@@ -2,13 +2,19 @@ import { signal, Component, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
+import { DefaultSidenavComponent } from './components/default-sidenav/default-sidenav.component';
+import { SouscripteursComponent } from './pages/souscripteurs/souscripteurs.component';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
-import { PostComponent } from './post/post.component';
-import { DefaultSidenavComponent } from './components/default-sidenav/default-sidenav.component';
+import { FormsModule, FormGroup } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatdialogComponent } from './components/matdialog/matdialog.component';
+import { MultiaddComponent } from './pages/multiadd/multiadd.component';
 
 @Component({
   selector: 'app-root',
@@ -22,9 +28,15 @@ import { DefaultSidenavComponent } from './components/default-sidenav/default-si
     MatIconModule,
     MatSidenavModule,
     RouterModule,
-    PostComponent,
     MatListModule,
     DefaultSidenavComponent,
+    FormsModule,
+    MatFormFieldModule,
+    MatCardModule,
+    SouscripteursComponent,
+    MatTableModule,
+    MatdialogComponent,
+    MultiaddComponent,
   ],
   template: `
     <mat-toolbar class="mat-elevation-z3" color="primary"
@@ -46,13 +58,14 @@ import { DefaultSidenavComponent } from './components/default-sidenav/default-si
     `
       mat-toolbar {
         position: relative;
+        margin: -10px, -10px, -10px, -10px;
         z-index: 5;
       }
       .content {
-        padding: 24px;
+        padding: 20px;
       }
       mat-sidenav-container {
-        height: calc(100vh - 64px);
+        height: calc(100vh - 80px);
         background-color: rgba(0, 0, 0, 0.09);
         transition: all 500ms ease-in-out;
       }

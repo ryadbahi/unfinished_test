@@ -1,0 +1,236 @@
+<body class="souspage">
+  <mat-form-field>
+    <mat-label>Filter</mat-label>
+    <input
+      matInput
+      (keyup)="applyFilter($event)"
+      placeholder="Ex. Ahmed"
+      #input
+    />
+  </mat-form-field>
+
+  <button
+    style="margin-left: 80%"
+    class="ajouter"
+    color="success"
+    mat-fab
+    (click)="openSouscripDialog()"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
+  <mat-toolbar>Souscripteurs</mat-toolbar>
+  <div class="mat-elevation-z8">
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- ID Column -->
+      <ng-container matColumnDef="id_souscript">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <td mat-cell *matCellDef="let elemsous">
+          {{ elemsous.id_souscript }}
+        </td>
+      </ng-container>
+
+      <!-- nom_souscript Column -->
+      <ng-container matColumnDef="nom_souscript">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          Raison sociale
+        </th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input
+              [(ngModel)]="elemsous.nom_souscript"
+              type="text"
+              style="text-transform: uppercase"
+            />
+          </div>
+          <div *ngIf="!elemsous.isEdit">
+            {{ elemsous.nom_souscript | uppercase }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- adresse_souscript Column -->
+      <ng-container matColumnDef="adresse_souscript">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Adresse</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input [(ngModel)]="elemsous.adresse_souscript" type="text" />
+          </div>
+          <div *ngIf="!elemsous.isEdit">
+            {{ elemsous.adresse_souscript | titlecase }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- email_souscript_1 Column -->
+      <ng-container matColumnDef="email_souscript_1">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>E-mail (1)</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input [(ngModel)]="elemsous.email_souscript_1" type="email" />
+          </div>
+          <div *ngIf="!elemsous.isEdit">
+            {{ elemsous.email_souscript_1 | lowercase }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- email_souscript_2 Column -->
+      <ng-container matColumnDef="email_souscript_2">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>E-mail (2)</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input [(ngModel)]="elemsous.email_souscript_2" type="email" />
+          </div>
+          <div *ngIf="!elemsous.isEdit">
+            {{ elemsous.email_souscript_2 | lowercase }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- email_souscript_3 Column -->
+      <ng-container matColumnDef="email_souscript_3">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>E-mail (3)</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input [(ngModel)]="elemsous.email_souscript_3" type="email" />
+          </div>
+          <div *ngIf="!elemsous.isEdit">
+            {{ elemsous.email_souscript_3 | lowercase }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- tel_souscript_1 Column -->
+      <ng-container matColumnDef="tel_souscript_1">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel (1)</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input
+              maxlength="13"
+              size="12"
+              type="tel"
+              [(ngModel)]="elemsous.tel_souscript_1"
+            />
+          </div>
+          <div *ngIf="!elemsous.isEdit">{{ elemsous.tel_souscript_1 }}</div>
+        </td>
+      </ng-container>
+
+      <!-- tel_souscript_2 Column -->
+      <ng-container matColumnDef="tel_souscript_2">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel (2)</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input
+              maxlength="13"
+              size="12"
+              type="tel"
+              [(ngModel)]="elemsous.tel_souscript_2"
+            />
+          </div>
+          <div *ngIf="!elemsous.isEdit">{{ elemsous.tel_souscript_2 }}</div>
+        </td>
+      </ng-container>
+
+      <!-- tel_souscript_3 Column -->
+      <ng-container matColumnDef="tel_souscript_3">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel (3)</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input
+              maxlength="13"
+              size="12"
+              type="tel"
+              [(ngModel)]="elemsous.tel_souscript_3"
+            />
+          </div>
+          <div *ngIf="!elemsous.isEdit">{{ elemsous.tel_souscript_3 }}</div>
+        </td>
+      </ng-container>
+
+      <!-- tel_souscript_4 Column -->
+      <ng-container matColumnDef="tel_souscript_4">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel (4)</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="elemsous.isEdit">
+            <input
+              maxlength="13"
+              size="12"
+              type="tel"
+              [(ngModel)]="elemsous.tel_souscript_4"
+            />
+          </div>
+          <div *ngIf="!elemsous.isEdit">{{ elemsous.tel_souscript_4 }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Last_edit Column -->
+      <ng-container matColumnDef="Last_edit">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Dér. modif.</th>
+        <td mat-cell *matCellDef="let elemsous">
+          {{ elemsous.Last_edit | date : "dd/MM/yyyy - HH:mm:ss" }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="Add_on">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Ajouté le</th>
+        <td mat-cell *matCellDef="let elemsous">
+          {{ elemsous.Add_on | date : "dd/MM/yyyy - HH:mm:ss" }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Edit / Supr.</th>
+        <td mat-cell *matCellDef="let elemsous">
+          <div *ngIf="!elemsous.isEdit">
+            <button
+              style="margin-right: 5px"
+              mat-raised-button
+              color="primary"
+              [routerLink]="['/souscripteurs', elemsous.id_souscript]"
+              (click)="strteditsouscrip(elemsous)"
+            >
+              <mat-icon style="margin: 0">edit</mat-icon>
+            </button>
+
+            <button
+              mat-raised-button
+              color="warn"
+              (click)="deleteIDSouscr(elemsous.id_souscript)"
+            >
+              <mat-icon style="margin: 0">delete</mat-icon>
+            </button>
+          </div>
+          <!----------------------------ALTERNATE BUTTONS------------------------------->
+          <div *ngIf="elemsous.isEdit">
+            <button
+              style="background-color: green; margin-right: 10%"
+              mat-raised-button
+              (click)="updateSouscripData(elemsous)"
+            >
+              <mat-icon style="margin: 0; color: aliceblue">check</mat-icon>
+            </button>
+            <button mat-raised-button color="warn" (click)="Cancel(elemsous)">
+              <mat-icon style="margin: 0">close</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      <!-- Row shown when there is no matching data. -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="4">
+          Pas de résultats pour "{{ input.value }}"
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator
+      [pageSizeOptions]="[15, 30, 60, 120]"
+      aria-label="Select page of users"
+    ></mat-paginator>
+  </div>
+</body>

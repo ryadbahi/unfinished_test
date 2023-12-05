@@ -108,9 +108,24 @@ export class DefaultSidenavComponent {
       route: 'home',
     },
     {
-      icon: 'dashboard',
-      label: 'Dashboard',
-      route: 'post',
+      icon: 'work',
+      label: 'Souscripteurs',
+      route: 'souscripteurs',
+    },
+    {
+      icon: 'person',
+      label: 'Adhérents',
+      route: 'adherents',
+    },
+    {
+      icon: 'local_hospital',
+      label: 'Sinistres',
+      route: 'sinistres',
+    },
+    {
+      icon: 'cloud_upload',
+      label: 'Ajout Multiple',
+      route: 'multiadd',
     },
   ]);
 }
