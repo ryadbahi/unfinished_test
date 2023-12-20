@@ -204,7 +204,7 @@
           <!----------------------------ALTERNATE BUTTONS------------------------------->
           <div *ngIf="elemsous.isEdit">
             <button
-              style="background-color: green; margin-right: 10%"
+              style="background-color: green; margin-right: 3%"
               mat-raised-button
               (click)="updateSouscripData(elemsous)"
             >
@@ -229,7 +229,7 @@
     </table>
 
     <mat-paginator
-      [pageSizeOptions]="[15, 30, 60, 120]"
+      [pageSizeOptions]="[10, 30, 60, 120]"
       aria-label="Select page of users"
     ></mat-paginator>
   </div>

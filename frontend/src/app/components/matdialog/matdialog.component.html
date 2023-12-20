@@ -1,3 +1,5 @@
+<!-------------------------------------------------------SOUSCRIPTEUR--------------------------------------------------------------->
+
 <div *ngIf="formGroupToShow === 'SouscripForm'">
   <h1 matDialogTitle>Nouveau souscripteur</h1>
   <div mat-dialog-content>
@@ -225,8 +227,8 @@
             </td>
           </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsSous"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsSous"></tr>
         </table>
       </div>
       <div class="actionDiv">
@@ -235,6 +237,234 @@
           class="actionbtn"
           mat-raised-button
           (click)="souscripMultiSubmit()"
+          color="primary"
+        >
+          Ajouter
+        </button>
+        <button
+          style="margin: 10px 5px 5px 5px"
+          class="actionbtn"
+          mat-raised-button
+          color="warn"
+          (click)="closeDialog()"
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!---------------------------------------------------FIN ----- SOUSCRIPTEUR--------------------------------------------------------------->
+<!----------------------------------------------------------------ADHERENT----------------------------------------------------------------->
+<div *ngIf="formGroupToShow === 'AdhForm'">
+  <h1 matDialogTitle>Nouvel adhérent</h1>
+  <div mat-dialog-content>
+    <div class="form_container">
+      <form style="display: flex; flex-direction: column" [formGroup]="AdhForm">
+        <mat-form-field>
+          <mat-label>Nom</mat-label>
+          <input formControlName="nom_adherent" matInput placeholder="Nom" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Prénom</mat-label>
+          <input
+            formControlName="prenom_adherent"
+            matInput
+            placeholder="Prénom"
+          />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Date de naissance</mat-label>
+          <input formControlName="date_nai_adh" matInput type="text" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Situation fam.</mat-label>
+          <input formControlName="situa_fam" matInput placeholder="" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>RIB</mat-label>
+          <input
+            formControlName="rib_adh"
+            matInput
+            placeholder="Les 20 chiffre du rib"
+          />
+          <mat-icon matSuffix>account_balance</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Email (1)</mat-label>
+          <input
+            formControlName="email_adh_1"
+            matInput
+            placeholder="Email (1)"
+          />
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Email (2)</mat-label>
+          <input
+            formControlName="email_adh_2"
+            matInput
+            placeholder="Email (2)"
+          />
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Tel (1)</mat-label>
+          <input formControlName="tel_adh_1" matInput placeholder="Tel (1)" />
+          <mat-icon matSuffix>phone</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Tel (2)</mat-label>
+          <input formControlName="tel_adh_2" matInput placeholder="Tel (2)" />
+          <mat-icon matSuffix>phone</mat-icon>
+        </mat-form-field>
+      </form>
+    </div>
+    <div class="actionDiv" *ngIf="formGroupToShow === 'AdhForm'">
+      <button
+        class="actionbtn"
+        mat-raised-button
+        (click)="adhSubmit()"
+        color="primary"
+      >
+        Ajouter
+      </button>
+      <button
+        class="actionbtn"
+        mat-raised-button
+        color="warn"
+        (click)="closeDialog()"
+      >
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>
+<div *ngIf="formGroupToShow === 'MultiAdhForm'">
+  <h1 matDialogTitle>Ajout multiple Adhérents</h1>
+  <div mat-dialog-content>
+    <div class="form_container">
+      <div class="DropZone-btn">
+        <ngx-file-drop
+          (onFileDrop)="dropped($event)"
+          *ngIf="!dataSource || dataSource.length === 0"
+          dropZoneLabel="ooooooo Or drop your file her"
+          (multiple)="(false)"
+        >
+        </ngx-file-drop>
+        <button
+          mat-raised-button
+          style="
+            position: absolute;
+            top: 47%;
+            left: 23%;
+            transform: translate(-50%, -50%);
+          "
+          (click)="fileInput.click()"
+          *ngIf="!dataSource || dataSource.length === 0"
+        >
+          <span>Upload</span>
+          <input
+            #fileInput
+            type="file"
+            (change)="ReadExcel($event)"
+            style="display: none"
+          />
+        </button>
+      </div>
+      <div *ngIf="dataSource && dataSource.length > 0">
+        <table
+          mat-table
+          [dataSource]="dataSource"
+          mat-table
+          class="mat-elevation-z8"
+        >
+          <ng-container matColumnDef="n">
+            <th mat-header-cell *matHeaderCellDef>No.</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.n }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="nom_adherent">
+            <th mat-header-cell *matHeaderCellDef>Nom</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.nom_adherent }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="prenom_adherent">
+            <th mat-header-cell *matHeaderCellDef>Prénom</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.prenom_adherent }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="date_nai_adh">
+            <th mat-header-cell *matHeaderCellDef>Date de naissance</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.date_nai_adh }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="situa_fam">
+            <th mat-header-cell *matHeaderCellDef>Situation fam.</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.situa_fam }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="rib_adh">
+            <th mat-header-cell *matHeaderCellDef>RIB</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.rib_adh }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="email_adh_1">
+            <th mat-header-cell *matHeaderCellDef>Email (1)</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.email_adh_1 }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="email_adh_2">
+            <th mat-header-cell *matHeaderCellDef>Email (2)</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.email_adh_2 }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="tel_adh_1">
+            <th mat-header-cell *matHeaderCellDef>tel (1)</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.tel_adh_1 }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="tel_adh_2">
+            <th mat-header-cell *matHeaderCellDef>tel (2)</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.tel_adh_2 }}
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsAdh"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsAdh"></tr>
+        </table>
+      </div>
+      <div class="actionDiv">
+        <button
+          style="margin: 10px 5px 5px 5px"
+          class="actionbtn"
+          mat-raised-button
+          (click)="adhMultiSubmit()"
           color="primary"
         >
           Ajouter

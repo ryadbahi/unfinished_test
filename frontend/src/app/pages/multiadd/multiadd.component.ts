@@ -45,4 +45,13 @@ export class MultiaddComponent implements OnInit {
 
     this.dialog.open(MatdialogComponent, config);
   }
+
+  openMultiAdhFormDialog() {
+    const config = new MatDialogConfig();
+    config.disableClose = true;
+    config.autoFocus = true;
+    config.data = { formGroupToShow: 'MultiAdhForm' }; // Pass the form group to show
+
+    this.dialog.open(MatdialogComponent, config);
+  }
 }

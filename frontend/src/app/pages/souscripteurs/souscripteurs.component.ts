@@ -16,7 +16,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatdialogComponent } from '../../components/matdialog/matdialog.component';
 import { RouterModule, RouterLink, ActivatedRoute } from '@angular/router';
 
-export interface UserData {
+export interface SouscripData {
   id_souscript: number;
   nom_souscript: string;
   adresse_souscript: string;
@@ -58,7 +58,7 @@ export class SouscripteursComponent implements OnInit {
   OldsouscripData: any;
   isEditing = false;
   getDataValue: any;
-  dataSource!: MatTableDataSource<UserData>;
+  dataSource!: MatTableDataSource<SouscripData>;
   columnsSchema: any;
   displayedColumns: string[] = [
     'id_souscript',
@@ -123,7 +123,7 @@ export class SouscripteursComponent implements OnInit {
     this.dialog.open(MatdialogComponent, config);
   }
 
-  updateSouscripData(elemsous: UserData) {
+  updateSouscripData(elemsous: SouscripData) {
     this.service
       .updateSouscripteurData(elemsous.id_souscript, elemsous)
       .subscribe((res) => {
@@ -158,9 +158,8 @@ export class SouscripteursComponent implements OnInit {
           console.log(res, 'res=>');
         });
       this.OldsouscripData = JSON.stringify(elemsous);
-      this.dataSource.data.forEach((element: any) => {
-        // Change this.getDataValue.array to this.dataSource.data
-        element.isEdit = false;
+      this.dataSource.data.forEach((elemsous: any) => {
+        elemsous.isEdit = false;
       });
       elemsous.isEdit = true;
     }

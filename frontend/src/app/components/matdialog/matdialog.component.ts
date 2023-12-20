@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -17,15 +17,15 @@ import {
   Validators,
   FormBuilder,
 } from '@angular/forms';
-import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatInputModule } from '@angular/material/input';
 import * as XLSX from 'xlsx';
 import {
   NgxFileDropModule,
   NgxFileDropEntry,
   FileSystemFileEntry,
-  FileSystemDirectoryEntry,
 } from 'ngx-file-drop';
 import { MatTableModule } from '@angular/material/table';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-matdialog',
@@ -41,6 +41,7 @@ import { MatTableModule } from '@angular/material/table';
     MatInputModule,
     MatTableModule,
     NgxFileDropModule,
+    DatePipe,
   ],
   templateUrl: './matdialog.component.html',
   styleUrl: './matdialog.component.scss',
@@ -58,9 +59,10 @@ export class MatdialogComponent implements OnInit {
       }
     }
   }
+  element: any;
   dataSource: any[] = [];
   ExcelData: any[] = [];
-  displayedColumns: string[] = [
+  displayedColumnsSous: string[] = [
     'n',
     'nom_souscript',
     'adresse_souscript',
@@ -72,25 +74,56 @@ export class MatdialogComponent implements OnInit {
     'tel_souscript_3',
     'tel_souscript_4',
   ];
+  displayedColumnsAdh: string[] = [
+    'n',
+    'nom_adherent',
+    'prenom_adherent',
+    'date_nai_adh',
+    'situa_fam',
+    'rib_adh',
+    'email_adh_1',
+    'email_adh_2',
+    'tel_adh_1',
+    'tel_adh_2',
+  ];
+
   formGroupToShow: string = 'SouscripForm';
+  getDataValue: any;
   inputData: any;
   SouscripForm!: FormGroup;
   MultiSousForm!: FormGroup;
+  AdhForm!: FormGroup;
+  MultiAdhForm!: FormGroup;
+
   constructor(
     private formBuilder: FormBuilder,
     private service: ApiService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<MatdialogComponent>,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
-    if (this.data && this.data.formGroupToShow === 'MultiSousForm') {
-      this.createMultiSousForm();
-      this.formGroupToShow = 'MultiSousForm';
-    } else {
-      this.creatsouscriptForm();
-      this.formGroupToShow = 'SouscripForm';
+    if (this.data) {
+      switch (this.data.formGroupToShow) {
+        case 'MultiSousForm':
+          this.createMultiSousForm();
+          this.formGroupToShow = 'MultiSousForm';
+          break;
+        case 'MultiAdhForm':
+          this.createMultiAdhForm();
+          this.formGroupToShow = 'MultiAdhForm';
+          break;
+        case 'AdhForm':
+          this.createAdhForm();
+          this.formGroupToShow = 'AdhForm';
+          break;
+        default:
+          this.creatsouscriptForm();
+          this.formGroupToShow = 'SouscripForm';
+      }
     }
   }
   creatsouscriptForm() {
@@ -106,6 +139,19 @@ export class MatdialogComponent implements OnInit {
       tel_souscript_4: new FormControl(''),
     });
   }
+  createAdhForm() {
+    this.AdhForm = this.formBuilder.group({
+      nom_adherent: new FormControl('', Validators.required),
+      prenom_adherent: new FormControl('', Validators.required),
+      date_nai_adh: new FormControl('', [Validators.required]),
+      situa_fam: new FormControl('', Validators.required),
+      rib_adh: new FormControl(''),
+      email_adh_1: new FormControl('', Validators.email),
+      email_adh_2: new FormControl('', Validators.email),
+      tel_adh_1: new FormControl(''),
+      tel_adh_2: new FormControl(''),
+    });
+  }
   createMultiSousForm() {
     this.MultiSousForm = this.formBuilder.group({
       nom_souscript: new FormControl('', Validators.required),
@@ -117,6 +163,19 @@ export class MatdialogComponent implements OnInit {
       tel_souscript_2: new FormControl(''),
       tel_souscript_3: new FormControl(''),
       tel_souscript_4: new FormControl(''),
+    });
+  }
+  createMultiAdhForm() {
+    this.MultiAdhForm = this.formBuilder.group({
+      nom_adherent: new FormControl('', Validators.required),
+      prenom_adherent: new FormControl('', Validators.required),
+      date_nai_adh: new FormControl('', [Validators.required]),
+      situa_fam: new FormControl('', Validators.required),
+      rib_adh: new FormControl(''),
+      email_adh_1: new FormControl('', Validators.email),
+      email_adh_2: new FormControl('', Validators.email),
+      tel_adh_1: new FormControl(''),
+      tel_adh_2: new FormControl(''),
     });
   }
   souscripSubmit() {
@@ -134,6 +193,19 @@ export class MatdialogComponent implements OnInit {
     }
   }
 
+  adhSubmit() {
+    if (this.AdhForm.valid) {
+      console.table(this.AdhForm.value);
+      this.service.addAdherentData(this.AdhForm.value).subscribe((res) => {
+        console.log(res, 'res==>');
+        this.dialogRef.close();
+        window.location.reload();
+      });
+    } else {
+      alert('Veuillez remplir tous les champs');
+    }
+  }
+
   souscripMultiSubmit() {
     console.log(this.MultiSousForm.value);
     if (this.dataSource && this.dataSource.length > 0) {
@@ -141,10 +213,33 @@ export class MatdialogComponent implements OnInit {
         (res) => {
           console.log(res, 'res==>');
           this.dialogRef.close();
-          window.location.reload();
+          // Navigate to 'souscripteurs' path
+          this.router.navigate(['/souscripteurs']);
         },
         (error) => {
           console.error('Error submitting multiple souscripteurs:', error);
+          // Handle errors here
+        }
+      );
+    } else {
+      alert(
+        "Aucune donnée à soumettre. Veuillez importer des données à partir d'un fichier Excel."
+      );
+    }
+  }
+
+  adhMultiSubmit() {
+    console.log(this.MultiAdhForm.value);
+    if (this.dataSource && this.dataSource.length > 0) {
+      this.service.addMultipleAdherentsData(this.dataSource).subscribe(
+        (res) => {
+          console.log(res, 'res==>');
+          this.dialogRef.close();
+          // Navigate to 'souscripteurs' path
+          this.router.navigate(['/adherents']);
+        },
+        (error) => {
+          console.error('Error submitting multiple adherents:', error);
           // Handle errors here
         }
       );

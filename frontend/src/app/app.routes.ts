@@ -5,6 +5,7 @@ import { SinistresComponent } from './pages/sinistres/sinistres.component';
 import { SouscripteursComponent } from './pages/souscripteurs/souscripteurs.component';
 import { CommonModule } from '@angular/common';
 import { MultiaddComponent } from './pages/multiadd/multiadd.component';
+import { MailreportsComponent } from './pages/mailreports/MailreportsComponent';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,7 @@ export const routes: Routes = [
   },
   { path: 'home', component: HomeComponent, title: 'Acceuil' },
   { path: 'adherents', component: AdherentsComponent, title: 'Adhérents' },
+  { path: 'adherents/:id', component: AdherentsComponent, title: 'Adhérents' },
   { path: 'sinistres', component: SinistresComponent, title: 'Sinistres' },
   { path: 'multiadd', component: MultiaddComponent, title: 'Ajout Multiple' },
   {
@@ -25,5 +27,15 @@ export const routes: Routes = [
     path: 'souscripteurs/:id',
     component: SouscripteursComponent,
     title: 'Souscripteurs',
+  },
+  {
+    path: 'mailreports',
+    component: MailreportsComponent,
+    title: 'Suivi des requétes',
+  },
+  {
+    path: 'mailreports/:id',
+    component: MailreportsComponent,
+    title: 'Suivi des requétes',
   },
 ];

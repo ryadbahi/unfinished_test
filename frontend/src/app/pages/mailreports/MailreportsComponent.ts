@@ -1,0 +1,591 @@
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { ApiService } from '../../api.service';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import MsgReader from '@kenjiuno/msgreader';
+import { BusinessHoursService } from '../../businessdayshours.service';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ToastrService } from 'ngx-toastr';
+import {
+  NgxFileDropModule,
+  NgxFileDropEntry,
+  FileSystemFileEntry,
+} from 'ngx-file-drop';
+import * as XLSX from 'xlsx';
+
+export interface MreportsData {
+  index?: number;
+  id_mail: string;
+  reception: Date;
+  canal: string;
+  traite_par: string;
+  agence: string;
+  contrat: string;
+  souscripteur: string;
+  adherent: string;
+  objet: string;
+  statut: string;
+  reponse: Date;
+  tdr: string;
+  score: string;
+  observation: string;
+  isEdit?: boolean;
+  isNew?: boolean;
+  [key: string]: any;
+}
+
+@Component({
+  selector: 'app-mailreports',
+  standalone: true,
+  imports: [
+    CommonModule,
+
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatInputModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatToolbarModule,
+    RouterLink,
+    MatSelectModule,
+    MatOptionModule,
+    MatTooltipModule,
+    DatePipe,
+    NgxFileDropModule,
+  ],
+  templateUrl: './mailreports.component.html',
+  styleUrl: './mailreports.component.scss',
+})
+export class MailreportsComponent implements OnInit {
+  selectedTraiteePar!: string;
+  traite_par: string[] = [
+    'M.Boularouk',
+    'F.Birem',
+    'I.Bensalem',
+    'S.Dourari',
+    'M.Klouchi',
+    'B.Medjhoum',
+    'R.Bahi',
+  ];
+
+  statut: string[] = ['Réglée', 'Infondée'];
+  selectedStatut: string = this.statut[0];
+  canal: string[] = ['Mail', 'Tel'];
+  selectedCanal: string = this.statut[0];
+  items: MreportsData[] = [];
+  isNew: boolean = false;
+  selectedFile: any;
+  Oldmrepelem: any;
+  isEditing = false;
+  getDataValue: any;
+  dataSource!: MatTableDataSource<any>;
+  MreportsForm: any = {};
+  displayedColumns: string[] = [
+    'index',
+    'reception',
+    'canal',
+    'traite_par',
+    'agence',
+    'contrat',
+    'souscripteur',
+    'adherent',
+    'objet',
+    'statut',
+    'reponse',
+    'tdr',
+    'score',
+    'observation',
+    'actions',
+  ];
+  abbrevList: { [key: string]: string } = {
+    'BERGERAT MONNOYEUR ALGERIE': 'BMA',
+    'GLAXOSMITHKLINE ALGÉRIE': 'GSK',
+    'MSD IDEA ALGERIE': 'MSD',
+    'CAN HYGIENE SPA': 'CAN HYGIENE',
+    'SARL MERIPLAST': 'MERIPLAST',
+    'AMS ALGERIE SPA': 'AMS',
+    'MAGHREB LEASING ALGERIE PC CO GE MAGHREB': 'MLA',
+    'CLARIANT OIL SERVICES UK LTD': 'CLARIANT UK',
+    'ACCENTIS PHARMA ALGERIE': 'ACCENTIS',
+    'SUEZ WATER TECHNOLOGIES AND SOLUTIONS ALGERIA SPA': 'SUEZ WATER',
+    'ABDI IBRAHIM REMEDE PHARMA': ' AIRP DZ',
+    'EURL TABUK ALGERIE': 'TABUK',
+    'HENKEL ALGÉRIE': 'HENKEL',
+    'BRITISH AMERICAN  TOBACCO ALGERIE SPA': 'BAT',
+    'THALES SIX GTS FRANCE SAS': 'THALES SIX GTS',
+    'ALCATEL-LUCENT INTERNATIONAL SUCCURSALE ALGÉRIE': 'ALCATEL',
+    'JMC MOTORS ALGÉRIE': 'JMC',
+    'SARL ALPHAREP': 'ALPHAREP',
+  };
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('fileInput') fileInput!: ElementRef;
+  public dropped(files: NgxFileDropEntry[]) {
+    for (const droppedFile of files) {
+      // Check if it's a file
+      if (droppedFile.fileEntry.isFile) {
+        const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
+        fileEntry.file((file: File) => {
+          // Here you can access the real file
+          this.readMsgFile(file);
+        });
+      }
+    }
+  }
+
+  ngAfterViewInit() {
+    this.sort.start = 'desc';
+  }
+
+  constructor(
+    private datePipe: DatePipe,
+    private service: ApiService,
+    private businessHoursService: BusinessHoursService,
+    private cdr: ChangeDetectorRef,
+    private router: ActivatedRoute,
+    private toastr: ToastrService
+  ) {}
+  isNewRow(row: MreportsData) {
+    if ('isNew' in row) {
+      return row.isNew;
+    } else {
+      return false;
+    }
+  }
+
+  ngOnInit(): void {
+    setTimeout(() => {
+      this.sort.start = 'desc';
+      this.sort.direction = 'desc';
+      this.sort.active = 'index'; // Affichage inversé (donc d plus recent au plus ancien)
+    });
+    this.refreshTable(); // Initial data load
+
+    this.service.dataChange.subscribe(() => {
+      this.refreshTable();
+    });
+  }
+  getScoreColor(score: string): string {
+    // Convert score to hours
+    const hours = this.convertScoreToHours(score);
+
+    if (hours < 4) {
+      return 'green';
+    } else if (hours >= 4 && hours < 8) {
+      return 'orange';
+    } else {
+      return 'red';
+    }
+  }
+  convertScoreToHours(score: string): number {
+    // Extract hours, minutes, and seconds from the score
+    const timeParts = score.split(' ');
+
+    const hours = parseInt(timeParts[0].slice(0, -1));
+    const minutes = parseInt(timeParts[1].slice(0, -1));
+    const seconds = parseInt(timeParts[2].slice(0, -1));
+
+    // Convert everything to hours
+
+    const totalHours = hours + minutes / 60 + seconds / 3600;
+
+    return totalHours;
+  }
+
+  formatDate(date: string | null): string {
+    return this.datePipe.transform(date, 'dd/MM/yyyy, HH:mm:ss') || '';
+  }
+
+  getShort(word: string): string {
+    return this.abbrevList[word] || word;
+  }
+  CharLimit(value: string, limit = 25): string {
+    return value.length > limit ? value.substring(0, limit) + '...' : value;
+  }
+  TrimContratct(value: string, count = 5): string {
+    return value.length > count ? value.substring(count) : '';
+  }
+  isShortVersion = false;
+
+  private refreshTable() {
+    this.service.getAllMailreportsData().subscribe((data) => {
+      this.getDataValue = data;
+      this.getDataValue.forEach((item: { index: any }, index: number) => {
+        item.index = index + 1;
+      });
+
+      console.table(this.getDataValue);
+
+      // Use slice to create a new reference to the data
+      this.dataSource = new MatTableDataSource([...this.getDataValue]);
+
+      // Set the paginator and sort after initializing the data source
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+
+      // Trigger change detection explicitly
+      this.cdr.detectChanges();
+    });
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  strteditmrep(mrepelem: any) {
+    if (this.dataSource) {
+      // Cancel editing for all other rows
+      this.dataSource.data.forEach((row: any) => {
+        if (row.isEdit) {
+          row.isEdit = false;
+          row.isNew = false;
+        }
+      });
+
+      // Now start editing for the selected row
+      mrepelem.isEdit = true;
+      this.selectedTraiteePar = mrepelem.traite_par;
+      this.selectedStatut = mrepelem.statut;
+      this.selectedCanal = mrepelem.canal;
+
+      // Store the current state of mrepelem
+      this.Oldmrepelem = JSON.stringify(mrepelem);
+      console.log(this.Oldmrepelem);
+
+      // Set dropdown values based on the current values of mrepelem
+
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Add a method to handle canceling the new row
+  CancelNew() {
+    const index = this.dataSource.data.findIndex((mrepelem) => mrepelem.isNew);
+    if (index !== -1) {
+      this.dataSource.data.splice(index, 1);
+      this.dataSource = new MatTableDataSource(this.dataSource.data);
+    }
+  }
+
+  // Modify Cancel to handle both existing and new rows
+  Cancel(mrepelem: any) {
+    if (this.isNew) {
+      this.CancelNew();
+      this.isNew = false;
+    } else {
+      // Restore the original values
+      Object.assign(mrepelem, this.Oldmrepelem);
+      mrepelem.isEdit = false;
+    }
+  }
+
+  readMsgFile(file: File) {
+    let fileReader = new FileReader();
+    fileReader.onload = (e) => {
+      let arrayBuffer = fileReader.result as ArrayBuffer;
+      let msgReader = new MsgReader(arrayBuffer);
+      let msgFileData = msgReader.getFileData();
+
+      if (msgFileData.body) {
+        let sentOnDate: Date | null = null;
+        console.log(msgFileData.body);
+
+        console.log(msgFileData.clientSubmitTime);
+
+        let sentOnMatch = msgFileData.body.match(/Envoyé : (.+)/);
+
+        if (sentOnMatch && sentOnMatch.length > 1) {
+          let sentOnString = sentOnMatch[1];
+
+          let months: { [key: string]: string } = {
+            janvier: 'January',
+            février: 'February',
+            mars: 'March',
+            avril: 'April',
+            mai: 'May',
+            juin: 'June',
+            juillet: 'July',
+            août: 'August',
+            septembre: 'September',
+            octobre: 'October',
+            novembre: 'November',
+            décembre: 'December',
+          };
+
+          for (let month in months) {
+            sentOnString = sentOnString.replace(month, months[month]);
+          }
+
+          sentOnDate = new Date(Date.parse(sentOnString));
+
+          console.log(sentOnDate);
+          console.log(msgFileData.subject);
+          console.log(JSON.stringify(msgFileData.subject));
+          console.log(msgFileData.creationTime);
+        } else {
+          console.error('Unable to match "Envoyé" line in the message body.');
+          this.toastr.warning('Elements envoyés ??', 'Erreur sur le fichier');
+        }
+
+        if (msgFileData.subject) {
+          let subjectMatch = msgFileData.subject.match(
+            /RE:\s*(\w+)\s*(\d+\s*\d+\s*\d+\s*\d+)(?:\/\d+)?\s*-\s*([^\/]+)\s*\/\s*([^:]+)\s*:/
+          );
+
+          if (subjectMatch && subjectMatch.length > 4) {
+            let agence = subjectMatch[1];
+            let contrat = subjectMatch[1] + ' ' + subjectMatch[2];
+            let souscripteur = subjectMatch[3].trim();
+            let adherent = subjectMatch[4].trim();
+
+            console.log(agence);
+            console.log(contrat);
+            console.log(souscripteur);
+            console.log(adherent);
+
+            let newRow: MreportsData = {
+              id_mail: '',
+              reception: sentOnDate || new Date(),
+              canal: this.selectedCanal,
+              traite_par: this.selectedTraiteePar,
+              agence: agence,
+              contrat: contrat,
+              souscripteur: souscripteur,
+              adherent: adherent,
+              objet: '',
+              statut: this.selectedStatut,
+              reponse: msgFileData.clientSubmitTime
+                ? new Date(msgFileData.clientSubmitTime)
+                : new Date(),
+              tdr: '',
+              score: '',
+              observation: '',
+              isEdit: false,
+              isNew: true,
+            };
+            newRow.index = this.dataSource.data.length + 1;
+            // Calculate the score using the service
+            newRow.score = this.businessHoursService
+              .calculateBusinessTimeDifference(newRow.reception, newRow.reponse)
+              .toString();
+
+            let timeDifference = Math.abs(
+              newRow.reponse.getTime() - newRow.reception.getTime()
+            );
+
+            let hours = Math.floor(timeDifference / (1000 * 60 * 60));
+            let minutes = Math.floor(
+              (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+            );
+
+            let seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            let formattedTDR = `${hours}h ${minutes}m ${seconds}s`;
+
+            newRow.tdr = formattedTDR;
+
+            this.dataSource.data.unshift(newRow);
+
+            this.dataSource = new MatTableDataSource(this.dataSource.data);
+
+            this.dataSource.sort = this.sort;
+            this.dataSource.paginator = this.paginator;
+
+            this.strteditmrep(newRow);
+
+            this.cdr.detectChanges();
+          } else {
+            console.error('Unable to match subject line in the message.');
+          }
+        }
+      }
+    };
+    fileReader.readAsArrayBuffer(file);
+  }
+
+  submitNewRow(mrepelem: MreportsData) {
+    mrepelem.traite_par = this.selectedTraiteePar;
+    mrepelem.statut = this.selectedStatut;
+    mrepelem.canal = this.selectedCanal;
+    // Assign other selected values as needed...
+    this.service.addMailreportData(mrepelem).subscribe(
+      (response) => {
+        console.log('Row added successfully:', response);
+        this.toastr.success('Rapport Ajouté ', '');
+        mrepelem.isNew = false;
+        mrepelem.isEdit = false;
+        this.service.triggerDataChange();
+      },
+
+      (error) => {
+        console.error('Error adding row:', error);
+        // Handle error as needed
+        console.log('Complete error response:', error);
+      }
+    );
+  }
+  deleteIDMreport(id: any) {
+    const confirmDelete = confirm('Are you sure you want to delete this item?');
+
+    if (confirmDelete) {
+      console.log('Deleting ID:', id);
+
+      this.service.deleteIDMailreportData(id).subscribe({
+        next: (res) => {
+          this.toastr.info('Élément supprimé :X');
+          console.log(res, 'Suppression');
+          console.log(id, 'ID supprimée');
+
+          // Notify about data change
+          this.service.triggerDataChange();
+        },
+        error: (error) => {
+          console.error('Error deleting row:', error);
+        },
+      });
+    }
+  }
+  updateRow(mrepelem: MreportsData) {
+    // Assign the selected values to mrepelem
+    mrepelem.traite_par = this.selectedTraiteePar;
+    mrepelem.statut = this.selectedStatut;
+    mrepelem.canal = this.selectedCanal;
+
+    // Stringify the updated mrepelem
+    let updatedMrepelem = JSON.stringify(mrepelem);
+
+    // Compare with the old mrepelem
+    if (updatedMrepelem !== this.Oldmrepelem) {
+      // Changes have been made, so submit the update
+      // Your existing code for updating the row
+      this.service.updateMailreportData(mrepelem.id_mail, mrepelem).subscribe(
+        (response) => {
+          console.log('Row updated successfully:', response);
+          this.toastr.success('Mise à jour effectuée', '');
+
+          this.service.triggerDataChange();
+          // Toggle off the editing mode after a successful update
+          mrepelem.isEdit = false;
+        },
+        (error) => {
+          console.error('Error updating row:', error);
+          // Handle error as needed
+          console.log('Erreur:', error);
+        }
+      );
+    } else {
+      console.log('No changes detected. Skipping update.');
+      this.toastr.warning('Aucune donnée éditée ', '');
+    }
+  }
+  downloadExcel() {
+    const fileName = 'mail_reports.xlsx';
+
+    // Convert your MatTableDataSource data to Excel format using XLSX
+    const excelData: any[] = this.dataSource.data.map((item: MreportsData) => {
+      // Map the properties you want to include in the Excel file
+      return {
+        Reception: new Date(item.reception),
+        Canal: String(item.canal),
+        Traité_par: String(item.traite_par),
+        Agence: String(item.agence),
+        Contrat: String(item.contrat),
+        Souscripteur: String(item.souscripteur),
+        Adhérent: String(item.adherent),
+        Objet: String(item.objet),
+        Staut: String(item.statut),
+        Réponse: new Date(item.reponse),
+        Ratio: String(item.score),
+        Observation: String(item.observation),
+      };
+    });
+
+    // Create a worksheet
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Create a workbook with a single sheet
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Mail Reports');
+
+    // Save the workbook as a blob
+    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    // Create a download link and trigger a click event to download the file
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  calculateAverageScore(): string {
+    let totalScoreInSeconds = 0;
+    let count = 0;
+
+    if (this.dataSource && this.dataSource.data) {
+      this.dataSource.data.forEach((item: MreportsData) => {
+        // Skip items with empty or invalid score values
+        if (item.score && typeof item.score === 'string') {
+          const scoreParts = item.score.split(' ');
+          if (scoreParts.length === 3) {
+            const hours = parseInt(scoreParts[0]);
+            const minutes = parseInt(scoreParts[1]);
+            const seconds = parseInt(scoreParts[2]);
+            totalScoreInSeconds += hours * 3600 + minutes * 60 + seconds;
+            count++;
+          }
+        }
+      });
+    }
+
+    if (count > 0) {
+      // Calculate average
+      const averageScoreInSeconds = Math.round(totalScoreInSeconds / count);
+
+      const hours = Math.floor(averageScoreInSeconds / 3600);
+      const minutes = Math.floor((averageScoreInSeconds % 3600) / 60);
+      const seconds = averageScoreInSeconds % 60;
+
+      return `${this.formatTimeUnit(hours)}:${this.formatTimeUnit(
+        minutes
+      )}:${this.formatTimeUnit(seconds)}`;
+    } else {
+      return 'N/A'; // Handle the case when there are no valid score values
+    }
+  }
+
+  private formatTimeUnit(unit: number): string {
+    return unit < 10 ? `0${unit}` : `${unit}`;
+  }
+}
