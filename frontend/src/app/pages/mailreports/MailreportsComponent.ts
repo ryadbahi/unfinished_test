@@ -15,7 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { ApiService } from '../../api.service';
+import { ApiService, MailreportsResponse } from '../../api.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import MsgReader from '@kenjiuno/msgreader';
@@ -32,7 +32,6 @@ import {
 import * as XLSX from 'xlsx';
 
 export interface MreportsData {
-  index?: number;
   id_mail: string;
   reception: Date;
   canal: string;
@@ -89,7 +88,11 @@ export class MailreportsComponent implements OnInit {
     'B.Medjhoum',
     'R.Bahi',
   ];
-
+  total: number = 0;
+  page: number = 1;
+  pageSize: number = 10;
+  sortField: string = 'id_mail';
+  searchInputValue: string = '';
   statut: string[] = ['Réglée', 'Infondée'];
   selectedStatut: string = this.statut[0];
   canal: string[] = ['Mail', 'Tel'];
@@ -103,7 +106,7 @@ export class MailreportsComponent implements OnInit {
   dataSource!: MatTableDataSource<any>;
   MreportsForm: any = {};
   displayedColumns: string[] = [
-    'index',
+    'id_mail',
     'reception',
     'canal',
     'traite_par',
@@ -156,10 +159,6 @@ export class MailreportsComponent implements OnInit {
     }
   }
 
-  ngAfterViewInit() {
-    this.sort.start = 'desc';
-  }
-
   constructor(
     private datePipe: DatePipe,
     private service: ApiService,
@@ -177,17 +176,22 @@ export class MailreportsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    setTimeout(() => {
-      this.sort.start = 'desc';
-      this.sort.direction = 'desc';
-      this.sort.active = 'index'; // Affichage inversé (donc d plus recent au plus ancien)
-    });
-    this.refreshTable(); // Initial data load
+    this.refreshTable();
+  }
 
-    this.service.dataChange.subscribe(() => {
+  ngAfterViewInit(): void {
+    this.paginator.page.subscribe(() => {
+      this.page = this.paginator.pageIndex + 1;
+      this.pageSize = this.paginator.pageSize;
+      this.refreshTable();
+    });
+
+    this.sort.sortChange.subscribe(() => {
+      this.sortField = this.sort.active;
       this.refreshTable();
     });
   }
+
   getScoreColor(score: string): string {
     // Convert score to hours
     const hours = this.convertScoreToHours(score);
@@ -230,25 +234,30 @@ export class MailreportsComponent implements OnInit {
   }
   isShortVersion = false;
 
-  private refreshTable() {
-    this.service.getAllMailreportsData().subscribe((data) => {
-      this.getDataValue = data;
-      this.getDataValue.forEach((item: { index: any }, index: number) => {
-        item.index = index + 1;
+  /**
+   * Refreshes the table data in the `MailreportsComponent` class.
+   */
+
+  refreshTable(): void {
+    this.service
+      .getAllMailreportsData(
+        this.page,
+        this.pageSize,
+        this.sortField,
+        this.searchInputValue
+      )
+      .subscribe({
+        next: (response: MailreportsResponse) => {
+          this.dataSource = new MatTableDataSource(response.data);
+          this.total = response.total;
+
+          this.paginator.length = this.total;
+          console.table(response.data);
+        },
+        error: (error) => {
+          console.error('Failed to fetch data:', error);
+        },
       });
-
-      console.table(this.getDataValue);
-
-      // Use slice to create a new reference to the data
-      this.dataSource = new MatTableDataSource([...this.getDataValue]);
-
-      // Set the paginator and sort after initializing the data source
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-
-      // Trigger change detection explicitly
-      this.cdr.detectChanges();
-    });
   }
 
   applyFilter(event: Event) {
@@ -391,7 +400,7 @@ export class MailreportsComponent implements OnInit {
               isEdit: false,
               isNew: true,
             };
-            newRow.index = this.dataSource.data.length + 1;
+            // newRow.index = this.dataSource.data.length + 1;
             // Calculate the score using the service
             newRow.score = this.businessHoursService
               .calculateBusinessTimeDifference(newRow.reception, newRow.reponse)
@@ -443,6 +452,7 @@ export class MailreportsComponent implements OnInit {
         mrepelem.isNew = false;
         mrepelem.isEdit = false;
         this.service.triggerDataChange();
+        this.refreshTable();
       },
 
       (error) => {

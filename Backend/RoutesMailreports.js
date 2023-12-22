@@ -94,15 +94,65 @@ async function insertMailReport(data) {
   }
 }
 
-// MAIL REPORTS - GET
-router.get("/", async (req, res) => {
-  const selectQuery = "SELECT * FROM mailreports";
+// MAIL REPORTS - GET with pagination
+router.get("/", async (req, res, next) => {
+  const {
+    page = page || 1,
+    pageSize = pageSize || 10,
+    sortBy = "id_mail",
+    sortOrder = "desc",
+    search = "",
+  } = req.query;
+
+  // Validate sortBy and sortOrder here to prevent SQL injection
+  const validColumns = [
+    "id_mail",
+    "reception",
+    "canal",
+    "traite_par",
+    "agence",
+    "contrat",
+    "souscripteur",
+    "adherent",
+    "objet",
+    "statut",
+    "reponse",
+    "tdr",
+    "score",
+    "observation",
+  ];
+  if (!validColumns.includes(sortBy)) {
+    return res.status(400).json({ error: "Invalid sort column" });
+  }
+  if (!["asc", "desc"].includes(sortOrder.toLowerCase())) {
+    return res.status(400).json({ error: "Invalid sort order" });
+  }
+
+  const offset = (page - 1) * pageSize;
+  const limit = parseInt(pageSize, 10);
+
+  let selectQuery = `
+    SELECT * FROM mailreports
+    WHERE CONCAT(id_mail, ' ') LIKE ? 
+    ORDER BY ${sortBy} ${sortOrder}
+    LIMIT ?, ?`;
+
+  let countQuery = `
+    SELECT COUNT(*) as total FROM mailreports
+    WHERE CONCAT(id_mail, ' ') LIKE ?`;
 
   try {
-    const [results] = await db.query(selectQuery);
-    res.status(200).json(results);
+    const [results] = await db.query(selectQuery, [
+      `%${search}%`,
+      offset,
+      limit,
+    ]);
+    const [totalResult] = await db.query(countQuery, [`%${search}%`]);
+    const total = totalResult[0].total;
+
+    res.status(200).json({ data: results, total: total });
   } catch (err) {
-    next(err); // Pass the error to the error handler middleware
+    next(err);
   }
 });
 

@@ -56,11 +56,11 @@
   ></mat-toolbar>
   <div class="mat-elevation-z8" style="border-radius: 10px; overflow: hidden">
     <table mat-table [dataSource]="dataSource" matSort>
-      <ng-container matColumnDef="index">
+      <ng-container matColumnDef="id_mail">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>N°</th>
         <td mat-cell *matCellDef="let mrepelem">
           <div *ngIf="!mrepelem.isEdit && !mrepelem.isNew">
-            {{ mrepelem.index }}
+            {{ mrepelem.id_mail }}
           </div>
         </td>
       </ng-container>
@@ -386,9 +386,10 @@
     </table>
 
     <mat-paginator
-      [pageSizeOptions]="[10, 30, 60, 120]"
+      [pageSizeOptions]="[10, 30, 100]"
       aria-label="Select page of users"
       fxLayoutGap="10px"
+      showFirstLastButtons
     ></mat-paginator>
   </div>
 </body>

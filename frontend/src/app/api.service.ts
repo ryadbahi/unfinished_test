@@ -2,6 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Subject, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+
+export interface MailreportsResponse {
+  data: any[]; // Replace 'any' with the type of your data
+  total: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -77,9 +83,33 @@ export class ApiService {
     );
   }
   // Mailreports endpoints
+  /**
+   * Fetches mailreports data from the server based on the provided parameters.
+   * @param page The page number of the mailreports data to fetch.
+   * @param pageSize The number of mailreports data to fetch per page.
+   * @param sort The field to sort the mailreports data by.
+   * @param search The search query to filter the mailreports data.
+   * @returns An observable of type `MailreportsResponse` containing the fetched mailreports data.
+   */
+  getAllMailreportsData(
+    page: number,
+    pageSize: number,
+    sort: string,
+    search: string
+  ): Observable<MailreportsResponse> {
+    const encodedSort = encodeURIComponent(sort);
+    const encodedSearch = encodeURIComponent(search);
+    const url = `${this.apiUrl}/mailreports?page=${page}&pageSize=${pageSize}&sortBy=${encodedSort}&search=${encodedSearch}`;
 
-  getAllMailreportsData() {
-    return this.http.get(`${this.apiUrl}/mailreports`);
+    return this.http.get<MailreportsResponse>(url).pipe(
+      catchError((error: any) => {
+        console.error(
+          'An error occurred while fetching mailreports data:',
+          error
+        );
+        throw new Error('Failed to fetch mailreports data.');
+      })
+    );
   }
 
   addMailreportData(data: any) {

@@ -8,6 +8,7 @@ import {
 import { provideHttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { provideToastr } from 'ngx-toastr';
+import { MatTableModule } from '@angular/material/table';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,5 +25,6 @@ export const appConfig: ApplicationConfig = {
       maxOpened: 1,
       autoDismiss: true,
     }),
+    MatTableModule,
   ],
 };
