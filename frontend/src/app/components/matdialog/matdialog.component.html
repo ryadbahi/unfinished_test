@@ -124,14 +124,6 @@
   <div mat-dialog-content>
     <div class="form_container">
       <div class="DropZone-btn">
-        <ngx-file-drop
-          (onFileDrop)="dropped($event)"
-          *ngIf="!dataSource || dataSource.length === 0"
-          dropZoneLabel="ooooooo Or drop your file her"
-          (onFileDrop)="dropped($event)"
-          (multiple)="(false)"
-        >
-        </ngx-file-drop>
         <button
           mat-raised-button
           style="
@@ -353,13 +345,6 @@
   <div mat-dialog-content>
     <div class="form_container">
       <div class="DropZone-btn">
-        <ngx-file-drop
-          (onFileDrop)="dropped($event)"
-          *ngIf="!dataSource || dataSource.length === 0"
-          dropZoneLabel="ooooooo Or drop your file her"
-          (multiple)="(false)"
-        >
-        </ngx-file-drop>
         <button
           mat-raised-button
           style="

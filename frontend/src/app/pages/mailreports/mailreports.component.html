@@ -1,59 +1,58 @@
-<ngx-file-drop
-  class="dropzone"
-  (onFileDrop)="dropped($event)"
-  dropZoneLabel="Par ici le mail
-    (Fichiers .MSG uniquement)"
-  (multiple)="(false)"
->
-</ngx-file-drop>
 <body class="ReqPage">
   <!---------------UPPERSTART----------------->
-  <div class="upperSection">
-    <!---------------FILTER----------------->
-    <div class="filter">
-      <mat-form-field>
-        <mat-label>Filter</mat-label>
-        <input
-          matInput
-          (keyup)="applyFilter($event)"
-          placeholder="Ex. Ahmed"
-          #input
-        />
-      </mat-form-field>
-    </div>
-    <!---------------FAB + ----------------->
 
-    <!---------------UPLOAD----------------->
-    <div class="drop_upload">
-      <div class="infilebtn">
-        <input
-          type="file"
-          (change)="
-            fileInput && fileInput.files && fileInput.files.length > 0
-              ? readMsgFile(fileInput.files[0])
-              : null
-          "
-          #fileInput
-          style="display: none"
-        />
-        <button (click)="fileInput.click()">Select MSG File</button>
-      </div>
-    </div>
-  </div>
+  <!---------------UPLOAD----------------->
 
   <!---------------UPPER END----------------->
-  <mat-toolbar
-    class="matoolB"
-    style="border-radius: 10px !important; margin: 0 0 10px 0"
-    >Suivi des requétes
+  <div class="mainTB">
+    <mat-toolbar class="matoolB"
+      >Suivi des requétes
 
-    <button>
-      <mat-icon>add</mat-icon>
-    </button>
-    <div class="average-tdr">Average TDR: {{ calculateAverageScore() }}</div>
-    <button class="xlsdl" (click)="downloadExcel()">
-      <img class="icon" src="assets/xlsicn.png" /></button
-  ></mat-toolbar>
+      <button>
+        <mat-icon>add</mat-icon>
+      </button>
+      <div class="average-tdr">Average TDR: {{ calculateAverageScore() }}</div>
+      <button class="xlsdl" (click)="downloadExcel()">
+        <img class="icon" src="assets/xlsicn.png" /></button
+    ></mat-toolbar>
+  </div>
+  <div
+    id="dropzone"
+    (drop)="dropped($event)"
+    (dragover)="$event.preventDefault()"
+  >
+    <p>Vous pouvez lacher le mail</p>
+  </div>
+  <div>
+    <mat-toolbar class="matoolB" id="search">
+      Recherches
+      <div class="searchField">
+        <input mat-input id="canal" placeholder="Canal" type="text" />
+        <input
+          mat-input
+          id="Traité_par"
+          placeholder="Traité par"
+          type="text"
+        /><input
+          mat-input
+          id="Contrat"
+          placeholder="Contrat"
+          type="text"
+        /><input
+          mat-input
+          id="Souscripteur"
+          placeholder="Souscripteur"
+          type="text"
+        /><input
+          mat-input
+          id="Adherent"
+          placeholder="Adherent"
+          type="text"
+        /><input mat-input id="Statut" placeholder="Statut" type="text" />
+      </div>
+    </mat-toolbar>
+  </div>
+
   <div class="mat-elevation-z8" style="border-radius: 10px; overflow: hidden">
     <table mat-table [dataSource]="dataSource" matSort>
       <ng-container matColumnDef="id_mail">
@@ -378,11 +377,6 @@
       </tr>
 
       <!-- Row shown when there is no matching data. -->
-      <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" colspan="4">
-          Pas de résultats pour "{{ input.value }}"
-        </td>
-      </tr>
     </table>
 
     <mat-paginator

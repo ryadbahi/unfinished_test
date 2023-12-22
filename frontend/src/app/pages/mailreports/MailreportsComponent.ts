@@ -2,6 +2,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -24,11 +25,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToastrService } from 'ngx-toastr';
-import {
-  NgxFileDropModule,
-  NgxFileDropEntry,
-  FileSystemFileEntry,
-} from 'ngx-file-drop';
+
 import * as XLSX from 'xlsx';
 
 export interface MreportsData {
@@ -72,7 +69,6 @@ export interface MreportsData {
     MatOptionModule,
     MatTooltipModule,
     DatePipe,
-    NgxFileDropModule,
   ],
   templateUrl: './mailreports.component.html',
   styleUrl: './mailreports.component.scss',
@@ -146,15 +142,52 @@ export class MailreportsComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('fileInput') fileInput!: ElementRef;
-  public dropped(files: NgxFileDropEntry[]) {
-    for (const droppedFile of files) {
-      // Check if it's a file
-      if (droppedFile.fileEntry.isFile) {
-        const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
-        fileEntry.file((file: File) => {
-          // Here you can access the real file
-          this.readMsgFile(file);
-        });
+
+  private dragCounter = 0;
+
+  @HostListener('window:dragenter', ['$event'])
+  onWindowDragEnter(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter++;
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'block';
+      dropzone.style.zIndex = '99999';
+    }
+  }
+
+  @HostListener('window:dragleave', ['$event'])
+  onWindowDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter--;
+    if (this.dragCounter === 0) {
+      const dropzone = document.getElementById('dropzone');
+      if (dropzone) {
+        dropzone.style.display = 'none';
+      }
+    }
+  }
+
+  @HostListener('window:drop', ['$event'])
+  onWindowDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter = 0;
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'none';
+    }
+  }
+
+  public dropped(event: DragEvent) {
+    event.preventDefault();
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'none';
+    }
+
+    if (event.dataTransfer) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        this.readMsgFile(event.dataTransfer.files[i]);
       }
     }
   }
@@ -301,6 +334,7 @@ export class MailreportsComponent implements OnInit {
     if (index !== -1) {
       this.dataSource.data.splice(index, 1);
       this.dataSource = new MatTableDataSource(this.dataSource.data);
+      this.refreshTable();
     }
   }
 
@@ -325,7 +359,6 @@ export class MailreportsComponent implements OnInit {
 
       if (msgFileData.body) {
         let sentOnDate: Date | null = null;
-        console.log(msgFileData.body);
 
         console.log(msgFileData.clientSubmitTime);
 

@@ -19,11 +19,7 @@ import {
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import * as XLSX from 'xlsx';
-import {
-  NgxFileDropModule,
-  NgxFileDropEntry,
-  FileSystemFileEntry,
-} from 'ngx-file-drop';
+
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -40,25 +36,13 @@ import { ActivatedRoute, Router } from '@angular/router';
     FormsModule,
     MatInputModule,
     MatTableModule,
-    NgxFileDropModule,
+
     DatePipe,
   ],
   templateUrl: './matdialog.component.html',
   styleUrl: './matdialog.component.scss',
 })
 export class MatdialogComponent implements OnInit {
-  public dropped(files: NgxFileDropEntry[]) {
-    for (const droppedFile of files) {
-      // Check if it's a file
-      if (droppedFile.fileEntry.isFile) {
-        const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
-        fileEntry.file((file: File) => {
-          // Here you can access the real file
-          this.ReadDropExcel(file);
-        });
-      }
-    }
-  }
   element: any;
   dataSource: any[] = [];
   ExcelData: any[] = [];
