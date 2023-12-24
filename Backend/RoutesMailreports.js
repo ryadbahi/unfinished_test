@@ -94,7 +94,7 @@ async function insertMailReport(data) {
   }
 }
 
-// MAIL REPORTS - GET with pagination
+// _______________________________________MAIL REPORTS - GET with pagination_______________________________________
 router.get("/", async (req, res, next) => {
   const {
     page = page || 1,
@@ -132,14 +132,44 @@ router.get("/", async (req, res, next) => {
   const limit = parseInt(pageSize, 10);
 
   let selectQuery = `
-    SELECT * FROM mailreports
-    WHERE CONCAT(id_mail, ' ') LIKE ? 
-    ORDER BY ${sortBy} ${sortOrder}
-    LIMIT ?, ?`;
+  SELECT * FROM mailreports
+  WHERE CONCAT(
+    COALESCE(id_mail, ''), ' ',
+    COALESCE(reception, ''), ' ',
+    COALESCE(canal, ''), ' ',
+    COALESCE(traite_par, ''), ' ',
+    COALESCE(agence, ''), ' ',
+    COALESCE(contrat, ''), ' ',
+    COALESCE(souscripteur, ''), ' ',
+    COALESCE(adherent, ''), ' ',
+    COALESCE(objet, ''), ' ',
+    COALESCE(statut, ''), ' ',
+    COALESCE(reponse, ''), ' ',
+    COALESCE(tdr, ''), ' ',
+    COALESCE(score, ''), ' ',
+    COALESCE(observation, '')
+  ) LIKE ? 
+  ORDER BY ${sortBy} ${sortOrder}
+  LIMIT ?, ?`;
 
   let countQuery = `
-    SELECT COUNT(*) as total FROM mailreports
-    WHERE CONCAT(id_mail, ' ') LIKE ?`;
+  SELECT COUNT(*) as total FROM mailreports
+  WHERE CONCAT(
+    COALESCE(id_mail, ''), ' ',
+    COALESCE(reception, ''), ' ',
+    COALESCE(canal, ''), ' ',
+    COALESCE(traite_par, ''), ' ',
+    COALESCE(agence, ''), ' ',
+    COALESCE(contrat, ''), ' ',
+    COALESCE(souscripteur, ''), ' ',
+    COALESCE(adherent, ''), ' ',
+    COALESCE(objet, ''), ' ',
+    COALESCE(statut, ''), ' ',
+    COALESCE(reponse, ''), ' ',
+    COALESCE(tdr, ''), ' ',
+    COALESCE(score, ''), ' ',
+    COALESCE(observation, '')
+  ) LIKE ?`;
 
   try {
     const [results] = await db.query(selectQuery, [
@@ -229,5 +259,7 @@ router.put("/:id", async (req, res) => {
     next(err); // Pass the error to the error handler middleware
   }
 });
+
+// __________________________________Calcule de la moyenne________________________
 
 module.exports = router;

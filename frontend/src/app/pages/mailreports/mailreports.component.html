@@ -8,10 +8,12 @@
     <mat-toolbar class="matoolB"
       >Suivi des requétes
 
-      <button>
-        <mat-icon>add</mat-icon>
-      </button>
-      <div class="average-tdr">Average TDR: {{ calculateAverageScore() }}</div>
+      <div
+        class="average-tdr"
+        [ngStyle]="{ color: getScoreColor(calculateAverageScore()) }"
+      >
+        Temps de réponse moyen : {{ calculateAverageScore() }}
+      </div>
       <button class="xlsdl" (click)="downloadExcel()">
         <img class="icon" src="assets/xlsicn.png" /></button
     ></mat-toolbar>
@@ -21,34 +23,26 @@
     (drop)="dropped($event)"
     (dragover)="$event.preventDefault()"
   >
-    <p>Vous pouvez lacher le mail</p>
+    >>>>>>>> lachez ici ! <<<<<<<<<
   </div>
   <div>
     <mat-toolbar class="matoolB" id="search">
-      Recherches
+      Recherches :
       <div class="searchField">
-        <input mat-input id="canal" placeholder="Canal" type="text" />
         <input
-          mat-input
-          id="Traité_par"
-          placeholder="Traité par"
+          #filterInput
+          matInput
+          id="search"
+          placeholder="...."
           type="text"
-        /><input
-          mat-input
-          id="Contrat"
-          placeholder="Contrat"
-          type="text"
-        /><input
-          mat-input
-          id="Souscripteur"
-          placeholder="Souscripteur"
-          type="text"
-        /><input
-          mat-input
-          id="Adherent"
-          placeholder="Adherent"
-          type="text"
-        /><input mat-input id="Statut" placeholder="Statut" type="text" />
+        />
+        <button
+          id="rech_btn"
+          mat-raised-button
+          (click)="applyFilter(filterInput.value)"
+        >
+          <mat-icon>search</mat-icon>
+        </button>
       </div>
     </mat-toolbar>
   </div>
@@ -377,6 +371,11 @@
       </tr>
 
       <!-- Row shown when there is no matching data. -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="4">
+          No data matching the filter "{{ filterInput.value }}"
+        </td>
+      </tr>
     </table>
 
     <mat-paginator

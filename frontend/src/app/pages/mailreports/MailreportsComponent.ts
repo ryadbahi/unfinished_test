@@ -27,6 +27,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToastrService } from 'ngx-toastr';
 
 import * as XLSX from 'xlsx';
+import { SnackBarService } from '../../snack-bar.service';
 
 export interface MreportsData {
   id_mail: string;
@@ -74,6 +75,8 @@ export interface MreportsData {
   styleUrl: './mailreports.component.scss',
 })
 export class MailreportsComponent implements OnInit {
+  searchData!: string;
+
   selectedTraiteePar!: string;
   traite_par: string[] = [
     'M.Boularouk',
@@ -84,11 +87,12 @@ export class MailreportsComponent implements OnInit {
     'B.Medjhoum',
     'R.Bahi',
   ];
+  averageScore!: string;
   total: number = 0;
   page: number = 1;
   pageSize: number = 10;
   sortField: string = 'id_mail';
-  searchInputValue: string = '';
+  search: string = '';
   statut: string[] = ['Réglée', 'Infondée'];
   selectedStatut: string = this.statut[0];
   canal: string[] = ['Mail', 'Tel'];
@@ -198,7 +202,8 @@ export class MailreportsComponent implements OnInit {
     private businessHoursService: BusinessHoursService,
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private snackBService: SnackBarService
   ) {}
   isNewRow(row: MreportsData) {
     if ('isNew' in row) {
@@ -273,12 +278,7 @@ export class MailreportsComponent implements OnInit {
 
   refreshTable(): void {
     this.service
-      .getAllMailreportsData(
-        this.page,
-        this.pageSize,
-        this.sortField,
-        this.searchInputValue
-      )
+      .getAllMailreportsData(this.page, this.pageSize, this.sortField)
       .subscribe({
         next: (response: MailreportsResponse) => {
           this.dataSource = new MatTableDataSource(response.data);
@@ -293,13 +293,31 @@ export class MailreportsComponent implements OnInit {
       });
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+  applyFilter(search: string) {
+    this.service
+      .getFilteredMailreportsData(
+        this.page,
+        this.pageSize,
+        this.sortField,
+        search
+      )
+      .subscribe({
+        next: (response: MailreportsResponse) => {
+          console.log(response);
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+          this.dataSource = new MatTableDataSource(response.data);
+
+          this.total = response.total;
+
+          this.paginator.length = this.total;
+
+          console.table(response.data);
+        },
+        error: (error) => {
+          // Log any errors
+          console.error('Failed to fetch filtered mailreports data:', error);
+        },
+      });
   }
 
   strteditmrep(mrepelem: any) {
@@ -503,7 +521,7 @@ export class MailreportsComponent implements OnInit {
 
       this.service.deleteIDMailreportData(id).subscribe({
         next: (res) => {
-          this.toastr.info('Élément supprimé :X');
+          this.snackBService.openSnackBar('Élément supprimé', 'Cacher');
           console.log(res, 'Suppression');
           console.log(id, 'ID supprimée');
 
@@ -612,23 +630,15 @@ export class MailreportsComponent implements OnInit {
       });
     }
 
-    if (count > 0) {
-      // Calculate average
-      const averageScoreInSeconds = Math.round(totalScoreInSeconds / count);
+    // Calculate the average score in seconds
+    let averageScoreInSeconds = totalScoreInSeconds / count;
 
-      const hours = Math.floor(averageScoreInSeconds / 3600);
-      const minutes = Math.floor((averageScoreInSeconds % 3600) / 60);
-      const seconds = averageScoreInSeconds % 60;
+    // Convert the average score to hours, minutes, and seconds
+    let hours = Math.floor(averageScoreInSeconds / 3600);
+    let minutes = Math.floor((averageScoreInSeconds % 3600) / 60);
+    let seconds = Math.floor(averageScoreInSeconds % 60);
 
-      return `${this.formatTimeUnit(hours)}:${this.formatTimeUnit(
-        minutes
-      )}:${this.formatTimeUnit(seconds)}`;
-    } else {
-      return 'N/A'; // Handle the case when there are no valid score values
-    }
-  }
-
-  private formatTimeUnit(unit: number): string {
-    return unit < 10 ? `0${unit}` : `${unit}`;
+    // Return the average score as a string in the format "Xh Ym Zs"
+    return `${hours}h ${minutes}m ${seconds}s`;
   }
 }
