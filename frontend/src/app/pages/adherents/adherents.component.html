@@ -18,13 +18,20 @@
   >
     <mat-icon>add</mat-icon>
   </button>
-  <mat-toolbar>Adherent</mat-toolbar>
+  <mat-toolbar>Adherents</mat-toolbar>
   <div class="mat-elevation-z8">
     <table mat-table [dataSource]="adhdataSource" matSort>
       <ng-container matColumnDef="id_adherent">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
         <td mat-cell *matCellDef="let elemadh">
           {{ elemadh.id_adherent }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="nom_souscript">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Souscripteur</th>
+        <td mat-cell *matCellDef="let elemadh">
+          {{ elemadh.nom_souscript }}
         </td>
       </ng-container>
 
@@ -61,7 +68,7 @@
             <input [(ngModel)]="elemadh.date_nai_adh" matInput />
           </div>
           <div *ngIf="!elemadh.isEdit">
-            {{ elemadh.date_nai_adh }}
+            {{ elemadh.date_nai_adh | date : "dd/MM/yyyy" }}
           </div>
         </td>
       </ng-container>
@@ -92,57 +99,43 @@
         </td>
       </ng-container>
 
-      <!-- email_adh_1 Column -->
-      <ng-container matColumnDef="email_adh_1">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Email (1)</th>
+      <ng-container matColumnDef="email_adh">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
         <td mat-cell *matCellDef="let elemadh">
           <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.email_adh_1" type="email" />
+            <input [(ngModel)]="elemadh.email_adh" type="email" />
           </div>
-          <div *ngIf="!elemadh.isEdit">{{ elemadh.email_adh_1 }}</div>
+          <div *ngIf="!elemadh.isEdit">{{ elemadh.email_adh }}</div>
         </td>
       </ng-container>
 
-      <!-- email_adh_2 Column -->
-      <ng-container matColumnDef="email_adh_2">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Email (2)</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.email_adh_2" type="email" />
-          </div>
-          <div *ngIf="!elemadh.isEdit">{{ elemadh.email_adh_2 }}</div>
-        </td>
-      </ng-container>
-
-      <!-- tel_adh_1 Column -->
-      <ng-container matColumnDef="tel_adh_1">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel (1)</th>
+      <ng-container matColumnDef="tel_adh">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel</th>
         <td mat-cell *matCellDef="let elemadh">
           <div *ngIf="elemadh.isEdit">
             <input
               maxlength="13"
               size="12"
               type="tel"
-              [(ngModel)]="elemadh.tel_adh_1"
+              [(ngModel)]="elemadh.tel_adh"
             />
           </div>
-          <div *ngIf="!elemadh.isEdit">{{ elemadh.tel_adh_1 }}</div>
+          <div *ngIf="!elemadh.isEdit">{{ elemadh.tel_adh }}</div>
         </td>
       </ng-container>
 
-      <!-- tel_adh_2 Column -->
-      <ng-container matColumnDef="tel_adh_2">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel (2)</th>
+      <ng-container matColumnDef="statut">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
         <td mat-cell *matCellDef="let elemadh">
           <div *ngIf="elemadh.isEdit">
             <input
               maxlength="13"
               size="12"
               type="tel"
-              [(ngModel)]="elemadh.tel_adh_2"
+              [(ngModel)]="elemadh.statut"
             />
           </div>
-          <div *ngIf="!elemadh.isEdit">{{ elemadh.tel_adh_2 }}</div>
+          <div *ngIf="!elemadh.isEdit">{{ elemadh.statut }}</div>
         </td>
       </ng-container>
 

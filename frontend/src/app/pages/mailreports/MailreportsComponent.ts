@@ -90,7 +90,7 @@ export class MailreportsComponent implements OnInit {
   averageScore!: string;
   total: number = 0;
   page: number = 1;
-  pageSize: number = 10;
+  pageSize: number = 15;
   sortField: string = 'id_mail';
   search: string = '';
   statut: string[] = ['Réglée', 'Infondée'];
@@ -278,11 +278,14 @@ export class MailreportsComponent implements OnInit {
 
   refreshTable(): void {
     this.service
-      .getAllMailreportsData(this.page, this.pageSize, this.sortField)
+      .getMailreportsData(this.page, this.pageSize, this.sortField)
       .subscribe({
         next: (response: MailreportsResponse) => {
           this.dataSource = new MatTableDataSource(response.data);
           this.total = response.total;
+          this.averageScore = response.averageDuration;
+
+          console.log(this.averageScore);
 
           this.paginator.length = this.total;
           console.table(response.data);
@@ -527,6 +530,7 @@ export class MailreportsComponent implements OnInit {
 
           // Notify about data change
           this.service.triggerDataChange();
+          this.refreshTable();
         },
         error: (error) => {
           console.error('Error deleting row:', error);
@@ -570,75 +574,86 @@ export class MailreportsComponent implements OnInit {
   downloadExcel() {
     const fileName = 'mail_reports.xlsx';
 
-    // Convert your MatTableDataSource data to Excel format using XLSX
-    const excelData: any[] = this.dataSource.data.map((item: MreportsData) => {
-      // Map the properties you want to include in the Excel file
-      return {
-        Reception: new Date(item.reception),
-        Canal: String(item.canal),
-        Traité_par: String(item.traite_par),
-        Agence: String(item.agence),
-        Contrat: String(item.contrat),
-        Souscripteur: String(item.souscripteur),
-        Adhérent: String(item.adherent),
-        Objet: String(item.objet),
-        Staut: String(item.statut),
-        Réponse: new Date(item.reponse),
-        Ratio: String(item.score),
-        Observation: String(item.observation),
-      };
+    // Fetch all data from the database
+    this.service.getAllMailreports(1, 10, this.sortField, '', true).subscribe({
+      next: (response: any) => {
+        // Convert all data to Excel format using XLSX
+        const excelData: any[] = response.data.map((item: MreportsData) => {
+          // Map the properties you want to include in the Excel file
+          return {
+            Reception: new Date(item.reception),
+            Canal: String(item.canal),
+            Traité_par: String(item.traite_par),
+            Agence: String(item.agence),
+            Contrat: String(item.contrat),
+            Souscripteur: String(item.souscripteur),
+            Adhérent: String(item.adherent),
+            Objet: String(item.objet),
+            Staut: String(item.statut),
+            Réponse: new Date(item.reponse),
+            Ratio: String(item.score),
+            Observation: String(item.observation),
+          };
+        });
+
+        //LA cellule vie avant la moyenne
+
+        excelData.push({});
+        // Calculate the average score and add it to the excelData
+        const averageScore = this.calculateAverageScore();
+        excelData.push({ Ratio: 'Ratio moyen : ' + averageScore });
+
+        // Create a worksheet
+        const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(excelData);
+
+        // Create a workbook with a single sheet
+        const wb: XLSX.WorkBook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Mail Reports');
+
+        // Save the workbook as a blob
+        const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        // Create a download link and trigger a click event to download the file
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
+      error: (error) => {
+        console.error('Error fetching data for Excel download:', error);
+        // Handle error as needed
+      },
     });
-
-    // Create a worksheet
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(excelData);
-
-    // Create a workbook with a single sheet
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Mail Reports');
-
-    // Save the workbook as a blob
-    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
-
-    // Create a download link and trigger a click event to download the file
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
   calculateAverageScore(): string {
-    let totalScoreInSeconds = 0;
-    let count = 0;
-
-    if (this.dataSource && this.dataSource.data) {
-      this.dataSource.data.forEach((item: MreportsData) => {
-        // Skip items with empty or invalid score values
-        if (item.score && typeof item.score === 'string') {
-          const scoreParts = item.score.split(' ');
-          if (scoreParts.length === 3) {
-            const hours = parseInt(scoreParts[0]);
-            const minutes = parseInt(scoreParts[1]);
-            const seconds = parseInt(scoreParts[2]);
-            totalScoreInSeconds += hours * 3600 + minutes * 60 + seconds;
-            count++;
-          }
-        }
-      });
+    // Check if this.averageScore is defined and is a string
+    if (!this.averageScore || typeof this.averageScore !== 'string') {
+      return 'Invalid average score';
     }
 
-    // Calculate the average score in seconds
-    let averageScoreInSeconds = totalScoreInSeconds / count;
+    // Get the average score from the server response
+    let averageScore = this.averageScore;
 
-    // Convert the average score to hours, minutes, and seconds
-    let hours = Math.floor(averageScoreInSeconds / 3600);
-    let minutes = Math.floor((averageScoreInSeconds % 3600) / 60);
-    let seconds = Math.floor(averageScoreInSeconds % 60);
+    // Remove the milliseconds part
+    averageScore = averageScore.split('.')[0];
 
-    // Return the average score as a string in the format "Xh Ym Zs"
-    return `${hours}h ${minutes}m ${seconds}s`;
+    // Split the average score into hours, minutes, and seconds
+    const scoreParts = averageScore.split(':');
+    if (scoreParts.length === 3) {
+      const hours = parseInt(scoreParts[0]);
+      const minutes = parseInt(scoreParts[1]);
+      const seconds = parseInt(scoreParts[2]);
+
+      // Return the average score as a string in the format "Xh Ym Zs"
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    // If the format is not as expected, return an error message
+    return 'Invalid format';
   }
 }

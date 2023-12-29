@@ -17,7 +17,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { ApiService } from '../../api.service';
+import { AdherentResponse, ApiService } from '../../api.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatdialogComponent } from '../../components/matdialog/matdialog.component';
 import { RouterModule, RouterLink, ActivatedRoute } from '@angular/router';
@@ -26,15 +26,15 @@ import { MatNativeDateModule } from '@angular/material/core';
 
 export interface AdherentData {
   id_adherent: number;
+  nom_souscript: string;
   nom_adherent: string;
   prenom_adherent: string;
   date_nai_adh: Date;
   situa_fam: string;
   rib_adh: string;
-  email_adh_1: string;
-  email_adh_2: string;
-  tel_adh_1: string;
-  tel_adh_2: string;
+  email_adh: string;
+  tel_adh: string;
+  statut: boolean;
   added_date: Date;
   updated_date: Date;
 }
@@ -66,6 +66,11 @@ export interface AdherentData {
   styleUrl: './adherents.component.scss',
 })
 export class AdherentsComponent implements OnInit {
+  total: number = 0;
+  page: number = 1;
+  pageSize: number = 15;
+  sortField: string = 'id_adherent';
+  search: string = '';
   AdhForm!: FormGroup;
   OldadhData: any;
   isEditing = false;
@@ -74,15 +79,15 @@ export class AdherentsComponent implements OnInit {
   columnsSchema: any;
   displayedColumns: string[] = [
     'id_adherent',
+    'nom_souscript',
     'nom_adherent',
     'prenom_adherent',
     'date_nai_adh',
     'situa_fam',
     'rib_adh',
-    'email_adh_1',
-    'email_adh_2',
-    'tel_adh_1',
-    'tel_adh_2',
+    'email_adh',
+    'tel_adh',
+    'statut',
     'added_date',
     'updated_date',
     'actions',
@@ -105,6 +110,18 @@ export class AdherentsComponent implements OnInit {
 
     // Subscribe to changes in data after adding, updating, or deleting
     this.service.dataChange.subscribe(() => {
+      this.refreshTable();
+    });
+  }
+  ngAfterViewInit(): void {
+    this.paginator.page.subscribe(() => {
+      this.page = this.paginator.pageIndex + 1;
+      this.pageSize = this.paginator.pageSize;
+      this.refreshTable();
+    });
+
+    this.sort.sortChange.subscribe(() => {
+      this.sortField = this.sort.active;
       this.refreshTable();
     });
   }
@@ -163,18 +180,20 @@ export class AdherentsComponent implements OnInit {
 
   // Method to refresh the table with the latest data
   private refreshTable() {
-    this.service.getAllAdherentsData().subscribe((data) => {
-      this.getDataValue = data;
+    this.service
+      .getAdherents(this.page, this.pageSize, this.sortField)
+      .subscribe({
+        next: (response: AdherentResponse) => {
+          this.adhdataSource = new MatTableDataSource(response.data);
+          this.total = response.total;
 
-      console.table(this.getDataValue);
-
-      this.adhdataSource = new MatTableDataSource(this.getDataValue);
-      this.adhdataSource.paginator = this.paginator;
-      this.adhdataSource.sort = this.sort;
-
-      // Trigger change detection explicitly
-      this.cdr.detectChanges();
-    });
+          this.paginator.length = this.total;
+          console.table(response.data);
+        },
+        error: (error) => {
+          console.error('Failed to fetch data:', error);
+        },
+      });
   }
 
   strteditadh(elemadh: any) {

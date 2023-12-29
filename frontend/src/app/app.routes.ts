@@ -17,6 +17,7 @@ export const routes: Routes = [
   { path: 'adherents', component: AdherentsComponent, title: 'Adhérents' },
   { path: 'adherents/:id', component: AdherentsComponent, title: 'Adhérents' },
   { path: 'sinistres', component: SinistresComponent, title: 'Sinistres' },
+  { path: 'sinistres/:id', component: SinistresComponent, title: 'Sinistres' },
   { path: 'multiadd', component: MultiaddComponent, title: 'Ajout Multiple' },
   {
     path: 'souscripteurs',

@@ -102,6 +102,7 @@ router.get("/", async (req, res, next) => {
     sortBy = "id_mail",
     sortOrder = "desc",
     search = "",
+    getAllData = false,
   } = req.query;
 
   // Validate sortBy and sortOrder here to prevent SQL injection
@@ -150,7 +151,7 @@ router.get("/", async (req, res, next) => {
     COALESCE(observation, '')
   ) LIKE ? 
   ORDER BY ${sortBy} ${sortOrder}
-  LIMIT ?, ?`;
+  ${getAllData ? "" : "LIMIT ?, ?"}`; // Use LIMIT only if not fetching all data
 
   let countQuery = `
   SELECT COUNT(*) as total FROM mailreports
@@ -172,6 +173,11 @@ router.get("/", async (req, res, next) => {
   ) LIKE ?`;
 
   try {
+    const [averageDurationResult] = await db.query(`
+      SELECT SEC_TO_TIME(AVG(TIME_TO_SEC(STR_TO_DATE(score, '%Hh %im %ss')))) AS average_duration
+      FROM mailreports;
+    `);
+
     const [results] = await db.query(selectQuery, [
       `%${search}%`,
       offset,
@@ -179,8 +185,12 @@ router.get("/", async (req, res, next) => {
     ]);
     const [totalResult] = await db.query(countQuery, [`%${search}%`]);
     const total = totalResult[0].total;
-
-    res.status(200).json({ data: results, total: total });
+    console.log("Average Duration:", averageDurationResult[0].average_duration);
+    res.status(200).json({
+      data: results,
+      total: total,
+      averageDuration: averageDurationResult[0].average_duration,
+    });
   } catch (err) {
     next(err);
   }

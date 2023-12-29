@@ -124,7 +124,8 @@ td {
 }
 
 .ng-star-inserted {
-  position: relative; // Add this line
+  position: relative;
+  height: auto;
 }
 .matoolB {
   flex-direction: row;
