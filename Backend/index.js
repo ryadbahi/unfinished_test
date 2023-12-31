@@ -1,14 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const mysql = require("mysql2/promise");
-const { format } = require("date-fns");
-const db = require("./dbLink.js");
 const mailreportsRoutes = require("./RoutesMailreports.js");
 const adherentsRoutes = require("./Routesadherents.js");
 const contratsRoutes = require("./RoutesContrats.js");
 const souscripteursRoutes = require("./RoutesSouscripteurs.js");
 const dpt_sinRoutes = require("./RoutesDPT_Sin.js");
+const familyRoutes = require("./RoutesFamily_adh.js");
 
 const app = express();
 
@@ -16,8 +14,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-  console.log(req.body); // Log the raw request body
   next();
+  console.log(req.body); // Log the raw request body
 });
 
 // -------------------------DPT SINISTRE--------------------------------------
@@ -35,6 +33,9 @@ app.use("/adherents", adherentsRoutes);
 
 //____________________MAILREPORTS________________________
 app.use("/mailreports", mailreportsRoutes);
+
+//______________________FAMILY___________________________
+app.use("/fam_adh", familyRoutes);
 
 // Error handler middleware
 app.use((err, req, res) => {

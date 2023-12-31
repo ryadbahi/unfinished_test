@@ -65,10 +65,9 @@ export class MatdialogComponent implements OnInit {
     'date_nai_adh',
     'situa_fam',
     'rib_adh',
-    'email_adh_1',
-    'email_adh_2',
-    'tel_adh_1',
-    'tel_adh_2',
+    'email_adh',
+    'statut',
+    'tel_adh',
   ];
 
   formGroupToShow: string = 'SouscripForm';
@@ -130,10 +129,9 @@ export class MatdialogComponent implements OnInit {
       date_nai_adh: new FormControl('', [Validators.required]),
       situa_fam: new FormControl('', Validators.required),
       rib_adh: new FormControl(''),
-      email_adh_1: new FormControl('', Validators.email),
-      email_adh_2: new FormControl('', Validators.email),
-      tel_adh_1: new FormControl(''),
-      tel_adh_2: new FormControl(''),
+      email_adh: new FormControl('', Validators.email),
+      tel_adh: new FormControl(''),
+      statut: new FormControl(''),
     });
   }
   createMultiSousForm() {
@@ -156,10 +154,9 @@ export class MatdialogComponent implements OnInit {
       date_nai_adh: new FormControl('', [Validators.required]),
       situa_fam: new FormControl('', Validators.required),
       rib_adh: new FormControl(''),
-      email_adh_1: new FormControl('', Validators.email),
-      email_adh_2: new FormControl('', Validators.email),
-      tel_adh_1: new FormControl(''),
-      tel_adh_2: new FormControl(''),
+      email_adh: new FormControl('', Validators.email),
+      tel_adh: new FormControl(''),
+      statut: new FormControl(''),
     });
   }
   souscripSubmit() {

@@ -5,6 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { MreportsData } from './pages/mailreports/MailreportsComponent';
 import { AdherentData } from './pages/adherents/adherents.component';
+import { AdherentsData } from './pages/home/home.component';
 
 export interface MailreportsResponse {
   data: MreportsData[];
@@ -15,6 +16,19 @@ export interface MailreportsResponse {
 export interface AdherentResponse {
   data: AdherentData[];
   total: number;
+  familyData: fam_adhResponse[];
+}
+export interface AdherentsResponse {
+  data: AdherentsData[];
+  total: number;
+  familyData: fam_adhResponse[];
+}
+
+export interface fam_adhResponse {
+  lien_benef: string;
+  nom_benef: string;
+  prenom_benef: string;
+  date_nai_benef: Date;
 }
 
 @Injectable({
@@ -69,11 +83,11 @@ export class ApiService {
     page: number,
     pageSize: number,
     sort: string
-  ): Observable<AdherentResponse> {
+  ): Observable<AdherentsResponse> {
     const encodedSort = encodeURIComponent(sort);
     const url = `${this.apiUrl}/adherents?page=${page}&pageSize=${pageSize}&sortBy=${encodedSort}`;
 
-    return this.http.get<AdherentResponse>(url).pipe(
+    return this.http.get<AdherentsResponse>(url).pipe(
       catchError((error: any) => {
         console.error(
           'An error occurred while fetching default adherents data:',
@@ -82,9 +96,10 @@ export class ApiService {
         throw new Error('Failed to fetch default adherents data.');
       }),
       map((response: any) => {
-        const AdherentResponse: AdherentResponse = {
+        const AdherentResponse: AdherentsResponse = {
           data: response.data,
           total: response.total,
+          familyData: response.data,
         };
         return AdherentResponse;
       })
@@ -205,6 +220,13 @@ export class ApiService {
   }
   getAverMailScore(): Observable<any> {
     return this.http.get(`${this.apiUrl}/average-score`);
+  }
+
+  //_____________________ FAMILY______________________________
+
+  //get family by id________
+  getFamilyId(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/fam_adh/${id}`);
   }
 
   // _____MGSREADER_________________________________
