@@ -23,8 +23,16 @@ import { MatdialogComponent } from '../../components/matdialog/matdialog.compone
 import { RouterModule, RouterLink, ActivatedRoute } from '@angular/router';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 
 export interface AdherentData {
+  fam_adh: fam_adhData[];
   id_adherent: number;
   nom_souscript: string;
   nom_adherent: string;
@@ -37,6 +45,16 @@ export interface AdherentData {
   statut: boolean;
   added_date: Date;
   updated_date: Date;
+  hasfam_adh: boolean;
+}
+
+export interface fam_adhData {
+  id_fam: number;
+  id_adh: number;
+  lien_benef: string;
+  nom_benef: string;
+  prenom_benef: string;
+  date_nai_benef: Date;
 }
 
 @Component({
@@ -64,6 +82,16 @@ export interface AdherentData {
   ],
   templateUrl: './adherents.component.html',
   styleUrl: './adherents.component.scss',
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed, void', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('500ms cubic-bezier(0.4, 0.0, 0.2, 1)')
+      ),
+    ]),
+  ],
 })
 export class AdherentsComponent implements OnInit {
   total: number = 0;
@@ -92,6 +120,15 @@ export class AdherentsComponent implements OnInit {
     'updated_date',
     'actions',
   ];
+  famdisplayedColumns: string[] = [
+    'id_fam',
+    'id_adh',
+    'lien_benef',
+    'nom_benef',
+    'prenom_benef',
+    'date_nai_benef',
+  ];
+  expandedElement!: AdherentData | null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -217,5 +254,25 @@ export class AdherentsComponent implements OnInit {
     Object.assign(elemadh, this.OldadhData);
 
     elemadh.isEdit = false;
+  }
+  toggleFam(element: AdherentData) {
+    this.expandedElement = this.expandedElement === element ? null : element;
+    this.showfamily(element.id_adherent);
+  }
+
+  showfamily(id_adh: number) {
+    this.service.getFamilyId(id_adh).subscribe((items) => {
+      console.log('Received from server:', items); // Log what you received from the server
+      if (items && Array.isArray(items)) {
+        this.adhdataSource.data = this.adhdataSource.data.map((o) => {
+          if (o.id_adherent === id_adh) {
+            o.fam_adh = items;
+            o.hasfam_adh = true;
+          }
+          return o;
+        });
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

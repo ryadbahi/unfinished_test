@@ -5,7 +5,6 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { MreportsData } from './pages/mailreports/MailreportsComponent';
 import { AdherentData } from './pages/adherents/adherents.component';
-import { AdherentsData } from './pages/home/home.component';
 
 export interface MailreportsResponse {
   data: MreportsData[];
@@ -15,11 +14,6 @@ export interface MailreportsResponse {
 
 export interface AdherentResponse {
   data: AdherentData[];
-  total: number;
-  familyData: fam_adhResponse[];
-}
-export interface AdherentsResponse {
-  data: AdherentsData[];
   total: number;
   familyData: fam_adhResponse[];
 }
@@ -83,11 +77,11 @@ export class ApiService {
     page: number,
     pageSize: number,
     sort: string
-  ): Observable<AdherentsResponse> {
+  ): Observable<AdherentResponse> {
     const encodedSort = encodeURIComponent(sort);
     const url = `${this.apiUrl}/adherents?page=${page}&pageSize=${pageSize}&sortBy=${encodedSort}`;
 
-    return this.http.get<AdherentsResponse>(url).pipe(
+    return this.http.get<AdherentResponse>(url).pipe(
       catchError((error: any) => {
         console.error(
           'An error occurred while fetching default adherents data:',
@@ -96,7 +90,7 @@ export class ApiService {
         throw new Error('Failed to fetch default adherents data.');
       }),
       map((response: any) => {
-        const AdherentResponse: AdherentsResponse = {
+        const AdherentResponse: AdherentResponse = {
           data: response.data,
           total: response.total,
           familyData: response.data,
