@@ -8,12 +8,18 @@ tr.detail-row {
 .mat-elevation-z8 {
   border-radius: 10px;
   overflow: hidden;
+  white-space: pre-line;
 }
 #childtable {
   margin-top: 10px;
 }
 .highlight {
   color: red;
+  font-weight: bolder;
+}
+.issuescolor {
+  background-color: red;
+  color: white;
   font-weight: bolder;
 }
 .ng-star-inserted {

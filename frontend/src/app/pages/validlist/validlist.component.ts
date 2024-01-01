@@ -21,6 +21,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
+import { SnackBarService } from '../../snack-bar.service';
 
 export interface fam_adhData {
   serial: number;
@@ -43,6 +44,7 @@ export interface listing {
   categorie: string;
   email: string;
   highlight?: boolean;
+  issues?: number;
 }
 
 @Component({
@@ -92,6 +94,7 @@ export class ValidlistComponent implements OnInit {
     'rib',
     'categorie',
     'email',
+    'issues',
   ];
 
   famdisplayedColumns: string[] = [
@@ -104,7 +107,9 @@ export class ValidlistComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   constructor(
     private formBuilder: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private datePipe: DatePipe,
+    private snackBService: SnackBarService
   ) {}
 
   ngOnInit(): void {
@@ -276,6 +281,8 @@ export class ValidlistComponent implements OnInit {
     const currentDate = new Date();
 
     this.dataSource.forEach((item) => {
+      item.issues = 0; // Initialize the count for each item
+
       item.fam_adh.forEach((child: listing) => {
         if (child.lienBnf === 'Enfant') {
           const birthDate = new Date(child.dateDeNaissance);
@@ -289,11 +296,131 @@ export class ValidlistComponent implements OnInit {
               // Expand the parent item
               this.expandedElements.push(item);
             }
+
+            // Increment the count for each highlighted date
+            item.issues++;
           }
         }
       });
     });
 
     console.log('Data after processing:', this.dataSource); // Log the data after processing
+  }
+
+  flattenData(data: listing[]): any[] {
+    const flattenedData: any[] = [];
+
+    data.forEach((item) => {
+      // Add the main item
+      flattenedData.push({
+        serial: item.serial,
+        lienBnf: item.lienBnf,
+        num: item.num,
+        nom: item.nom,
+        prenom: item.prenom,
+        dateDeNaissance: this.formatDate(item.dateDeNaissance),
+        rib: item.rib,
+        // Include other main properties as needed
+      });
+
+      // Add the nested items directly under the main item
+      if (item.fam_adh && item.fam_adh.length > 0) {
+        item.fam_adh.forEach((child, index) => {
+          flattenedData.push({
+            serial: item.serial,
+            lienBnf: child.lienBnf,
+            num: child.num,
+            nom: child.nom,
+            prenom: child.prenom,
+            dateDeNaissance: this.formatDate(child.dateDeNaissance),
+
+            // Include other nested properties as needed
+          });
+        });
+      }
+    });
+
+    return flattenedData;
+  }
+
+  formatDate(date: Date): string {
+    // Use Angular's DatePipe to format the date
+    return this.datePipe.transform(date, 'dd/MM/yyyy') || '';
+  }
+  downloadExcel() {
+    // Flatten the data
+    const flattenedData = this.flattenData(this.originalData);
+
+    // Create a worksheet
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(flattenedData);
+
+    // Create a workbook
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+    // Generate a Blob from the workbook
+    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    // Create a download link and trigger the download
+    const fileName = 'Reworked listing.xlsx';
+    const downloadLink = document.createElement('a');
+    downloadLink.href = window.URL.createObjectURL(blob);
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
+
+  removeExtraSpaces() {
+    let removedSpacesCount = 0;
+
+    this.dataSource.forEach((item) => {
+      // Count and trim string properties
+      removedSpacesCount += this.trimAndCount(item, 'lienBnf');
+      removedSpacesCount += this.trimAndCount(item, 'num');
+      removedSpacesCount += this.trimAndCount(item, 'nom');
+      removedSpacesCount += this.trimAndCount(item, 'prenom');
+      removedSpacesCount += this.trimAndCount(item, 'email');
+
+      // Trim and count string properties in the nested fam_adh array
+      item.fam_adh.forEach((child: listing) => {
+        removedSpacesCount += this.trimAndCount(child, 'lienBnf');
+        removedSpacesCount += this.trimAndCount(child, 'num');
+        removedSpacesCount += this.trimAndCount(child, 'nom');
+        removedSpacesCount += this.trimAndCount(child, 'prenom');
+      });
+    });
+
+    // Optionally, you can reset the paginator after removing extra spaces
+    if (this.paginator) {
+      this.paginator.length = this.dataSource.length;
+      this.paginator.firstPage();
+    }
+
+    // Display the alert
+
+    this.snackBService.openSnackBar(
+      `${removedSpacesCount} espaces ont été retirés.`,
+      'Okey :)'
+    );
+  }
+
+  trimAndCount(obj: any, property: string): number {
+    const originalValue = obj[property];
+
+    // Replace multiple consecutive spaces with a single space
+    const cleanedValue = originalValue.replace(/\s+/g, ' ');
+
+    // Trim the value
+    const trimmedValue = cleanedValue.trim();
+
+    // Update the property with the trimmed value
+    obj[property] = trimmedValue;
+
+    // Return the count of removed spaces
+    return originalValue.length - trimmedValue.length;
   }
 }
