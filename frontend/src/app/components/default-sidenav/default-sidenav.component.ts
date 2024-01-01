@@ -62,5 +62,11 @@ export class DefaultSidenavComponent {
       label: 'Suivi des requétes',
       route: 'mailreports',
     },
+
+    {
+      icon: 'table_chart',
+      label: 'Vérif listing',
+      route: 'validlist',
+    },
   ]);
 }

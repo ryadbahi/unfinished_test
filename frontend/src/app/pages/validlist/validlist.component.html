@@ -1,0 +1,190 @@
+<body>
+  <div>
+    <mat-toolbar>
+      <button mat-raised-button (click)="highlightOldChildren()">
+        Check Age
+      </button>
+      <button
+        mat-raised-button
+        style="
+          position: absolute;
+          top: 47%;
+          left: 23%;
+          transform: translate(-50%, -50%);
+        "
+        (click)="fileInput.click()"
+        *ngIf="!dataSource || dataSource.length === 0"
+      >
+        <span>Upload</span>
+        <input
+          #fileInput
+          type="file"
+          (change)="ReadExcel($event)"
+          style="display: none"
+        /></button
+    ></mat-toolbar>
+
+    <DIV class="filter"
+      ><mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input
+          matInput
+          (keyup)="applyFilter($event)"
+          placeholder="Recherche...."
+          #input
+        /> </mat-form-field
+    ></DIV>
+  </div>
+  <div class="form_container">
+    <div *ngIf="dataSource && dataSource.length > 0">
+      <table
+        mat-table
+        [dataSource]="dataSource"
+        mat-table
+        class="mat-elevation-z8"
+        multiTemplateDataRows
+      >
+        <ng-container matColumnDef="serial">
+          <th mat-header-cell *matHeaderCellDef>No.</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.serial }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="lienBnf">
+          <th mat-header-cell *matHeaderCellDef>Lien</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.lienBnf }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="num">
+          <th mat-header-cell *matHeaderCellDef>Matricule</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.num }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="nom">
+          <th mat-header-cell *matHeaderCellDef>Nom</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.nom }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="prenom">
+          <th mat-header-cell *matHeaderCellDef>Prénom</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.prenom }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="dateDeNaissance">
+          <th mat-header-cell *matHeaderCellDef>Date de Naissance</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.dateDeNaissance | date : "dd/MM/yyyy" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="rib">
+          <th mat-header-cell *matHeaderCellDef>RIB</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.rib }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="categorie">
+          <th mat-header-cell *matHeaderCellDef>Option</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.categorie }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.email }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="expandedDetail">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [attr.colspan]="displayedColumns.length"
+          >
+            <div
+              class="familydisplay"
+              [@detailExpand]="
+                element == expandedElement ? 'expanded' : 'collapsed'
+              "
+            >
+              <table
+                mat-table
+                [dataSource]="element.fam_adh"
+                class="mat-elevation-z8"
+                id="childtable"
+              >
+                <ng-container matColumnDef="serial">
+                  <th mat-header-cell *matHeaderCellDef>N</th>
+                  <td mat-cell *matCellDef="let fam">{{ fam.serial }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="lienBnf">
+                  <th mat-header-cell *matHeaderCellDef>Lien</th>
+                  <td mat-cell *matCellDef="let fam">{{ fam.lienBnf }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="nom">
+                  <th mat-header-cell *matHeaderCellDef>Nom</th>
+                  <td mat-cell *matCellDef="let fam">
+                    {{ fam.nom }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="prenom">
+                  <th mat-header-cell *matHeaderCellDef>Prénom</th>
+                  <td mat-cell *matCellDef="let fam">{{ fam.prenom }}</td>
+                </ng-container>
+                <ng-container matColumnDef="dateDeNaissance">
+                  <th mat-header-cell *matHeaderCellDef>Date de nais</th>
+                  <td
+                    mat-cell
+                    *matCellDef="let fam"
+                    [ngClass]="{ highlight: fam.highlight }"
+                  >
+                    {{ fam.dateDeNaissance | date : "dd/MM/yyyy" }}
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="famdisplayedColumns"></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: famdisplayedColumns"
+                ></tr>
+              </table>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let element; columns: displayedColumns"
+          (click)="toggleFam(element)"
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: ['expandedDetail']"
+          class="detail-row"
+        ></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="4">
+            No data matching the filter "{{ input.value }}"
+          </td>
+        </tr>
+      </table>
+      <mat-paginator
+        [pageSizeOptions]="[10, 30, 60, 120]"
+        aria-label="Select page of users"
+      ></mat-paginator>
+    </div>
+  </div>
+</body>

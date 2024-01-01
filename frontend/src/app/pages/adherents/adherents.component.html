@@ -18,8 +18,10 @@
   >
     <mat-icon>add</mat-icon>
   </button>
-  <mat-toolbar>Adherents</mat-toolbar>
-  <div class="mat-elevation-z8">
+  <mat-toolbar style="border-radius: 10px; overflow: hidden"
+    >Adherents</mat-toolbar
+  >
+  <div class="mat-elevation-z8" id="maintable">
     <table mat-table [dataSource]="adhdataSource" matSort multiTemplateDataRows>
       <ng-container matColumnDef="id_adherent">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
@@ -208,14 +210,13 @@
               mat-table
               [dataSource]="element.fam_adh"
               class="mat-elevation-z8"
+              id="childtable"
             >
-              <!-- ID Fam Column -->
               <ng-container matColumnDef="id_fam">
                 <th mat-header-cell *matHeaderCellDef>ID Fam</th>
                 <td mat-cell *matCellDef="let fam">{{ fam.id_fam }}</td>
               </ng-container>
 
-              <!-- ID Adh Column -->
               <ng-container matColumnDef="id_adh">
                 <th mat-header-cell *matHeaderCellDef>ID Adh</th>
                 <td mat-cell *matCellDef="let fam">{{ fam.id_adh }}</td>

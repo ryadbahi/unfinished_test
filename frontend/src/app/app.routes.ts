@@ -6,6 +6,7 @@ import { SouscripteursComponent } from './pages/souscripteurs/souscripteurs.comp
 import { CommonModule } from '@angular/common';
 import { MultiaddComponent } from './pages/multiadd/multiadd.component';
 import { MailreportsComponent } from './pages/mailreports/MailreportsComponent';
+import { ValidlistComponent } from './pages/validlist/validlist.component';
 
 export const routes: Routes = [
   {
@@ -38,5 +39,10 @@ export const routes: Routes = [
     path: 'mailreports/:id',
     component: MailreportsComponent,
     title: 'Suivi des requétes',
+  },
+  {
+    path: 'validlist',
+    component: ValidlistComponent,
+    title: 'Vérif listing',
   },
 ];
