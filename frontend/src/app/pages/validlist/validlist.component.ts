@@ -77,7 +77,7 @@ export interface listing {
   ],
 })
 export class ValidlistComponent implements OnInit {
-  expandedElement!: listing | null;
+  expandedElements: listing[] = [];
   dataSource: any[] = [];
   originalData: any[] = [];
   rearrangedData: listing[] = [];
@@ -152,7 +152,22 @@ export class ValidlistComponent implements OnInit {
     );
   }
   toggleFam(element: listing) {
-    this.expandedElement = this.expandedElement === element ? null : element;
+    const index = this.expandedElements.indexOf(element);
+
+    if (index === -1) {
+      // If the element is not in the array, add it
+      this.expandedElements.push(element);
+    } else {
+      // If the element is already in the array, remove it
+      this.expandedElements.splice(index, 1);
+    }
+  }
+
+  isExpanded(element: listing): string {
+    if (this.expandedElements.indexOf(element) !== -1) {
+      return 'expanded';
+    }
+    return 'collapsed';
   }
 
   ReadExcel(event: any) {
@@ -259,6 +274,7 @@ export class ValidlistComponent implements OnInit {
   highlightOldChildren() {
     console.log('highlightOldChildren method called');
     const currentDate = new Date();
+
     this.dataSource.forEach((item) => {
       item.fam_adh.forEach((child: listing) => {
         if (child.lienBnf === 'Enfant') {
@@ -267,10 +283,17 @@ export class ValidlistComponent implements OnInit {
           console.log('Child age:', age); // Log the age of each child
           if (age >= 21) {
             child.highlight = true;
+
+            // Check if the parent item is not already expanded
+            if (this.expandedElements.indexOf(item) === -1) {
+              // Expand the parent item
+              this.expandedElements.push(item);
+            }
           }
         }
       });
     });
+
     console.log('Data after processing:', this.dataSource); // Log the data after processing
   }
 }
