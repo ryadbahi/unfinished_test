@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import * as XLSX from 'xlsx';
 import { ReactiveFormsModule, FormsModule, FormBuilder } from '@angular/forms';
@@ -105,6 +111,7 @@ export class ValidlistComponent implements OnInit {
     'dateDeNaissance',
   ];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private dragCounter = 0;
   constructor(
     private formBuilder: FormBuilder,
     private cdr: ChangeDetectorRef,
@@ -175,8 +182,7 @@ export class ValidlistComponent implements OnInit {
     return 'collapsed';
   }
 
-  ReadExcel(event: any) {
-    let file = event.target.files[0];
+  ReadExcel(file: File) {
     let fileReader = new FileReader();
 
     fileReader.onload = (e) => {
@@ -422,5 +428,52 @@ export class ValidlistComponent implements OnInit {
 
     // Return the count of removed spaces
     return originalValue.length - trimmedValue.length;
+  }
+
+  @HostListener('window:dragenter', ['$event'])
+  onWindowDragEnter(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter++;
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'block';
+      dropzone.style.zIndex = '99999';
+    }
+  }
+
+  @HostListener('window:dragleave', ['$event'])
+  onWindowDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter--;
+    if (this.dragCounter === 0) {
+      const dropzone = document.getElementById('dropzone');
+      if (dropzone) {
+        dropzone.style.display = 'none';
+      }
+    }
+  }
+
+  @HostListener('window:drop', ['$event'])
+  onWindowDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter = 0;
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'none';
+    }
+  }
+
+  public dropped(event: DragEvent) {
+    event.preventDefault();
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'none';
+    }
+
+    if (event.dataTransfer) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        this.ReadExcel(event.dataTransfer.files[i]);
+      }
+    }
   }
 }
