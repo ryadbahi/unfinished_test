@@ -144,10 +144,6 @@ td {
   margin-bottom: inherit;
 }
 
-.average-tdr {
-  font-size: medium;
-}
-
 #search {
   background-color: hwb(0 100% 0% / 0.6);
   border-bottom-style: hidden;
@@ -159,6 +155,9 @@ td {
   font-size: medium;
   display: block;
   height: fit-content;
+}
+.average-tdr {
+  font-size: medium;
 }
 .xlsdl {
   background: none;

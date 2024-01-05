@@ -51,6 +51,8 @@ export interface listing {
   email: string;
   highlight?: boolean;
   issues?: number;
+  highlightRib?: boolean;
+  nbrBenef?: number;
 }
 
 @Component({
@@ -85,6 +87,7 @@ export interface listing {
   ],
 })
 export class ValidlistComponent implements OnInit {
+  totalIssues: number = 0;
   expandedElements: listing[] = [];
   dataSource: any[] = [];
   originalData: any[] = [];
@@ -97,9 +100,11 @@ export class ValidlistComponent implements OnInit {
     'nom',
     'prenom',
     'dateDeNaissance',
+    'nbrBenef',
     'rib',
     'categorie',
     'email',
+
     'issues',
   ];
 
@@ -287,8 +292,6 @@ export class ValidlistComponent implements OnInit {
     const currentDate = new Date();
 
     this.dataSource.forEach((item) => {
-      item.issues = 0; // Initialize the count for each item
-
       item.fam_adh.forEach((child: listing) => {
         if (child.lienBnf === 'Enfant') {
           const birthDate = new Date(child.dateDeNaissance);
@@ -304,7 +307,8 @@ export class ValidlistComponent implements OnInit {
             }
 
             // Increment the count for each highlighted date
-            item.issues++;
+            item.issues = (item.issues || 0) + 1;
+            this.totalIssues++;
           }
         }
       });
@@ -474,6 +478,62 @@ export class ValidlistComponent implements OnInit {
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
         this.ReadExcel(event.dataTransfer.files[i]);
       }
+    }
+  }
+
+  verifyRIB(rib: string): boolean {
+    // Extracting parts
+    const bankCode = rib.substring(0, 3);
+    const agency = rib.substring(3, 8);
+    const accountNumber = rib.substring(8, 18); // Adjusted to 18
+    const inputKey = rib.substring(18); // Convert input key to string
+
+    if (bankCode === '007') {
+      const ccpstep1 = parseInt(accountNumber);
+      const ccpstep2 = ccpstep1 * 100;
+      const ccpstep3 = ccpstep2 % 97;
+      const ccpstep4 = ccpstep3 + 85 > 97 ? ccpstep3 + 85 - 97 : ccpstep3 + 85;
+      const ccpstep5 = ccpstep4 == 97 ? ccpstep4 : 97 - ccpstep4;
+      const calculateCcpKey = ccpstep5 < 10 ? `0${ccpstep5}` : `${ccpstep5}`;
+
+      return calculateCcpKey === inputKey;
+    } else {
+      // Concatenate agency and account number, then convert to number
+      const concatenatedNumber = parseInt(agency + accountNumber);
+
+      // Perform the described calculations
+      const step1Result = concatenatedNumber * 100;
+      const step2Result = step1Result / 97;
+      const step3Result = Math.floor(step2Result);
+      const step4Result = step3Result * 97;
+      const step5Result = step1Result - step4Result;
+      const step6Result = 97 - step5Result;
+
+      // Check if the input key is correct
+      const calculatedKey =
+        step6Result < 10 ? `0${step6Result}` : `${step6Result}`;
+
+      // Compare calculated key with the input key
+      return calculatedKey === inputKey;
+    }
+  }
+  verifyAndHighlight() {
+    this.dataSource.forEach((item) => {
+      const isRIBValid = this.verifyRIB(item.rib);
+
+      if (isRIBValid) {
+        item.highlightRib = 'green'; // Highlight the row in green
+      } else {
+        item.issues = (item.issues || 0) + 1;
+        this.totalIssues++;
+        item.highlightRib = 'red';
+      }
+    });
+
+    // Optionally, you can reset the paginator after verifying and highlighting
+    if (this.paginator) {
+      this.paginator.length = this.dataSource.length;
+      this.paginator.firstPage();
     }
   }
 }

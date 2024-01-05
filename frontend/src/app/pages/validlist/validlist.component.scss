@@ -1,25 +1,24 @@
+.mat-mdc-table {
+  background-color: hwb(0 100% 0% / 0.3);
+}
+
 .familydisplay {
   overflow: hidden !important;
   display: flex !important;
 }
-tr.detail-row {
-  height: 0;
-}
+
 .mat-elevation-z8 {
   border-radius: 10px;
   overflow: hidden;
   white-space: pre-line;
 }
-#childtable {
-  margin-top: 10px;
-}
+
 .highlight {
   color: red;
   font-weight: bolder;
 }
 .issuescolor {
-  background-color: red;
-  color: white;
+  color: red;
   font-weight: bolder;
 }
 .ng-star-inserted {
@@ -69,4 +68,40 @@ tr.detail-row {
   font-size: 25px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+.searchField {
+  display: inline-flex;
+  height: 20px !important;
+  font-size: smaller;
+  margin-bottom: inherit;
+}
+
+#search {
+  position: fixed;
+  background-color: hwb(0 100% 0% / 0.6);
+  border-bottom-style: hidden;
+  padding-left: 20px;
+  box-shadow: 0 4px 2px -2px gray;
+  font-size: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: medium;
+  float: right;
+  height: fit-content;
+}
+.grey-row {
+  color: rgb(
+    179,
+    174,
+    174
+  ); /* Set the text color to grey for rows with 0 sub-rows */
+}
+#childtable {
+  display: block;
+  border-radius: 10px;
+  margin: 1% 0 1% 2%;
+  min-width: min-content;
+}
+.expanded-row {
+  font-weight: bold; /* Set the font weight to bold for expanded rows */
 }
