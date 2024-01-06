@@ -17,7 +17,7 @@
         <input
           #fileInput
           type="file"
-          (change)="fileInput.files && ReadExcel(fileInput.files[0])"
+          (change)="fileInput.files && readExcel(fileInput.files[0])"
           style="display: none"
         />
       </button>
@@ -85,42 +85,78 @@
         <ng-container matColumnDef="serial">
           <th mat-header-cell *matHeaderCellDef>No.</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.serial }}
+            <div *ngIf="!element.editable">{{ element.serial }}</div>
+            <input
+              (click)="$event.stopPropagation()"
+              *ngIf="element.editable"
+              [(ngModel)]="element.serial"
+              style="width: 20px"
+            />
           </td>
         </ng-container>
 
         <ng-container matColumnDef="lienBnf">
           <th mat-header-cell *matHeaderCellDef>Lien</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.lienBnf }}
+            <div>{{ element.lienBnf }}</div>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="num">
           <th mat-header-cell *matHeaderCellDef>Matricule</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.num }}
+            <div *ngIf="!element.editable">{{ element.num }}</div>
+            <input
+              style="width: 60px"
+              *ngIf="element.editable"
+              [(ngModel)]="element.num"
+              (click)="$event.stopPropagation()"
+            />
           </td>
         </ng-container>
 
         <ng-container matColumnDef="nom">
           <th mat-header-cell *matHeaderCellDef>Nom</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.nom }}
+            <div *ngIf="!element.editable">{{ element.nom }}</div>
+            <input
+              *ngIf="element.editable"
+              [(ngModel)]="element.nom"
+              (click)="$event.stopPropagation()"
+            />
           </td>
         </ng-container>
 
         <ng-container matColumnDef="prenom">
           <th mat-header-cell *matHeaderCellDef>Prénom</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.prenom }}
+            <div *ngIf="!element.editable">{{ element.prenom }}</div>
+            <input
+              *ngIf="element.editable"
+              [(ngModel)]="element.prenom"
+              (click)="$event.stopPropagation()"
+            />
           </td>
         </ng-container>
 
         <ng-container matColumnDef="dateDeNaissance">
           <th mat-header-cell *matHeaderCellDef>Date de Naissance</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.dateDeNaissance | date : "dd/MM/yyyy" }}
+            <div *ngIf="!element.editable">
+              {{ element.dateDeNaissance | date : "dd/MM/yyyy" }}
+            </div>
+
+            <input
+              style="width: 65px"
+              *ngIf="element.editable"
+              matInput
+              [matDatepicker]="datePickers[element.serial]"
+              format="dd/MM/yyyy"
+              [(ngModel)]="element.dateDeNaissance"
+              (click)="$event.stopPropagation()"
+            />
+
+            <mat-datepicker #picker></mat-datepicker>
           </td>
         </ng-container>
 
@@ -131,20 +167,37 @@
             *matCellDef="let element"
             [ngStyle]="{ color: element.highlightRib }"
           >
-            {{ element.rib }}
+            <div *ngIf="!element.editable">{{ element.rib }}</div>
+            <input
+              *ngIf="element.editable"
+              [(ngModel)]="element.rib"
+              (click)="$event.stopPropagation()"
+            />
           </td>
         </ng-container>
 
         <ng-container matColumnDef="categorie">
           <th mat-header-cell *matHeaderCellDef>Option</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.categorie }}
+            <div *ngIf="!element.editable">{{ element.categorie }}</div>
+            <input
+              style="width: 20px"
+              *ngIf="element.editable"
+              [(ngModel)]="element.categorie"
+              (click)="$event.stopPropagation()"
+            />
           </td>
         </ng-container>
+
         <ng-container matColumnDef="email">
           <th mat-header-cell *matHeaderCellDef>Email</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.email }}
+            <div *ngIf="!element.editable">{{ element.email }}</div>
+            <input
+              *ngIf="element.editable"
+              [(ngModel)]="element.email"
+              (click)="$event.stopPropagation()"
+            />
           </td>
         </ng-container>
         <ng-container matColumnDef="issues">
@@ -168,6 +221,39 @@
             {{ element.nbrBenef || element.fam_adh.length }}
           </td>
         </ng-container>
+        <!----------------Main Action buttons----------------->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Édit/Suppr.</th>
+          <td mat-cell *matCellDef="let element">
+            <div class="actionicn" *ngIf="!element.editable">
+              <mat-icon
+                style="color: #348bfd"
+                (click)="$event.stopPropagation(); toggleEdit(element)"
+                >edit</mat-icon
+              >
+              <mat-icon
+                color="warn"
+                (click)="$event.stopPropagation(); deleteRow(element.id)"
+                >delete</mat-icon
+              >
+            </div>
+            <div *ngIf="element.editable">
+              <mat-icon
+                style="color: green"
+                (click)="$event.stopPropagation(); saveChanges(element)"
+                >check</mat-icon
+              >
+              <mat-icon
+                style="color: #348bfd"
+                (click)="$event.stopPropagation(); cancelEdit(element)"
+                >close</mat-icon
+              >
+            </div>
+          </td>
+        </ng-container>
+
+        <!----------------END ------Main Action buttons----------------->
+
         <ng-container matColumnDef="expandedDetail">
           <td
             mat-cell
@@ -183,38 +269,93 @@
               >
                 <ng-container matColumnDef="serial">
                   <th mat-header-cell *matHeaderCellDef>No.</th>
-                  <td mat-cell *matCellDef="let fam">{{ fam.serial }}</td>
+                  <td mat-cell *matCellDef="let fam">
+                    <div *ngIf="!fam.editable">{{ fam.serial }}</div>
+                    <input
+                      style="width: 20px"
+                      *ngIf="fam.editable"
+                      [(ngModel)]="fam.serial"
+                    />
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="lienBnf">
                   <th mat-header-cell *matHeaderCellDef>Lien</th>
-                  <td mat-cell *matCellDef="let fam">{{ fam.lienBnf }}</td>
+                  <td mat-cell *matCellDef="let fam">
+                    <div *ngIf="!fam.editable">{{ fam.lienBnf }}</div>
+                    <div *ngIf="fam.editable">
+                      <select [(ngModel)]="benefList">
+                        <option *ngFor="let mmbr of benefList" [value]="mmbr">
+                          {{ mmbr }}
+                        </option>
+                      </select>
+                    </div>
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="nom">
                   <th mat-header-cell *matHeaderCellDef>Nom</th>
                   <td mat-cell *matCellDef="let fam">
-                    {{ fam.nom }}
+                    <div *ngIf="!fam.editable">{{ fam.nom }}</div>
+                    <input *ngIf="fam.editable" [(ngModel)]="fam.nom" />
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="prenom">
                   <th mat-header-cell *matHeaderCellDef>Prénom</th>
-                  <td
-                    mat-cell
-                    *matCellDef="let fam"
-                    [ngClass]="{ highlight: fam.highlight }"
-                  >
-                    {{ fam.prenom }}
+                  <td mat-cell *matCellDef="let fam">
+                    <div
+                      [ngClass]="{ highlight: fam.highlight }"
+                      *ngIf="!fam.editable"
+                    >
+                      {{ fam.prenom }}
+                    </div>
+                    <input *ngIf="fam.editable" [(ngModel)]="fam.prenom" />
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="dateDeNaissance">
                   <th mat-header-cell *matHeaderCellDef>Date de nais</th>
-                  <td
-                    mat-cell
-                    *matCellDef="let fam"
-                    [ngClass]="{ highlight: fam.highlight }"
-                  >
-                    {{ fam.dateDeNaissance | date : "dd/MM/yyyy" }}
+                  <td mat-cell *matCellDef="let fam">
+                    <div
+                      [ngClass]="{ highlight: fam.highlight }"
+                      *ngIf="!fam.editable"
+                    >
+                      {{ fam.dateDeNaissance | date : "dd/MM/yyyy" }}
+                    </div>
+                    <input
+                      matInput
+                      *ngIf="fam.editable"
+                      [matDatepicker]="datePickers[element.index]"
+                      format="dd/MM/yyyy"
+                      [(ngModel)]="fam.dateDeNaissance"
+                    />
+                  </td>
+                </ng-container>
+                <!----------------sub Action buttons----------------->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Édit/Suppr.</th>
+                  <td mat-cell *matCellDef="let fam">
+                    <div class="actionicn" *ngIf="!fam.editable">
+                      <mat-icon
+                        style="color: #348bfd"
+                        (click)="toggleFamEdit(fam)"
+                        >edit</mat-icon
+                      >
+                      <mat-icon
+                        color="warn"
+                        (click)="deleteFamMbr(element.id, fam.id)"
+                        >delete</mat-icon
+                      >
+                    </div>
+                    <div *ngIf="fam.editable">
+                      <mat-icon
+                        style="color: green"
+                        (click)="saveFamChanges(fam)"
+                        >check</mat-icon
+                      >
+                      <mat-icon style="color: #348bfd" (click)="cancelEdit(fam)"
+                        >close</mat-icon
+                      >
+                    </div>
                   </td>
                 </ng-container>
 

@@ -79,7 +79,7 @@
 }
 .searchField {
   display: inline-flex;
-  height: 20px !important;
+  height: 30px !important;
   font-size: smaller;
   margin-bottom: inherit;
 }
@@ -96,6 +96,7 @@
   font-size: medium;
   float: right;
   height: fit-content;
+  margin: 8px 0 0 0;
 }
 .grey-row {
   color: rgb(
@@ -115,4 +116,16 @@
 }
 #detail-row .th {
   background-color: black;
+}
+.actionicn {
+  position: relative !important;
+  z-index: 3 !important;
+}
+.mdc-text-field--no-label:not(.mdc-text-field--outlined):not(
+    .mdc-text-field--textarea
+  )
+  .mat-mdc-form-field-infix
+  .mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }

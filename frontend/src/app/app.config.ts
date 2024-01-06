@@ -9,9 +9,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { provideToastr } from 'ngx-toastr';
 import { MatTableModule } from '@angular/material/table';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
     provideRouter(routes, withViewTransitions()),
     provideAnimations(),
     BrowserAnimationsModule,
