@@ -36,6 +36,7 @@ export interface fam_adhData {
   nom: string;
   prenom: string;
   dateDeNaissance: Date;
+  highlight?: boolean;
 }
 
 export interface listing {
@@ -51,7 +52,7 @@ export interface listing {
   email: string;
   highlight?: boolean;
   issues?: number;
-  highlightRib?: boolean;
+  highlightRib?: string;
   nbrBenef?: number;
 }
 
@@ -87,9 +88,11 @@ export interface listing {
   ],
 })
 export class ValidlistComponent implements OnInit {
+  page: number = 0;
+  pageSize: number = 15;
   totalIssues: number = 0;
   expandedElements: listing[] = [];
-  dataSource: any[] = [];
+  dataSource = new MatTableDataSource<listing>();
   originalData: any[] = [];
   rearrangedData: listing[] = [];
   ExcelData: any[] = [];
@@ -126,21 +129,54 @@ export class ValidlistComponent implements OnInit {
 
   ngOnInit(): void {
     this.originalData = this.ExcelData;
-    this.dataSource = this.ExcelData;
+    this.rearrangedData = this.ExcelData; // Add this line to assign the rearrangedData
+    this.dataSource = new MatTableDataSource<listing>(this.rearrangedData);
+    this.dataSource.paginator = this.paginator;
+    this.cdr.detectChanges();
+
+    this.waitForPaginator().then(() => {
+      this.dataSource.paginator = this.paginator;
+      this.cdr.detectChanges();
+    });
   }
+
+  private waitForPaginator(): Promise<void> {
+    return new Promise((resolve) => {
+      const checkPaginator = () => {
+        if (this.paginator) {
+          resolve();
+        } else {
+          setTimeout(checkPaginator, 100); // Check again after 100 milliseconds
+        }
+      };
+
+      checkPaginator();
+    });
+  }
+
+  ngAfterViewInit(): void {
+    if (this.paginator) {
+      this.paginator.page.subscribe(() => {
+        this.page = this.paginator.pageIndex;
+        this.pageSize = this.paginator.pageSize;
+        this.cdr.detectChanges();
+      });
+    }
+  }
+
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value
       .trim()
       .toLowerCase();
 
     // Filter the originalData based on the input value
-    this.dataSource = this.originalData.filter((item) =>
+    this.dataSource.data = this.originalData.filter((item) =>
       this.filterItem(item, filterValue)
     );
 
     // Optionally, you can reset the paginator after filtering
     if (this.paginator) {
-      this.paginator.length = this.dataSource.length;
+      this.paginator.length = this.dataSource.data.length;
       this.paginator.firstPage();
     }
   }
@@ -274,10 +310,10 @@ export class ValidlistComponent implements OnInit {
         console.log('Rearranged Data:', rearrangedData);
 
         // Now 'data' contains your Excel data, read by position
+        this.dataSource.paginator = this.paginator;
         this.originalData = rearrangedData;
         this.ExcelData = rearrangedData;
-        this.dataSource = rearrangedData;
-        console.log(this.ExcelData);
+        this.dataSource.data = rearrangedData;
 
         this.cdr.detectChanges();
       } catch (error) {
@@ -291,8 +327,8 @@ export class ValidlistComponent implements OnInit {
     console.log('highlightOldChildren method called');
     const currentDate = new Date();
 
-    this.dataSource.forEach((item) => {
-      item.fam_adh.forEach((child: listing) => {
+    this.dataSource.data.forEach((item) => {
+      item.fam_adh.forEach((child: fam_adhData) => {
         if (child.lienBnf === 'Enfant') {
           const birthDate = new Date(child.dateDeNaissance);
           const age = currentDate.getFullYear() - birthDate.getFullYear();
@@ -387,7 +423,7 @@ export class ValidlistComponent implements OnInit {
   removeExtraSpaces() {
     let removedSpacesCount = 0;
 
-    this.dataSource.forEach((item) => {
+    this.dataSource.data.forEach((item) => {
       // Count and trim string properties
       removedSpacesCount += this.trimAndCount(item, 'lienBnf');
       removedSpacesCount += this.trimAndCount(item, 'num');
@@ -396,7 +432,7 @@ export class ValidlistComponent implements OnInit {
       removedSpacesCount += this.trimAndCount(item, 'email');
 
       // Trim and count string properties in the nested fam_adh array
-      item.fam_adh.forEach((child: listing) => {
+      item.fam_adh.forEach((child: fam_adhData) => {
         removedSpacesCount += this.trimAndCount(child, 'lienBnf');
         removedSpacesCount += this.trimAndCount(child, 'num');
         removedSpacesCount += this.trimAndCount(child, 'nom');
@@ -406,7 +442,7 @@ export class ValidlistComponent implements OnInit {
 
     // Optionally, you can reset the paginator after removing extra spaces
     if (this.paginator) {
-      this.paginator.length = this.dataSource.length;
+      this.paginator.length = this.dataSource.data.length;
       this.paginator.firstPage();
     }
 
@@ -518,11 +554,11 @@ export class ValidlistComponent implements OnInit {
     }
   }
   verifyAndHighlight() {
-    this.dataSource.forEach((item) => {
+    this.dataSource.data.forEach((item) => {
       const isRIBValid = this.verifyRIB(item.rib);
 
       if (isRIBValid) {
-        item.highlightRib = 'green'; // Highlight the row in green
+        item.highlightRib = 'green';
       } else {
         item.issues = (item.issues || 0) + 1;
         this.totalIssues++;
@@ -532,7 +568,7 @@ export class ValidlistComponent implements OnInit {
 
     // Optionally, you can reset the paginator after verifying and highlighting
     if (this.paginator) {
-      this.paginator.length = this.dataSource.length;
+      this.paginator.length = this.dataSource.data.length;
       this.paginator.firstPage();
     }
   }

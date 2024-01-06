@@ -58,3 +58,20 @@ html {
   background-size: cover;
   margin: -7px -10px 0 -15px;
 }
+.blue-snackbar.mat-mdc-snack-bar-container {
+  .mdc-snackbar__surface {
+    background: rgba(255, 255, 255, 0.966);
+    border-radius: 30px;
+
+    .mat-mdc-button {
+      color: rgb(43, 42, 42) !important;
+      border-left-style: outset;
+    }
+  }
+
+  .mat-mdc-snack-bar-label.mdc-snackbar__label {
+    color: rgb(94, 94, 94);
+    font-weight: 500;
+    white-space: pre-wrap;
+  }
+}

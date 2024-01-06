@@ -2,13 +2,20 @@
   background-color: hwb(0 100% 0% / 0.3);
 }
 
+.mat-mdc-header-cell {
+  background-color: hwb(0 100% 0% / 0) !important;
+}
+
 .familydisplay {
   overflow: hidden !important;
   display: flex !important;
 }
 
+.familydisplay th {
+  background-color: #3d7ffe6e !important;
+}
+
 .mat-elevation-z8 {
-  border-radius: 10px;
   overflow: hidden;
   white-space: pre-line;
 }
@@ -24,6 +31,7 @@
 .ng-star-inserted {
   position: relative;
   height: auto;
+  font-size: 12px;
 }
 .matoolB {
   flex-direction: row;
@@ -104,4 +112,7 @@
 }
 .expanded-row {
   font-weight: bold; /* Set the font weight to bold for expanded rows */
+}
+#detail-row .th {
+  background-color: black;
 }

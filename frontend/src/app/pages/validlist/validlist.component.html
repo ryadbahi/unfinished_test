@@ -11,7 +11,7 @@
       <button
         mat-raised-button
         (click)="fileInput.click()"
-        *ngIf="!dataSource || dataSource.length === 0"
+        *ngIf="!dataSource || dataSource.data.length === 0"
       >
         Upload
         <input
@@ -26,14 +26,14 @@
         mat-raised-button
         color="primary"
         (click)="removeExtraSpaces()"
-        *ngIf="!(!dataSource || dataSource.length === 0)"
+        *ngIf="!(!dataSource || dataSource.data.length === 0)"
       >
         Remove Extra Spaces
       </button>
       <button
         mat-raised-button
         (click)="highlightOldChildren()"
-        *ngIf="!(!dataSource || dataSource.length === 0)"
+        *ngIf="!(!dataSource || dataSource.data.length === 0)"
       >
         Check Age
       </button>
@@ -41,7 +41,7 @@
         mat-raised-button
         color="primary"
         (click)="verifyAndHighlight()"
-        *ngIf="!(!dataSource || dataSource.length === 0)"
+        *ngIf="!(!dataSource || dataSource.data.length === 0)"
       >
         Verif RIB
       </button>
@@ -71,12 +71,15 @@
   >
 
   <div class="form_container">
-    <div *ngIf="dataSource && dataSource.length > 0">
+    <div
+      class="mat-elevation-z8"
+      *ngIf="dataSource && dataSource.data.length > 0"
+      style="border-radius: 10px; overflow: hidden"
+    >
       <table
         mat-table
         [dataSource]="dataSource"
         mat-table
-        class="mat-elevation-z8"
         multiTemplateDataRows
       >
         <ng-container matColumnDef="serial">
@@ -239,7 +242,7 @@
         <tr
           mat-row
           *matRowDef="let row; columns: ['expandedDetail']"
-          class="detail-row"
+          id="detail-row"
         ></tr>
         <tr class="mat-row" *matNoDataRow>
           <td class="mat-cell" colspan="4">
@@ -247,6 +250,14 @@
           </td>
         </tr>
       </table>
+      <mat-paginator
+        [pageSizeOptions]="[15, 30, 100]"
+        [pageSize]="pageSize"
+        [pageIndex]="page"
+        [length]="dataSource.data.length"
+        showFirstLastButtons
+      >
+      </mat-paginator>
     </div>
   </div>
 </body>
