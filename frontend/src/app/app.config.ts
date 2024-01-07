@@ -10,10 +10,11 @@ import { DatePipe } from '@angular/common';
 import { provideToastr } from 'ngx-toastr';
 import { MatTableModule } from '@angular/material/table';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { NgxSpinnerModule } from 'ngx-spinner';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' },
     provideRouter(routes, withViewTransitions()),
     provideAnimations(),
     BrowserAnimationsModule,
@@ -28,5 +29,6 @@ export const appConfig: ApplicationConfig = {
       autoDismiss: true,
     }),
     MatTableModule,
+    NgxSpinnerModule,
   ],
 };

@@ -78,14 +78,12 @@
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 .searchField {
-  display: inline-flex;
   height: 30px !important;
   font-size: smaller;
   margin-bottom: inherit;
 }
 
 #search {
-  position: fixed;
   background-color: hwb(0 100% 0% / 0.6);
   border-bottom-style: hidden;
   padding-left: 20px;
@@ -128,4 +126,15 @@
   .mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined) {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+}
+.spinner {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  -moz-transform: translateX(-50%) translateY(-50%);
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+.thespinner {
+  z-index: 99999;
 }

@@ -2,23 +2,22 @@ import {
   ChangeDetectorRef,
   Component,
   HostListener,
-  NgZone,
   OnInit,
-  QueryList,
   ViewChild,
-  ViewChildren,
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import * as XLSX from 'xlsx';
-import { ReactiveFormsModule, FormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
+
 import {
   MatTable,
   MatTableDataSource,
@@ -30,7 +29,6 @@ import {
 } from '@angular/material/datepicker';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
 import {
   animate,
   state,
@@ -39,7 +37,8 @@ import {
   trigger,
 } from '@angular/animations';
 import { SnackBarService } from '../../snack-bar.service';
-import { indexOf } from 'lodash';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 export interface fam_adhData {
   id?: string;
@@ -91,7 +90,10 @@ export interface listing {
     DatePipe,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSlideToggleModule,
+    NgxSpinnerModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './validlist.component.html',
   styleUrl: './validlist.component.scss',
   animations: [
@@ -106,6 +108,8 @@ export interface listing {
   ],
 })
 export class ValidlistComponent implements OnInit {
+  showSpinner: boolean = false;
+  showOnlyIssues: boolean = false;
   benefList: string[] = ['Conjoint', 'Enfant', 'Père', 'Mère'];
   page: number = 0;
   pageSize: number = 15;
@@ -146,12 +150,16 @@ export class ValidlistComponent implements OnInit {
 
   private dragCounter = 0;
   constructor(
-    private formBuilder: FormBuilder,
+    private spinner: NgxSpinnerService,
     private cdr: ChangeDetectorRef,
-    private datePipe: DatePipe,
-    private snackBService: SnackBarService,
-    private zone: NgZone
+    public datePipe: DatePipe,
+    private snackBService: SnackBarService
   ) {}
+
+  public createDate(dateString: string): Date {
+    const [day, month, year] = dateString.split('/');
+    return new Date(`${month}/${day}/${year}`);
+  }
 
   ngOnInit(): void {
     this.originalData = this.ExcelData;
@@ -206,6 +214,21 @@ export class ValidlistComponent implements OnInit {
       this.paginator.firstPage();
     }
   }
+  applyFilterByIssues() {
+    if (this.showOnlyIssues) {
+      this.dataSource.data = this.originalData.filter(
+        (listing) => listing.issues > 0
+      );
+    } else {
+      this.dataSource.data = [...this.originalData];
+    }
+
+    // Optionally, you can reset the paginator after filtering
+    if (this.paginator) {
+      this.paginator.length = this.dataSource.data.length;
+      this.paginator.firstPage();
+    }
+  }
 
   filterItem(item: listing, filterValue: string): boolean {
     // Check if any property in the item matches the filterValue
@@ -250,15 +273,10 @@ export class ValidlistComponent implements OnInit {
   }
 
   readExcel(file: File) {
+    this.spinner.show();
     let fileReader = new FileReader();
-
-    // Define a counter for adherents
     let adherentCounter = 1;
-
-    // Define a counter for family members
     let familyCounter = 0;
-
-    // Define a variable for the current adherent ID
     let currentAdherentId = '';
 
     fileReader.onload = (e) => {
@@ -311,63 +329,34 @@ export class ValidlistComponent implements OnInit {
               rib,
               categorie,
               email,
-              // Initialize fam_adh property
             };
-
-            // Check if the current row is an adherent or a family member
             if (lienBnf.toLowerCase().includes('ass')) {
-              // It's an adherent, so assign the next available number as the ID
               item.id = adherentCounter.toString();
-
-              // Store the current adherent ID for assigning IDs to family members
               currentAdherentId = item.id;
-
-              // Increment the adherent counter
               adherentCounter++;
-
-              // Reset the family counter
               familyCounter = 0;
             } else {
-              // It's a family member, so assign the adherent's ID followed by a letter as the ID
               item.id =
                 currentAdherentId +
                 String.fromCharCode('a'.charCodeAt(0) + familyCounter);
-
-              // Increment the family counter
               familyCounter++;
             }
-
-            // Rearrange the data while pushing according to conditions
             if (lienBnf.toLowerCase().includes('ass')) {
-              // Add the adherent person
               rearrangedData.push(item);
             } else {
-              // Find the adherent person
               const adherent = rearrangedData.find(
                 (adherentItem) => adherentItem.serial === serial
               );
-
               if (adherent) {
-                // Add the family members of the adherent person
                 adherent.fam_adh = adherent.fam_adh || [];
                 adherent.fam_adh.push(item);
-
-                // Sort the fam_adh array so that 'Conjoint' comes first
                 adherent.fam_adh.sort((a, b) =>
                   a.lienBnf === 'Conjoint' ? -1 : 1
                 );
               }
             }
-
-            // Log the current item for debugging
-            console.log('Current Item:', item);
           }
         }
-
-        // Log the rearrangedData and check if it contains data
-        console.log('Rearranged Data:', rearrangedData);
-
-        // Now 'data' contains your Excel data, read by position
         this.dataSource.paginator = this.paginator;
         this.originalData = rearrangedData;
         this.ExcelData = rearrangedData;
@@ -377,6 +366,8 @@ export class ValidlistComponent implements OnInit {
         this.cdr.detectChanges();
       } catch (error) {
         console.error('Error reading Excel file:', error);
+      } finally {
+        this.spinner.hide();
       }
     };
     fileReader.readAsBinaryString(file);
@@ -639,29 +630,8 @@ export class ValidlistComponent implements OnInit {
   }
 
   saveChanges(element: listing) {
-    // Assuming 'date' is the property containing the date value
-    const formattedDate = this.editedformatDate(element.dateDeNaissance);
-
-    // Save changes using the formatted date string
-    element.dateDeNaissance = new Date(formattedDate);
     this.saveRowChanges(element);
-
-    // Disable editing
     element.editable = false;
-  }
-
-  private editedformatDate(date: Date | string): string {
-    // If it's already a string, just return it
-    if (typeof date === 'string') {
-      return date;
-    }
-
-    // If it's a Date, format it to the desired string format
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
   }
 
   cancelEdit(element: listing) {
@@ -701,16 +671,10 @@ export class ValidlistComponent implements OnInit {
   resetFamRowData(fam: fam_adhData) {}
 
   saveFamChanges(fam: fam_adhData) {
-    // Assuming 'date' is the property containing the date value
-    const formattedDate = this.editedformatDate(fam.dateDeNaissance);
-
-    // Save changes using the formatted date string
-    fam.dateDeNaissance = new Date(formattedDate);
-    this.saveFamChanges(fam);
-
-    // Disable editing
+    this.saveFamrowChanges(fam);
     fam.editable = false;
   }
+  saveFamrowChanges(fam: fam_adhData) {}
 
   // Function to delete a family member
   deleteFamMbr(parentId: string, famId: string) {
