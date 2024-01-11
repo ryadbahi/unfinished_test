@@ -94,7 +94,7 @@
   font-size: medium;
   float: right;
   height: fit-content;
-  margin: 8px 0 0 0;
+  margin: 4px 0 0 0;
 }
 .grey-row {
   color: rgb(
@@ -137,4 +137,23 @@
 }
 .thespinner {
   z-index: 99999;
+}
+#fabbtn {
+  background-color: white;
+  width: 25px;
+  height: 25px;
+}
+.Filters {
+  display: contents;
+}
+
+.toggle {
+  float: right;
+  color: white;
+  font-weight: bolder;
+}
+.hiddenTB {
+  background-color: unset;
+  margin: 0 0 10px 0;
+  display: inline-block;
 }

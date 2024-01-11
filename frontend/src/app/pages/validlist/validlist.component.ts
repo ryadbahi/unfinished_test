@@ -108,6 +108,7 @@ export interface listing {
   ],
 })
 export class ValidlistComponent implements OnInit {
+  excelWorker!: Worker;
   showSpinner: boolean = false;
   showOnlyIssues: boolean = false;
   benefList: string[] = ['Conjoint', 'Enfant', 'Père', 'Mère'];
@@ -116,14 +117,14 @@ export class ValidlistComponent implements OnInit {
   totalIssues: number = 0;
   expandedElements: listing[] = [];
   dataSource = new MatTableDataSource<listing>();
-  originalData: any[] = [];
+
   rearrangedData: listing[] = [];
   ExcelData: any[] = [];
   datePickers: MatDatepicker<Date>[] = [];
   displayedColumns: string[] = [
     'serial',
     'lienBnf',
-    'num',
+
     'nom',
     'prenom',
     'dateDeNaissance',
@@ -154,7 +155,9 @@ export class ValidlistComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     public datePipe: DatePipe,
     private snackBService: SnackBarService
-  ) {}
+  ) {
+    this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
+  }
 
   public createDate(dateString: string): Date {
     const [day, month, year] = dateString.split('/');
@@ -162,16 +165,70 @@ export class ValidlistComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.originalData = this.ExcelData;
-    this.rearrangedData = this.ExcelData; // Add this line to assign the rearrangedData
+    this.rearrangedData = this.ExcelData || [];
     this.dataSource = new MatTableDataSource<listing>(this.rearrangedData);
     this.dataSource.paginator = this.paginator;
-    this.cdr.detectChanges();
 
     this.waitForPaginator().then(() => {
       this.dataSource.paginator = this.paginator;
       this.cdr.detectChanges();
     });
+
+    this.excelWorker = new Worker(new URL('../../app.worker', import.meta.url));
+
+    this.excelWorker.onmessage = ({
+      data,
+    }: {
+      data: { type: string; data?: listing[]; error?: any };
+    }) => {
+      if (data.type === 'success') {
+        this.rearrangedData = data.data || [];
+        this.dataSource.data = this.rearrangedData; // Set data property instead of creating a new instance
+        this.dataSource.paginator = this.paginator;
+        this.cdr.detectChanges();
+      } else if (data.type === 'error') {
+        console.error('Error in web worker:', data.error);
+      }
+
+      this.spinner.hide();
+    };
+  }
+
+  ngOnDestro() {
+    this.excelWorker.terminate();
+  }
+
+  handleWorkerMessage(event: MessageEvent) {
+    const { type, data, error } = event.data;
+
+    if (type === 'success') {
+      this.dataSource = data;
+      console.log('Received data from web worker:', data);
+      this.dataSource.paginator = this.paginator;
+
+      this.ExcelData = data;
+      this.dataSource.data = data;
+      console.table(this.dataSource.data);
+
+      console.log('Received data from web worker:', data);
+    } else if (type === 'error') {
+      // Handle error during data processing
+      console.error('Error in web worker:', error);
+    }
+    this.cdr.detectChanges();
+    this.spinner.hide();
+  }
+
+  readExcelFile(file: File) {
+    this.spinner.show();
+    this.excelWorker.postMessage({ file: file });
+  }
+  onFileInputChange(event: Event) {
+    const fileInput = event.target as HTMLInputElement;
+    const selectedFile = fileInput.files?.[0];
+    if (selectedFile) {
+      this.readExcelFile(selectedFile);
+    }
   }
 
   private waitForPaginator(): Promise<void> {
@@ -203,8 +260,8 @@ export class ValidlistComponent implements OnInit {
       .trim()
       .toLowerCase();
 
-    // Filter the originalData based on the input value
-    this.dataSource.data = this.originalData.filter((item) =>
+    // Filter the rearrangedData based on the input value
+    this.dataSource.data = this.rearrangedData.filter((item) =>
       this.filterItem(item, filterValue)
     );
 
@@ -214,19 +271,21 @@ export class ValidlistComponent implements OnInit {
       this.paginator.firstPage();
     }
   }
+
   applyFilterByIssues() {
     if (this.showOnlyIssues) {
-      this.dataSource.data = this.originalData.filter(
-        (listing) => listing.issues > 0
+      this.dataSource.data = this.rearrangedData.filter(
+        (listing) => listing.issues !== undefined && listing.issues > 0
       );
     } else {
-      this.dataSource.data = [...this.originalData];
+      this.dataSource.data = [...this.rearrangedData];
     }
 
     // Optionally, you can reset the paginator after filtering
     if (this.paginator) {
       this.paginator.length = this.dataSource.data.length;
       this.paginator.firstPage();
+      this.cdr.detectChanges();
     }
   }
 
@@ -272,117 +331,19 @@ export class ValidlistComponent implements OnInit {
     return 'collapsed';
   }
 
-  readExcel(file: File) {
-    this.spinner.show();
-    let fileReader = new FileReader();
-    let adherentCounter = 1;
-    let familyCounter = 0;
-    let currentAdherentId = '';
-
-    fileReader.onload = (e) => {
-      try {
-        var workBook = XLSX.read(fileReader.result, {
-          type: 'binary',
-          raw: true,
-        });
-        var firstSheetName = workBook.SheetNames[0];
-        var sheet = workBook.Sheets[firstSheetName];
-
-        // Define your data array
-        let rearrangedData: listing[] = [];
-
-        // Check if '!ref' is defined
-        if (sheet['!ref']) {
-          // Get the range of cells that contain data
-          let range = XLSX.utils.decode_range(sheet['!ref']);
-
-          // Loop over the rows in the range
-          for (let i = range.s.r + 1; i <= range.e.r; i++) {
-            // Read the data based on cell position
-            let serial = sheet[XLSX.utils.encode_cell({ r: i, c: 0 })]?.v;
-            let lienBnf = sheet[XLSX.utils.encode_cell({ r: i, c: 1 })]?.v;
-            let num = sheet[XLSX.utils.encode_cell({ r: i, c: 2 })]?.v || '';
-            let nom = sheet[XLSX.utils.encode_cell({ r: i, c: 3 })]?.v;
-            let prenom = sheet[XLSX.utils.encode_cell({ r: i, c: 4 })]?.v;
-
-            // Convert Excel date to JavaScript date
-            let dateDeNaissance =
-              sheet[XLSX.utils.encode_cell({ r: i, c: 5 })]?.v;
-            if (dateDeNaissance) {
-              let date = new Date((dateDeNaissance - 25569) * 86400 * 1000);
-              dateDeNaissance = date;
-            }
-
-            let rib = sheet[XLSX.utils.encode_cell({ r: i, c: 9 })]?.v;
-            let categorie = sheet[XLSX.utils.encode_cell({ r: i, c: 10 })]?.v;
-            let email = sheet[XLSX.utils.encode_cell({ r: i, c: 11 })]?.v || '';
-
-            // Push the data to your array
-            const item: listing = {
-              fam_adh: [],
-              serial,
-              lienBnf,
-              num,
-              nom,
-              prenom,
-              dateDeNaissance,
-              rib,
-              categorie,
-              email,
-            };
-            if (lienBnf.toLowerCase().includes('ass')) {
-              item.id = adherentCounter.toString();
-              currentAdherentId = item.id;
-              adherentCounter++;
-              familyCounter = 0;
-            } else {
-              item.id =
-                currentAdherentId +
-                String.fromCharCode('a'.charCodeAt(0) + familyCounter);
-              familyCounter++;
-            }
-            if (lienBnf.toLowerCase().includes('ass')) {
-              rearrangedData.push(item);
-            } else {
-              const adherent = rearrangedData.find(
-                (adherentItem) => adherentItem.serial === serial
-              );
-              if (adherent) {
-                adherent.fam_adh = adherent.fam_adh || [];
-                adherent.fam_adh.push(item);
-                adherent.fam_adh.sort((a, b) =>
-                  a.lienBnf === 'Conjoint' ? -1 : 1
-                );
-              }
-            }
-          }
-        }
-        this.dataSource.paginator = this.paginator;
-        this.originalData = rearrangedData;
-        this.ExcelData = rearrangedData;
-        this.dataSource.data = rearrangedData;
-        console.table(this.dataSource.data);
-
-        this.cdr.detectChanges();
-      } catch (error) {
-        console.error('Error reading Excel file:', error);
-      } finally {
-        this.spinner.hide();
-      }
-    };
-    fileReader.readAsBinaryString(file);
-  }
-
   highlightOldChildren() {
     console.log('highlightOldChildren method called');
     const currentDate = new Date();
 
-    this.dataSource.data.forEach((item) => {
+    this.rearrangedData.forEach((item) => {
       item.fam_adh.forEach((child: fam_adhData) => {
-        if (child.lienBnf === 'Enfant') {
+        if (
+          child.lienBnf === 'Enfant' &&
+          !child.prenom.toLowerCase().includes('(+21 ans)')
+        ) {
           const birthDate = new Date(child.dateDeNaissance);
           const age = currentDate.getFullYear() - birthDate.getFullYear();
-          console.log('Child age:', age); // Log the age of each child
+
           if (age >= 21) {
             child.highlight = true;
 
@@ -395,6 +356,7 @@ export class ValidlistComponent implements OnInit {
             // Increment the count for each highlighted date
             item.issues = (item.issues || 0) + 1;
             this.totalIssues++;
+            this.cdr.detectChanges();
           }
         }
       });
@@ -445,7 +407,7 @@ export class ValidlistComponent implements OnInit {
   }
   downloadExcel() {
     // Flatten the data
-    const flattenedData = this.flattenData(this.originalData);
+    const flattenedData = this.flattenData(this.rearrangedData);
 
     // Create a worksheet
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(flattenedData);
@@ -473,7 +435,7 @@ export class ValidlistComponent implements OnInit {
   removeExtraSpaces() {
     let removedSpacesCount = 0;
 
-    this.dataSource.data.forEach((item) => {
+    this.rearrangedData.forEach((item) => {
       // Count and trim string properties
       removedSpacesCount += this.trimAndCount(item, 'lienBnf');
       removedSpacesCount += this.trimAndCount(item, 'num');
@@ -559,7 +521,7 @@ export class ValidlistComponent implements OnInit {
 
     if (event.dataTransfer) {
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
-        this.readExcel(event.dataTransfer.files[i]);
+        this.readExcelFile(event.dataTransfer.files[i]);
       }
     }
   }
@@ -601,7 +563,7 @@ export class ValidlistComponent implements OnInit {
     }
   }
   verifyAndHighlight() {
-    this.dataSource.data.forEach((item) => {
+    this.rearrangedData.forEach((item) => {
       const isRIBValid = this.verifyRIB(item.rib);
 
       if (isRIBValid) {
@@ -617,6 +579,7 @@ export class ValidlistComponent implements OnInit {
     if (this.paginator) {
       this.paginator.length = this.dataSource.data.length;
       this.paginator.firstPage();
+      this.cdr.detectChanges();
     }
   }
 
@@ -689,6 +652,58 @@ export class ValidlistComponent implements OnInit {
 
       // Trigger change detection
       this.cdr.detectChanges();
+    }
+  }
+
+  collapseAll() {
+    this.expandedElements = [];
+  }
+
+  resetIssues() {
+    this.rearrangedData.forEach((item) => {
+      item.highlight = false;
+      item.issues = 0;
+      item.highlightRib = 'black';
+
+      if (item.fam_adh) {
+        item.fam_adh.forEach((child: fam_adhData) => {
+          child.highlight = false;
+        });
+      }
+    });
+
+    this.totalIssues = 0;
+
+    // Optionally, you can reset the paginator after updating the data
+    if (this.paginator) {
+      this.paginator.length = this.dataSource.data.length;
+      this.paginator.firstPage();
+    }
+
+    // Trigger change detection
+    this.cdr.detectChanges();
+  }
+
+  addAgeTag() {
+    this.rearrangedData.forEach((item) => {
+      item.fam_adh.forEach((child: fam_adhData) => {
+        if (
+          child.lienBnf === 'Enfant' &&
+          !child.prenom.toLowerCase().includes('(+21 ans)')
+        ) {
+          const birthDate = new Date(child.dateDeNaissance);
+          const age = new Date().getFullYear() - birthDate.getFullYear();
+
+          if (age >= 21) {
+            child.prenom += ' (+21 ANS)';
+          }
+        }
+      });
+    });
+
+    if (this.paginator) {
+      this.paginator.length = this.dataSource.data.length;
+      this.paginator.firstPage();
     }
   }
 }

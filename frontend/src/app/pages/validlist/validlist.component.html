@@ -1,14 +1,4 @@
 <body>
-  <div>
-    <ngx-spinner
-      bdColor="rgba(0, 0, 0, 0.8)"
-      size="large"
-      color="#fff"
-      type="ball-scale-multiple"
-      [fullScreen]="true"
-      ><p style="color: white">Chargement...</p></ngx-spinner
-    >
-  </div>
   <div
     id="dropzone"
     (drop)="dropped($event)"
@@ -27,7 +17,7 @@
         <input
           #fileInput
           type="file"
-          (change)="fileInput.files && readExcel(fileInput.files[0])"
+          (change)="onFileInputChange($event)"
           style="display: none"
         />
       </button>
@@ -62,31 +52,50 @@
   </div>
   <DIV class="filter">
     <mat-toolbar class="matoolB">
-      <div class="searchField">
-        <input
-          id="search"
-          matInput
-          (keyup)="applyFilter($event)"
-          placeholder="Recherche...."
-          #input
-        />
+      <div class="Filters">
+        <div class="searchField">
+          <input
+            id="search"
+            matInput
+            (keyup)="applyFilter($event)"
+            placeholder="Recherche...."
+            #input
+          />
+        </div>
       </div>
-      <div *ngIf="totalIssues != 0" class="toggle">
-        <mat-slide-toggle
-          [(ngModel)]="showOnlyIssues"
-          (change)="applyFilterByIssues()"
-          >Anomalies seulment ?</mat-slide-toggle
-        >
+
+      <div *ngIf="totalIssues != 0">
+        <button mat-raised-button (click)="addAgeTag()">Ajout +21</button>
+        <button id="fabbtn" mat-fab (click)="collapseAll()">
+          <mat-icon>keyboard_arrow_up</mat-icon>
+        </button>
       </div>
+
+      <div *ngIf="totalIssues != 0">
+        <button id="fabbtn" mat-fab (click)="resetIssues()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+
       <div
         *ngIf="totalIssues != 0"
         [ngClass]="{ issuescolor: totalIssues > 0 }"
       >
-        Total des anomalies : {{ totalIssues }}
+        Total des anomalies :
+        {{ totalIssues }}
       </div></mat-toolbar
     ></DIV
   >
-
+  <mat-toolbar class="hiddenTB">
+    <div *ngIf="totalIssues != 0" class="toggle">
+      <mat-slide-toggle
+        class="toggle"
+        [(ngModel)]="showOnlyIssues"
+        (change)="applyFilterByIssues()"
+        >Anomalies seulment ?</mat-slide-toggle
+      >
+    </div>
+  </mat-toolbar>
   <div class="form_container">
     <div
       class="mat-elevation-z8"
@@ -116,19 +125,6 @@
           <th mat-header-cell *matHeaderCellDef>Lien</th>
           <td mat-cell *matCellDef="let element">
             <div>{{ element.lienBnf }}</div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="num">
-          <th mat-header-cell *matHeaderCellDef>Matricule</th>
-          <td mat-cell *matCellDef="let element">
-            <div *ngIf="!element.editable">{{ element.num }}</div>
-            <input
-              style="width: 60px"
-              *ngIf="element.editable"
-              [(ngModel)]="element.num"
-              (click)="$event.stopPropagation()"
-            />
           </td>
         </ng-container>
 
@@ -337,6 +333,7 @@
                       {{ fam.dateDeNaissance | date : "dd/MM/yyyy" }}
                     </div>
                     <input
+                      style="width: 65px"
                       matInput
                       *ngIf="fam.editable"
                       [ngModel]="
@@ -408,7 +405,7 @@
         </tr>
       </table>
       <mat-paginator
-        [pageSizeOptions]="[15, 30, 100]"
+        [pageSizeOptions]="[15, 30, dataSource.data.length]"
         [pageSize]="pageSize"
         [pageIndex]="page"
         [length]="dataSource.data.length"
@@ -418,3 +415,12 @@
     </div>
   </div>
 </body>
+
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="large"
+  color="#fff"
+  type="ball-scale-multiple"
+  [fullScreen]="true"
+  ><p style="color: white">Chargement...</p></ngx-spinner
+>
