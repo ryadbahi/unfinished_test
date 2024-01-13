@@ -1,4 +1,4 @@
-<body class="ReqPage">
+<body>
   <!---------------UPPERSTART----------------->
 
   <!---------------UPLOAD----------------->
@@ -354,67 +354,46 @@
             *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
             class="button-container"
           >
-            <button
-              class="act_btn"
-              style="margin-right: 5px; width: 5px"
-              mat-raised-button
-              color="primary"
+            <mat-icon
+              style="color: #348bfd"
               [routerLink]="['/mailreports', mrepelem.id_mail]"
               (click)="strteditmrep(mrepelem)"
+              >edit</mat-icon
             >
-              <mat-icon class="icon">edit</mat-icon>
-            </button>
 
-            <button
-              mat-raised-button
-              color="warn"
-              class="act_btn"
-              (click)="deleteIDMreport(mrepelem.id_mail)"
+            <mat-icon color="warn" (click)="deleteIDMreport(mrepelem.id_mail)"
+              >delete</mat-icon
             >
-              <mat-icon class="icon">delete</mat-icon>
-            </button>
           </div>
           <!----------------------------ALTERNATE BUTTONS------------------------------->
           <div
             *ngIf="mrepelem.isEdit && !mrepelem.isNew"
             class="button-container"
           >
-            <button
-              style="background-color: green; margin-right: 3%"
-              mat-raised-button
-              class="act_btn"
+            <mat-icon
+              style="color: green; font-weight: bolder"
               (click)="updateRow(mrepelem)"
+              >check</mat-icon
             >
-              <mat-icon style="margin: 0; color: aliceblue">check</mat-icon>
-            </button>
-            <button
-              mat-raised-button
-              color="warn"
-              class="act_btn"
+
+            <mat-icon
+              style="color: grey; font-weight: bolder"
               (click)="Cancel(mrepelem)"
+              >close</mat-icon
             >
-              <mat-icon class="icon">close</mat-icon>
-            </button>
           </div>
           <div *ngIf="isNewRow(mrepelem)" class="button-container">
-            <button
-              mat-raised-button
-              color="primary"
+            <mat-icon
+              style="color: green; font-weight: bolder"
               (click)="submitNewRow(mrepelem)"
-              class="act_btn"
-              style="background-color: green"
+              >check</mat-icon
             >
-              <mat-icon>check</mat-icon>
-            </button>
 
-            <button
-              mat-raised-button
-              color="warn"
+            <mat-icon
+              style="color: grey; font-weight: bolder"
               (click)="CancelNew()"
-              class="act_btn"
+              >close</mat-icon
             >
-              <mat-icon>close</mat-icon>
-            </button>
           </div>
         </td>
       </ng-container>

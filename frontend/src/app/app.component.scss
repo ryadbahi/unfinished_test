@@ -1,13 +1,8 @@
-.content {
-  margin: 0 0 0 0;
-}
-
 mat-sidenav-container {
   margin: 0;
   background-color: rgba(0, 0, 0, 0.09);
   transition: all 500ms ease-in-out;
-  height: auto;
-  min-height: 50vh;
+  min-height: 99vh;
   border-radius: 20px;
   overflow-x: hidden;
 }

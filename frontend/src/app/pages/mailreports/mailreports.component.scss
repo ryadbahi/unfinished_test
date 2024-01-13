@@ -1,3 +1,7 @@
+body {
+  margin: -5px 0 0 10px;
+}
+
 .mat-toolbar-row,
 .mat-toolbar-single-row {
   height: fit-content;
@@ -22,10 +26,7 @@ div {
   display: inline-flex !important;
   margin-right: 5px;
 }
-.mat-icon {
-  overflow: visible;
-  margin: unset !important;
-}
+
 input {
   font-size: 8px;
   border-top-style: hidden;
@@ -169,10 +170,14 @@ td {
   display: flex;
   flex-direction: row;
   white-space: nowrap;
+  font-size: 12px;
 }
 #rech_btn {
   background-color: hwb(0 100% 0% / 0.6);
   border-radius: 10px;
-  width: 50%;
-  margin-left: 1%;
+
+  margin-left: 3%;
+}
+.icon {
+  height: 40px;
 }
