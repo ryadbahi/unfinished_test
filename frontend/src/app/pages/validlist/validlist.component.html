@@ -8,6 +8,45 @@
   </div>
   <div>
     <mat-toolbar class="matoolB">
+      <div class="magiclist">
+        <button
+          class="magicbtn"
+          mat-raised-button
+          (click)="
+            magicMethod(
+              runCheckDuplicates,
+              runVerifyRib,
+              runHighlightChildren,
+              runRemoveSpaces
+            )
+          "
+        >
+          <span style="color: ghostwhite"> Verif. </span>
+        </button>
+        <button
+          mat-raised-button
+          [matMenuTriggerFor]="belowMenu"
+          class="menudrp"
+        >
+          <mat-icon style="color: ghostwhite">keyboard_arrow_down</mat-icon>
+        </button>
+        <mat-menu #belowMenu="matMenu" yPosition="below" class="menu">
+          <mat-checkbox [(ngModel)]="runCheckDuplicates"
+            >Check Duplicates</mat-checkbox
+          >
+
+          <mat-checkbox [(ngModel)]="runVerifyRib">Verify RIB</mat-checkbox>
+
+          <mat-checkbox [(ngModel)]="runHighlightChildren"
+            >Highlight Old Children</mat-checkbox
+          >
+
+          <mat-checkbox [(ngModel)]="runRemoveSpaces"
+            >Remove Extra Spaces</mat-checkbox
+          >
+        </mat-menu>
+      </div>
+
       <button
         mat-raised-button
         (click)="fileInput.click()"
@@ -22,29 +61,6 @@
         />
       </button>
 
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="removeExtraSpaces()"
-        *ngIf="!(!dataSource || dataSource.data.length === 0)"
-      >
-        Remove Extra Spaces
-      </button>
-      <button
-        mat-raised-button
-        (click)="highlightOldChildren()"
-        *ngIf="!(!dataSource || dataSource.data.length === 0)"
-      >
-        Check Age
-      </button>
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="verifyAndHighlight()"
-        *ngIf="!(!dataSource || dataSource.data.length === 0)"
-      >
-        Verif RIB
-      </button>
       <button class="xlsdl" (click)="downloadExcel()">
         <img class="icon" src="assets/xlsicn.png" />
       </button>
@@ -71,18 +87,15 @@
         </button>
       </div>
 
-      <div *ngIf="totalIssues != 0">
-        <button id="fabbtn" mat-fab (click)="resetIssues()">
-          <mat-icon>refresh</mat-icon>
-        </button>
-      </div>
-
       <div
+        class="blocdroit"
         *ngIf="totalIssues != 0"
         [ngClass]="{ issuescolor: totalIssues > 0 }"
       >
-        Total des anomalies :
-        {{ totalIssues }}
+        <div class="rstbtn">
+          <mat-icon (click)="resetIssues()">refresh</mat-icon>
+        </div>
+        <div>Total des anomalies : {{ totalIssues }}</div>
       </div></mat-toolbar
     ></DIV
   >
@@ -110,7 +123,11 @@
       >
         <ng-container matColumnDef="serial">
           <th mat-header-cell *matHeaderCellDef>No.</th>
-          <td mat-cell *matCellDef="let element">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [ngClass]="{ duplicatehighlight: element.duplicatehighlight }"
+          >
             <div *ngIf="!element.editable">{{ element.serial }}</div>
             <input
               (click)="$event.stopPropagation()"
@@ -123,14 +140,22 @@
 
         <ng-container matColumnDef="lienBnf">
           <th mat-header-cell *matHeaderCellDef>Lien</th>
-          <td mat-cell *matCellDef="let element">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [ngClass]="{ duplicatehighlight: element.duplicatehighlight }"
+          >
             <div>{{ element.lienBnf }}</div>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="nom">
           <th mat-header-cell *matHeaderCellDef>Nom</th>
-          <td mat-cell *matCellDef="let element">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [ngClass]="{ duplicatehighlight: element.duplicatehighlight }"
+          >
             <div *ngIf="!element.editable">{{ element.nom }}</div>
             <input
               *ngIf="element.editable"
@@ -142,7 +167,11 @@
 
         <ng-container matColumnDef="prenom">
           <th mat-header-cell *matHeaderCellDef>Prénom</th>
-          <td mat-cell *matCellDef="let element">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [ngClass]="{ duplicatehighlight: element.duplicatehighlight }"
+          >
             <div *ngIf="!element.editable">{{ element.prenom }}</div>
             <input
               *ngIf="element.editable"
@@ -154,7 +183,11 @@
 
         <ng-container matColumnDef="dateDeNaissance">
           <th mat-header-cell *matHeaderCellDef>Date de Naissance</th>
-          <td mat-cell *matCellDef="let element">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [ngClass]="{ duplicatehighlight: element.duplicatehighlight }"
+          >
             <div *ngIf="!element.editable">
               {{ element.dateDeNaissance | date : "dd/MM/yyyy" }}
             </div>
@@ -388,7 +421,8 @@
           *matRowDef="let row; columns: displayedColumns"
           [ngClass]="{
             'grey-row': row.fam_adh.length === 0,
-            'expanded-row': expandedElements.indexOf(row) !== -1
+            'expanded-row': expandedElements.indexOf(row) !== -1,
+            
           }"
           (click)="row.fam_adh.length > 0 ? toggleFam(row) : null"
         ></tr>

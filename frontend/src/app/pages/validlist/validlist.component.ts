@@ -8,7 +8,14 @@ import {
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import * as XLSX from 'xlsx';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormsModule,
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  FormControl,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -39,6 +46,8 @@ import {
 import { SnackBarService } from '../../snack-bar.service';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatMenuModule } from '@angular/material/menu';
 
 export interface fam_adhData {
   id?: string;
@@ -65,6 +74,7 @@ export interface listing {
   categorie: string;
   email: string;
   highlight?: boolean;
+  duplicatehighlight?: boolean;
   issues?: number;
   highlightRib?: string;
   nbrBenef?: number;
@@ -92,6 +102,8 @@ export interface listing {
     MatNativeDateModule,
     MatSlideToggleModule,
     NgxSpinnerModule,
+    MatCheckboxModule,
+    MatMenuModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './validlist.component.html',
@@ -108,6 +120,10 @@ export interface listing {
   ],
 })
 export class ValidlistComponent implements OnInit {
+  runCheckDuplicates: boolean = true;
+  runVerifyRib: boolean = true;
+  runHighlightChildren: boolean = true;
+  runRemoveSpaces: boolean = true;
   excelWorker!: Worker;
   showSpinner: boolean = false;
   showOnlyIssues: boolean = false;
@@ -196,6 +212,58 @@ export class ValidlistComponent implements OnInit {
 
   ngOnDestro() {
     this.excelWorker.terminate();
+  }
+
+  magicMethod(
+    checkDuplicates: boolean,
+    verifyRib: boolean,
+    highlightChildren: boolean,
+    removeSpaces: boolean
+  ): Promise<void> {
+    this.spinner.show();
+
+    return this.magicMethodAsync(
+      checkDuplicates,
+      verifyRib,
+      highlightChildren,
+      removeSpaces
+    ).then(() => {
+      this.spinner.hide();
+    });
+  }
+
+  private async magicMethodAsync(
+    checkDuplicates: boolean,
+    verifyRib: boolean,
+    highlightChildren: boolean,
+    removeSpaces: boolean
+  ): Promise<void> {
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+
+    try {
+      if (checkDuplicates) {
+        this.checkForDuplicateAssures();
+        await delay(1000);
+      }
+
+      if (verifyRib) {
+        this.verifyAndHighlight();
+        await delay(1000);
+      }
+
+      if (highlightChildren) {
+        this.highlightOldChildren();
+        await delay(1000);
+      }
+
+      if (removeSpaces) {
+        this.removeExtraSpaces();
+        await delay(1000);
+      }
+    } catch (error) {
+      console.error('An error occurred during processing:', error);
+    }
   }
 
   handleWorkerMessage(event: MessageEvent) {
@@ -704,6 +772,58 @@ export class ValidlistComponent implements OnInit {
     if (this.paginator) {
       this.paginator.length = this.dataSource.data.length;
       this.paginator.firstPage();
+    }
+  }
+
+  checkForDuplicateAssures(): void {
+    const uniqueAssures: Set<string> = new Set();
+    const duplicateAssures: listing[] = [];
+
+    this.rearrangedData.forEach((item) => {
+      const key = `${item.nom.toLowerCase()}_${item.prenom.toLowerCase()}_${
+        item.serial
+      }`;
+
+      if (uniqueAssures.has(key)) {
+        duplicateAssures.push(item);
+
+        // Increase the issues count on both duplicates
+        const originalItem = this.rearrangedData.find(
+          (original) =>
+            original.nom.toLowerCase() === item.nom.toLowerCase() &&
+            original.prenom.toLowerCase() === item.prenom.toLowerCase() &&
+            original.serial === item.serial
+        );
+
+        if (originalItem) {
+          originalItem.issues = (originalItem.issues || 0) + 1;
+          originalItem.duplicatehighlight = true; // Highlight the original item
+          item.issues = (item.issues || 0) + 1;
+          item.duplicatehighlight = true; // Highlight the duplicate item
+          this.totalIssues++;
+        }
+      } else {
+        uniqueAssures.add(key);
+      }
+    });
+
+    if (duplicateAssures.length > 0) {
+      // Sort the rearrangedData to bring duplicates near each other
+      this.rearrangedData.sort((a, b) => {
+        const keyA = `${a.nom.toLowerCase()}_${a.prenom.toLowerCase()}_${
+          a.serial
+        }`;
+        const keyB = `${b.nom.toLowerCase()}_${b.prenom.toLowerCase()}_${
+          b.serial
+        }`;
+
+        if (keyA < keyB) return -1;
+        if (keyA > keyB) return 1;
+        return 0;
+      });
+
+      // Optionally, trigger change detection after making changes.
+      this.cdr.detectChanges();
     }
   }
 }
