@@ -81,3 +81,12 @@ html {
 body {
   margin: 1px 1px 1px 1px;
 }
+.mat-mdc-menu-content {
+  background-color: hwb(0 100% 0%);
+  display: flex;
+  flex-direction: column;
+  padding: 0px 15px 5px 5px !important;
+}
+.mat-mdc-menu-panel {
+  background-color: hwb(0 100% 0%);
+}

@@ -6,16 +6,10 @@ import {
   ViewChild,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
+
 import { CommonModule, DatePipe } from '@angular/common';
 import * as XLSX from 'xlsx';
-import {
-  ReactiveFormsModule,
-  FormsModule,
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  FormControl,
-} from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -79,6 +73,7 @@ export interface listing {
   highlightRib?: string;
   nbrBenef?: number;
   editable?: boolean;
+  levHighlight?: boolean;
 }
 
 @Component({
@@ -124,6 +119,7 @@ export class ValidlistComponent implements OnInit {
   runVerifyRib: boolean = true;
   runHighlightChildren: boolean = true;
   runRemoveSpaces: boolean = true;
+  runLevDupl: boolean = false;
   excelWorker!: Worker;
   showSpinner: boolean = false;
   showOnlyIssues: boolean = false;
@@ -214,11 +210,23 @@ export class ValidlistComponent implements OnInit {
     this.excelWorker.terminate();
   }
 
+  multiSelect($event: any) {
+    // this stops the menu from closing
+    $event.stopPropagation();
+    $event.preventDefault();
+
+    // in this case, the check box is controlled by adding the .selected class
+    if ($event.target) {
+      $event.target.classList.toggle('selected');
+    }
+  }
+
   magicMethod(
     checkDuplicates: boolean,
     verifyRib: boolean,
     highlightChildren: boolean,
-    removeSpaces: boolean
+    removeSpaces: boolean,
+    levDupl: boolean
   ): Promise<void> {
     this.spinner.show();
 
@@ -226,7 +234,8 @@ export class ValidlistComponent implements OnInit {
       checkDuplicates,
       verifyRib,
       highlightChildren,
-      removeSpaces
+      removeSpaces,
+      levDupl
     ).then(() => {
       this.spinner.hide();
     });
@@ -236,7 +245,8 @@ export class ValidlistComponent implements OnInit {
     checkDuplicates: boolean,
     verifyRib: boolean,
     highlightChildren: boolean,
-    removeSpaces: boolean
+    removeSpaces: boolean,
+    levDupl: boolean
   ): Promise<void> {
     const delay = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
@@ -259,6 +269,10 @@ export class ValidlistComponent implements OnInit {
 
       if (removeSpaces) {
         this.removeExtraSpaces();
+        await delay(1000);
+      }
+      if (levDupl) {
+        this.levDupl();
         await delay(1000);
       }
     } catch (error) {
@@ -676,11 +690,11 @@ export class ValidlistComponent implements OnInit {
 
   deleteRow(id: string) {
     // Find the index of the row with the given ID
-    const index = this.dataSource.data.findIndex((row) => row.id === id);
+    const index = this.rearrangedData.findIndex((row) => row.id === id);
 
     if (index !== -1) {
       // Delete the main row
-      this.dataSource.data.splice(index, 1);
+      this.rearrangedData.splice(index, 1);
 
       // Update the data source
       this.dataSource = new MatTableDataSource(this.dataSource.data);
@@ -825,5 +839,107 @@ export class ValidlistComponent implements OnInit {
       // Optionally, trigger change detection after making changes.
       this.cdr.detectChanges();
     }
+  }
+
+  /**
+   * Identifies and highlights duplicate entries in the `rearrangedData` array based on the similarity of their names using the Levenshtein distance algorithm.
+   */
+  levDupl(): void {
+    const uniqueAssures: Map<string, listing> = new Map();
+    const duplicateAssures: listing[] = [];
+
+    for (const item of this.rearrangedData) {
+      const processedNom = this.processString(item.nom);
+      const processedPrenom = this.processString(item.prenom);
+
+      const key = `${processedNom}${processedPrenom}`;
+      console.log(uniqueAssures);
+
+      console.log('Storing item with key:', key);
+      const originalItem = uniqueAssures.get(key);
+      console.log('Retrieving item with key:', key);
+
+      if (originalItem) {
+        const levDistance = this.calculateLevenshteinDistance(
+          this.processString(originalItem.nom),
+          processedNom
+        );
+
+        console.log(
+          `Comparing ${originalItem.nom} with ${item.nom}. Levenshtein distance: ${levDistance}`
+        );
+
+        if (levDistance < 3) {
+          duplicateAssures.push(item);
+
+          originalItem.issues = (originalItem.issues || 0) + 1;
+          originalItem.levHighlight = true;
+          item.issues = (item.issues || 0) + 1;
+          item.levHighlight = true;
+          this.totalIssues++;
+
+          console.log(`Duplicate found! ${originalItem.nom} and ${item.nom}`);
+        }
+      } else {
+        console.warn('Original item not found for key:', key);
+      }
+    }
+
+    if (duplicateAssures.length > 0) {
+      this.rearrangedData.sort((a, b) => {
+        const keyA = `${this.processString(a.nom)}${this.processString(
+          a.prenom
+        )}`;
+        const keyB = `${this.processString(b.nom)}${this.processString(
+          b.prenom
+        )}`;
+
+        return keyA.localeCompare(keyB);
+      });
+
+      console.log('Sorted rearrangedData:', this.rearrangedData);
+
+      this.cdr.detectChanges();
+    }
+  }
+
+  processString(input: string): string {
+    // Remove extra spaces, double letters, and non-alphabetical characters
+    const processedString = input
+      .replace(/\s+/g, ' ')
+      .replace(/(.)\1+/g, '$1')
+      .replace(/[^a-zA-Z]/g, '');
+
+    // Concatenate and reorder letters in alphabetical order
+    return processedString.split('').sort().join('');
+  }
+
+  calculateLevenshteinDistance(a: string, b: string): number {
+    const matrix = [];
+
+    let i;
+    for (i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+
+    let j;
+    for (j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (i = 1; i <= b.length; i++) {
+      for (j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+          );
+        }
+      }
+    }
+
+    return matrix[b.length][a.length];
   }
 }
