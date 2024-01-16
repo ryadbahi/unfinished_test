@@ -42,7 +42,7 @@
               (click)="$event.stopPropagation()"
               color="primary"
               [(ngModel)]="runRemoveSpaces"
-              >Exrta espace</mat-checkbox
+              >Extra espace</mat-checkbox
             >
             <mat-checkbox
               (click)="$event.stopPropagation()"
@@ -106,14 +106,7 @@
           />
         </div>
       </div>
-
-      <div *ngIf="totalIssues != 0">
-        <button mat-raised-button (click)="addAgeTag()">Ajout +21</button>
-        <button id="fabbtn" mat-fab (click)="collapseAll()">
-          <mat-icon>keyboard_arrow_up</mat-icon>
-        </button>
-      </div>
-
+      <button mat-raised-button (click)="addAgeTag()">Ajout +21</button>
       <div
         class="blocdroit"
         *ngIf="totalIssues != 0"
@@ -122,7 +115,13 @@
         <div class="rstbtn">
           <mat-icon (click)="resetIssues()">refresh</mat-icon>
         </div>
-        <div>Total des anomalies : {{ totalIssues }}</div>
+        <div
+          matBadge="{{ totalIssues }}"
+          matBadgeOverlap="false"
+          matBadgeColor="warn"
+        >
+          Anomalie(s)
+        </div>
       </div></mat-toolbar
     ></DIV
   >
@@ -134,6 +133,16 @@
         (change)="applyFilterByIssues()"
         >Anomalies seulment ?</mat-slide-toggle
       >
+    </div>
+    <div *ngIf="totalIssues != 0">
+      <button id="fabbtn" mat-fab (click)="collapseExpandAll()">
+        <ng-container *ngIf="expandedElements.length > 0; else expandIcon">
+          <mat-icon>keyboard_arrow_up</mat-icon>
+        </ng-container>
+        <ng-template #expandIcon>
+          <mat-icon>keyboard_arrow_down</mat-icon>
+        </ng-template>
+      </button>
     </div>
   </mat-toolbar>
   <div class="form_container">
@@ -168,11 +177,16 @@
         <ng-container matColumnDef="lienBnf">
           <th mat-header-cell *matHeaderCellDef>Lien</th>
           <td
+            style="padding-right: 0; min-width: none; width: 5px"
             mat-cell
             *matCellDef="let element"
             [ngClass]="{
               duplicatehighlight: element.duplicatehighlight
             }"
+            matBadge="{{ element.issues }}"
+            [matBadgeHidden]="element.issues === 0"
+            matBadgeOverlap="true"
+            matBadgeColor="warn"
           >
             <div>{{ element.lienBnf }}</div>
           </td>
@@ -181,6 +195,7 @@
         <ng-container matColumnDef="nom">
           <th mat-header-cell *matHeaderCellDef>Nom</th>
           <td
+            style="padding-left: 25px"
             mat-cell
             *matCellDef="let element"
             [ngClass]="{ duplicatehighlight: element.duplicatehighlight }"
@@ -274,17 +289,7 @@
             />
           </td>
         </ng-container>
-        <ng-container matColumnDef="issues">
-          <th mat-header-cell *matHeaderCellDef>issues</th>
-          <td
-            class="issuesCol"
-            mat-cell
-            *matCellDef="let element"
-            [ngClass]="{ issuescolor: element.issues > 0 }"
-          >
-            {{ element.issues }}
-          </td>
-        </ng-container>
+
         <ng-container matColumnDef="nbrBenef">
           <th mat-header-cell *matHeaderCellDef>Nbr de bénéf</th>
           <td

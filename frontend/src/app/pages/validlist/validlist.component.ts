@@ -42,6 +42,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatBadgeModule } from '@angular/material/badge';
 
 export interface fam_adhData {
   id?: string;
@@ -99,6 +100,7 @@ export interface listing {
     NgxSpinnerModule,
     MatCheckboxModule,
     MatMenuModule,
+    MatBadgeModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './validlist.component.html',
@@ -136,7 +138,6 @@ export class ValidlistComponent implements OnInit {
   displayedColumns: string[] = [
     'serial',
     'lienBnf',
-
     'nom',
     'prenom',
     'dateDeNaissance',
@@ -144,7 +145,6 @@ export class ValidlistComponent implements OnInit {
     'rib',
     'categorie',
     'email',
-    'issues',
     'actions',
   ];
 
@@ -195,7 +195,8 @@ export class ValidlistComponent implements OnInit {
     }) => {
       if (data.type === 'success') {
         this.rearrangedData = data.data || [];
-        this.dataSource.data = this.rearrangedData; // Set data property instead of creating a new instance
+        this.dataSource.data = this.rearrangedData;
+        console.log(this.rearrangedData);
         this.dataSource.paginator = this.paginator;
         this.cdr.detectChanges();
       } else if (data.type === 'error') {
@@ -210,18 +211,7 @@ export class ValidlistComponent implements OnInit {
     this.excelWorker.terminate();
   }
 
-  multiSelect($event: any) {
-    // this stops the menu from closing
-    $event.stopPropagation();
-    $event.preventDefault();
-
-    // in this case, the check box is controlled by adding the .selected class
-    if ($event.target) {
-      $event.target.classList.toggle('selected');
-    }
-  }
-
-  magicMethod(
+  async magicMethod(
     checkDuplicates: boolean,
     verifyRib: boolean,
     highlightChildren: boolean,
@@ -229,6 +219,7 @@ export class ValidlistComponent implements OnInit {
     levDupl: boolean
   ): Promise<void> {
     this.spinner.show();
+    this.resetIssues();
 
     return this.magicMethodAsync(
       checkDuplicates,
@@ -451,31 +442,41 @@ export class ValidlistComponent implements OnInit {
     const flattenedData: any[] = [];
 
     data.forEach((item) => {
-      // Add the main item
+      // Determine the value for the new column based on nbrBenef
+      const situaFam = item.fam_adh && item.fam_adh.length > 0 ? 'M' : 'C';
+
+      // Add the main item with the new column
       flattenedData.push({
-        serial: item.serial,
-        lienBnf: item.lienBnf,
-        num: item.num,
-        nom: item.nom,
-        prenom: item.prenom,
-        dateDeNaissance: this.formatDate(item.dateDeNaissance),
-        rib: item.rib,
+        Serial: item.serial,
+        'Type Assuré/Bénéficiaire': item.lienBnf,
+        'Num employé': item.num,
+        Nom: item.nom,
+        Prénom: item.prenom,
+        'Date de Naissance': this.formatDate(item.dateDeNaissance),
+        'Situatio familiale': situaFam,
+        "Nbr d'enfants": item.fam_adh.length,
+        Téléphone: '',
+        RIB: item.rib,
+        CATEGORIE: item.categorie,
+        Email: item.email,
+
         // Include other main properties as needed
       });
+      console.log(item.nbrBenef);
 
       // Add the nested items directly under the main item
       if (item.fam_adh && item.fam_adh.length > 0) {
         item.fam_adh.forEach((child, index) => {
+          // For child items, set the new column as an empty string
           flattenedData.push({
-            serial: item.serial,
-            lienBnf: child.lienBnf,
-            num: child.num,
-            nom: child.nom,
-            prenom: child.prenom,
-            dateDeNaissance: this.formatDate(child.dateDeNaissance),
-
-            // Include other nested properties as needed
+            Serial: item.serial,
+            'Type Assuré/Bénéficiaire': child.lienBnf,
+            'Num employé': child.num,
+            Nom: child.nom,
+            Prénom: child.prenom,
+            'Date de Naissance': this.formatDate(child.dateDeNaissance),
           });
+          console.log(item.fam_adh.length);
         });
       }
     });
@@ -737,8 +738,18 @@ export class ValidlistComponent implements OnInit {
     }
   }
 
-  collapseAll() {
-    this.expandedElements = [];
+  collapseExpandAll() {
+    if (this.expandedElements.length === 0) {
+      // If all rows are collapsed, expand them based on fam_adh
+      this.dataSource.data.forEach((element) => {
+        if (element.fam_adh && element.fam_adh.length > 0) {
+          this.expandedElements.push(element);
+        }
+      });
+    } else {
+      // If some rows are expanded, collapse all
+      this.expandedElements = [];
+    }
   }
 
   resetIssues() {

@@ -162,7 +162,9 @@ body {
 .hiddenTB {
   background-color: unset;
   margin: 0 0 10px 0;
-  display: inline-block;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
 }
 .icon {
   height: 40px;
@@ -174,6 +176,7 @@ body {
 }
 .blocdroit {
   display: flex;
+  margin-right: 10px;
 }
 .magicbtn {
   border-top-right-radius: 0;

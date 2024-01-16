@@ -90,3 +90,7 @@ body {
 .mat-mdc-menu-panel {
   background-color: hwb(0 100% 0%);
 }
+.mat-badge.mat-badge {
+  overflow: visible;
+  z-index: 2;
+}
