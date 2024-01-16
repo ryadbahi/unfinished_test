@@ -8,7 +8,7 @@
   </div>
   <div>
     <mat-toolbar class="matoolB">
-      <div class="magiclist">
+      <div class="magiclist" *ngIf="dataSource && dataSource.data.length > 0">
         <button
           class="magicbtn"
           mat-raised-button
@@ -67,7 +67,8 @@
               (click)="$event.stopPropagation()"
               color="primary"
               [(ngModel)]="runLevDupl"
-              >Recherche doublon</mat-checkbox
+              disabled
+              >Recherche doublon **Test**</mat-checkbox
             >
           </mat-menu>
         </div>

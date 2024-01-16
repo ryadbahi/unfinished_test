@@ -696,8 +696,8 @@ export class ValidlistComponent implements OnInit {
       // Delete the main row
       this.rearrangedData.splice(index, 1);
 
-      // Update the data source
-      this.dataSource = new MatTableDataSource(this.dataSource.data);
+      // Apply the filter again to maintain the filter state
+      this.applyFilterByIssues();
 
       // Trigger change detection
       this.cdr.detectChanges();
