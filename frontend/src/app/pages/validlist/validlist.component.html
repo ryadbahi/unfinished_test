@@ -75,6 +75,7 @@
       </div>
 
       <button
+        style="border-radius: 20px; width: 100px; height: 35px"
         mat-raised-button
         (click)="fileInput.click()"
         *ngIf="!dataSource || dataSource.data.length === 0"
@@ -94,7 +95,7 @@
     </mat-toolbar>
   </div>
   <DIV class="filter">
-    <mat-toolbar class="matoolB">
+    <mat-toolbar class="matoolB" id="scndtb">
       <div class="Filters">
         <div class="searchField">
           <input
@@ -107,6 +108,10 @@
         </div>
       </div>
       <button mat-raised-button (click)="addAgeTag()">Ajout +21</button>
+      <button (click)="deleteDuplicates()">delete dup</button>
+      <button mat-raised-button (click)="displayCurrentIssues()">
+        disp issue
+      </button>
       <div
         class="blocdroit"
         *ngIf="totalIssues != 0"
@@ -116,7 +121,7 @@
           <mat-icon (click)="resetIssues()">refresh</mat-icon>
         </div>
         <div
-          matBadge="{{ totalIssues }}"
+          matBadge="{{ displayCurrentIssues() }}"
           matBadgeOverlap="false"
           matBadgeColor="warn"
         >

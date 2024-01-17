@@ -129,6 +129,7 @@ export class ValidlistComponent implements OnInit {
   page: number = 0;
   pageSize: number = 15;
   totalIssues: number = 0;
+  displayedIssues: number = 0;
   expandedElements: listing[] = [];
   dataSource = new MatTableDataSource<listing>();
 
@@ -851,10 +852,42 @@ export class ValidlistComponent implements OnInit {
       this.cdr.detectChanges();
     }
   }
+  deleteDuplicates(): void {
+    const serialCounts: Map<number, number> = new Map();
 
-  /**
-   * Identifies and highlights duplicate entries in the `rearrangedData` array based on the similarity of their names using the Levenshtein distance algorithm.
-   */
+    // Count occurrences of each serial number
+    this.rearrangedData.forEach((item) => {
+      const serial = item.serial;
+      serialCounts.set(serial, (serialCounts.get(serial) || 0) + 1);
+    });
+
+    // Filter out rows with more than one occurrence of serial number
+    const filteredData = this.rearrangedData.filter((item) => {
+      const serialCount = serialCounts.get(item.serial) || 0;
+      return serialCount <= 1;
+    });
+
+    // Update the data array with the filtered data
+    this.rearrangedData = filteredData;
+
+    // Update the MatTableDataSource
+    this.dataSource.data = this.rearrangedData;
+
+    // Optionally, trigger change detection after making changes.
+    this.cdr.detectChanges();
+
+    // Update the paginator if you are using one
+    if (this.paginator) {
+      this.paginator.length = this.dataSource.data.length;
+      this.paginator.firstPage();
+    }
+  }
+
+  displayCurrentIssues(): number {
+    return this.rearrangedData.reduce((sum, item) => {
+      return sum + (item.issues || 0);
+    }, 0);
+  }
   levDupl(): void {
     const uniqueAssures: Map<string, listing> = new Map();
     const duplicateAssures: listing[] = [];
