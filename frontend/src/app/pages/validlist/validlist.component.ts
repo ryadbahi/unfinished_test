@@ -45,7 +45,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 
 export interface fam_adhData {
-  id?: string;
+  id: string;
   serial: number;
   lienBnf: string;
   num: string;
@@ -57,7 +57,7 @@ export interface fam_adhData {
 }
 
 export interface listing {
-  id?: string;
+  id: string;
   fam_adh: fam_adhData[];
   serial: number;
   lienBnf: string;
@@ -117,10 +117,16 @@ export interface listing {
   ],
 })
 export class ValidlistComponent implements OnInit {
-  runCheckDuplicates: boolean = true;
+  originalDataMap: { [key: string]: listing } = {};
+  originalFamDataMap: { [key: string]: fam_adhData } = {};
+  inputValue = '';
+  inputWidth = 50;
+  runAddAgeTag: boolean = false;
+  runDeleteDuplicates: boolean = false;
+  runRemoveSpaces: boolean = true;
+  runCheckDuplicates: boolean = false;
   runVerifyRib: boolean = true;
   runHighlightChildren: boolean = true;
-  runRemoveSpaces: boolean = true;
   runLevDupl: boolean = false;
   excelWorker!: Worker;
   showSpinner: boolean = false;
@@ -212,32 +218,34 @@ export class ValidlistComponent implements OnInit {
     this.excelWorker.terminate();
   }
 
-  async magicMethod(
+  //input adjust
+  adjustWidth() {
+    this.inputWidth = this.inputValue.length * 8;
+  }
+
+  async checkupListing(
     checkDuplicates: boolean,
     verifyRib: boolean,
     highlightChildren: boolean,
-    removeSpaces: boolean,
     levDupl: boolean
   ): Promise<void> {
     this.spinner.show();
     this.resetIssues();
 
-    return this.magicMethodAsync(
+    return this.checkupListingAsync(
       checkDuplicates,
       verifyRib,
       highlightChildren,
-      removeSpaces,
       levDupl
     ).then(() => {
       this.spinner.hide();
     });
   }
 
-  private async magicMethodAsync(
+  private async checkupListingAsync(
     checkDuplicates: boolean,
     verifyRib: boolean,
     highlightChildren: boolean,
-    removeSpaces: boolean,
     levDupl: boolean
   ): Promise<void> {
     const delay = (ms: number) =>
@@ -258,13 +266,57 @@ export class ValidlistComponent implements OnInit {
         this.highlightOldChildren();
         await delay(1000);
       }
-
-      if (removeSpaces) {
-        this.removeExtraSpaces();
-        await delay(1000);
-      }
       if (levDupl) {
         this.levDupl();
+        await delay(1000);
+      }
+    } catch (error) {
+      console.error('An error occurred during processing:', error);
+    }
+  }
+
+  async correctListing(
+    addAgeTag: boolean,
+    deleteDuplicates: boolean,
+    removeSpaces: boolean
+  ): Promise<void> {
+    this.spinner.show();
+    this.resetIssues();
+
+    return this.correctListingAsync(
+      addAgeTag,
+      deleteDuplicates,
+      removeSpaces
+    ).then(() => {
+      this.spinner.hide();
+      this.checkupListing(
+        this.runCheckDuplicates,
+        this.runVerifyRib,
+        this.runHighlightChildren,
+        this.runLevDupl
+      );
+    });
+  }
+
+  private async correctListingAsync(
+    addAgeTag: boolean,
+    deleteDuplicates: boolean,
+    removeSpaces: boolean
+  ): Promise<void> {
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+
+    try {
+      if (addAgeTag) {
+        this.addAgeTag();
+        await delay(1000);
+      }
+      if (deleteDuplicates) {
+        this.deleteDuplicates();
+        await delay(1000);
+      }
+      if (removeSpaces) {
+        this.removeExtraSpaces();
         await delay(1000);
       }
     } catch (error) {
@@ -377,7 +429,6 @@ export class ValidlistComponent implements OnInit {
   }
 
   checkItemProperties(item: any, filterValue: string): boolean {
-    // Customize this function to define how you want to filter the data
     return (
       item.lienBnf.toLowerCase().includes(filterValue) ||
       item.num.toLowerCase().includes(filterValue) ||
@@ -667,12 +718,12 @@ export class ValidlistComponent implements OnInit {
     }
   }
 
-  //CRUD LOGIC__________________________
   toggleEdit(element: listing) {
     element.editable = !element.editable;
 
-    if (!element.editable) {
-      this.resetRowData(element);
+    if (element.editable) {
+      // Store the original data when entering edit mode
+      this.originalDataMap[element.id] = { ...element }; // Using spread operator for shallow copy
     }
   }
 
@@ -686,7 +737,15 @@ export class ValidlistComponent implements OnInit {
     element.editable = false;
   }
 
-  resetRowData(element: listing) {}
+  resetRowData(element: listing) {
+    const originalItem = this.originalDataMap[element.id];
+
+    if (originalItem) {
+      Object.assign(element, originalItem);
+
+      element.editable = false;
+    }
+  }
 
   saveRowChanges(element: listing) {}
 
@@ -711,11 +770,26 @@ export class ValidlistComponent implements OnInit {
   toggleFamEdit(fam: fam_adhData) {
     fam.editable = !fam.editable;
 
-    if (!fam.editable) {
-      this.resetFamRowData(fam);
+    if (fam.editable) {
+      this.originalFamDataMap[fam.id] = { ...fam };
+
+      console.log(this.originalFamDataMap);
     }
   }
-  resetFamRowData(fam: fam_adhData) {}
+
+  cancelFamEdit(fam: fam_adhData) {
+    this.resetFamRowData(fam);
+    fam.editable = false;
+  }
+
+  resetFamRowData(fam: fam_adhData) {
+    const originalItem = this.originalFamDataMap[fam.id];
+    if (originalItem) {
+      Object.assign(fam, originalItem);
+
+      fam.editable = false;
+    }
+  }
 
   saveFamChanges(fam: fam_adhData) {
     this.saveFamrowChanges(fam);
