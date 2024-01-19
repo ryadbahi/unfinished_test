@@ -29,7 +29,6 @@ import {
   MatDatepickerModule,
 } from '@angular/material/datepicker';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   animate,
   state,
@@ -45,7 +44,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 
 export interface fam_adhData {
-  id: string;
+  id?: string;
   serial: number;
   lienBnf: string;
   num: string;
@@ -57,7 +56,7 @@ export interface fam_adhData {
 }
 
 export interface listing {
-  id: string;
+  id?: string;
   fam_adh: fam_adhData[];
   serial: number;
   lienBnf: string;
@@ -166,7 +165,6 @@ export class ValidlistComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatDatepicker) datepicker!: MatDatepicker<Date>[];
   @ViewChild(MatTable) table!: MatTable<any>;
-  datePickersArray: MatDatepicker<Date>[] = [];
 
   private dragCounter = 0;
   constructor(
@@ -216,11 +214,6 @@ export class ValidlistComponent implements OnInit {
 
   ngOnDestro() {
     this.excelWorker.terminate();
-  }
-
-  //input adjust
-  adjustWidth() {
-    this.inputWidth = this.inputValue.length * 8;
   }
 
   async checkupListing(
@@ -345,15 +338,17 @@ export class ValidlistComponent implements OnInit {
     this.spinner.hide();
   }
 
-  readExcelFile(file: File) {
+  readExcelFile(file: File, operationType: string) {
     this.spinner.show();
-    this.excelWorker.postMessage({ file: file });
+    this.excelWorker.postMessage({ file: file, method: operationType });
   }
   onFileInputChange(event: Event) {
     const fileInput = event.target as HTMLInputElement;
     const selectedFile = fileInput.files?.[0];
     if (selectedFile) {
-      this.readExcelFile(selectedFile);
+      // Choose the operationType based on the file or some other condition
+      const operationType = 'readExcel'; // or 'readDptSinExcel'
+      this.readExcelFile(selectedFile, operationType);
     }
   }
 
@@ -656,7 +651,8 @@ export class ValidlistComponent implements OnInit {
 
     if (event.dataTransfer) {
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
-        this.readExcelFile(event.dataTransfer.files[i]);
+        const operationType = 'readExcel';
+        this.readExcelFile(event.dataTransfer.files[i], operationType);
       }
     }
   }
@@ -719,11 +715,15 @@ export class ValidlistComponent implements OnInit {
   }
 
   toggleEdit(element: listing) {
-    element.editable = !element.editable;
+    if (element && element.id !== undefined) {
+      element.editable = !element.editable;
 
-    if (element.editable) {
-      // Store the original data when entering edit mode
-      this.originalDataMap[element.id] = { ...element }; // Using spread operator for shallow copy
+      if (element.editable) {
+        // Store the original data when entering edit mode
+        this.originalDataMap[element.id] = { ...element }; // Using spread operator for shallow copy
+      }
+    } else {
+      console.error('Element or element.id is undefined.');
     }
   }
 
@@ -738,12 +738,13 @@ export class ValidlistComponent implements OnInit {
   }
 
   resetRowData(element: listing) {
-    const originalItem = this.originalDataMap[element.id];
+    const originalItem = this.originalDataMap[element.id!];
 
-    if (originalItem) {
+    if (originalItem !== undefined && element.id !== undefined) {
       Object.assign(element, originalItem);
-
       element.editable = false;
+    } else {
+      console.error('Original item or element.id is undefined.');
     }
   }
 
@@ -768,12 +769,15 @@ export class ValidlistComponent implements OnInit {
   //FAM FUNCTIONS _______________________________
 
   toggleFamEdit(fam: fam_adhData) {
-    fam.editable = !fam.editable;
+    if (fam && fam.id !== undefined) {
+      fam.editable = !fam.editable;
 
-    if (fam.editable) {
-      this.originalFamDataMap[fam.id] = { ...fam };
-
-      console.log(this.originalFamDataMap);
+      if (fam.editable) {
+        this.originalFamDataMap[fam.id] = { ...fam };
+        console.log(this.originalFamDataMap);
+      }
+    } else {
+      console.error('Family or family.id is undefined.');
     }
   }
 
@@ -783,11 +787,13 @@ export class ValidlistComponent implements OnInit {
   }
 
   resetFamRowData(fam: fam_adhData) {
-    const originalItem = this.originalFamDataMap[fam.id];
-    if (originalItem) {
-      Object.assign(fam, originalItem);
+    const originalItem = this.originalFamDataMap[fam.id!];
 
+    if (originalItem !== undefined && fam.id !== undefined) {
+      Object.assign(fam, originalItem);
       fam.editable = false;
+    } else {
+      console.error('Original family item or fam.id is undefined.');
     }
   }
 

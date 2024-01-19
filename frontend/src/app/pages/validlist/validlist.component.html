@@ -192,12 +192,7 @@
       *ngIf="dataSource && dataSource.data.length > 0"
       style="border-radius: 10px; overflow: hidden"
     >
-      <table
-        mat-table
-        [dataSource]="dataSource"
-        mat-table
-        multiTemplateDataRows
-      >
+      <table mat-table [dataSource]="dataSource" multiTemplateDataRows>
         <ng-container matColumnDef="serial">
           <th mat-header-cell *matHeaderCellDef>No.</th>
           <td
@@ -395,7 +390,6 @@
                       [style.width.px]="inputWidth"
                       *ngIf="fam.editable"
                       [(ngModel)]="fam.serial"
-                      (ngModelChange)="adjustWidth()"
                     />
                   </td>
                 </ng-container>
@@ -504,7 +498,6 @@
           [ngClass]="{
             'grey-row': row.fam_adh.length === 0,
             'expanded-row': expandedElements.indexOf(row) !== -1,
-            
           }"
           (click)="row.fam_adh.length > 0 ? toggleFam(row) : null"
         ></tr>

@@ -68,5 +68,10 @@ export class DefaultSidenavComponent {
       label: 'Vérif listing',
       route: 'validlist',
     },
+    {
+      icon: 'local_hospital',
+      label: 'Vérif Dpt Sinistre',
+      route: 'verifsin',
+    },
   ]);
 }
