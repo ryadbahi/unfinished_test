@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import {
@@ -6,15 +6,17 @@ import {
   provideAnimations,
 } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
-import { DatePipe } from '@angular/common';
+import { DatePipe, registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 import { provideToastr } from 'ngx-toastr';
 import { MatTableModule } from '@angular/material/table';
-import { MAT_DATE_LOCALE } from '@angular/material/core';
+
 import { NgxSpinnerModule } from 'ngx-spinner';
+registerLocaleData(localeFr, 'fr');
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' },
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
     provideRouter(routes, withViewTransitions()),
     provideAnimations(),
     BrowserAnimationsModule,

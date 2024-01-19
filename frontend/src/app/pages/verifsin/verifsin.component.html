@@ -23,14 +23,42 @@
           style="display: none"
         />
       </button>
+      <div class="anom">
+        <div
+          *ngIf="displayCurrentIssues() != 0"
+          style="margin-right: 10px; color: red; font-weight: bolder"
+          matBadge="{{ displayCurrentIssues() }}"
+          matBadgeOverlap="false"
+          matBadgeColor="warn"
+        >
+          <div>Anomalie(s)</div>
+        </div>
+      </div>
     </mat-toolbar>
   </div>
+  <mat-toolbar class="hiddenTB">
+    <div class="toggle">
+      <mat-slide-toggle
+        class="toggle"
+        [(ngModel)]="showOnlyIssues"
+        (change)="applyFilterByIssues()"
+        >Anomalies seulment ?</mat-slide-toggle
+      >
+    </div></mat-toolbar
+  >
 
   <div class="mat-elevation-z8" style="border-radius: 10px; overflow: hidden">
     <table mat-table [dataSource]="dataSource">
       <ng-container matColumnDef="indx">
         <th mat-header-cell *matHeaderCellDef>No.</th>
-        <td mat-cell *matCellDef="let element">
+        <td
+          mat-cell
+          *matCellDef="let element"
+          matBadge="{{ element.issues }}"
+          [matBadgeHidden]="element.issues === 0"
+          matBadgeOverlap="true"
+          matBadgeColor="warn"
+        >
           <div>{{ element.indx }}</div>
         </td>
       </ng-container>
@@ -73,27 +101,43 @@
       <ng-container matColumnDef="acte">
         <th mat-header-cell *matHeaderCellDef>Acte</th>
         <td mat-cell *matCellDef="let element">
-          <div>{{ element.acte }}</div>
+          <div [matTooltip]="element.acte">
+            {{ element.acte.split(":")[0] }}
+          </div>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="frais">
         <th mat-header-cell *matHeaderCellDef>Frais éxpo.</th>
-        <td mat-cell *matCellDef="let element">
-          <div>{{ element.frais | number : "1.2-2" }}</div>
+        <td
+          mat-cell
+          *matCellDef="let element"
+          [ngStyle]="{ color: element.highlightAmount }"
+        >
+          <div style="float: right">
+            {{ element.frais | number : "1.2-2" }}
+          </div>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="rbt">
         <th mat-header-cell *matHeaderCellDef>Rembour.</th>
-        <td mat-cell *matCellDef="let element">
-          <div>{{ element.rbt | number }}</div>
+        <td
+          mat-cell
+          *matCellDef="let element"
+          [ngStyle]="{ color: element.highlightAmount }"
+        >
+          <div style="float: right">{{ element.rbt | number : "1.2-2" }}</div>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="rib">
         <th mat-header-cell *matHeaderCellDef>RIB</th>
-        <td mat-cell *matCellDef="let element">
+        <td
+          mat-cell
+          *matCellDef="let element"
+          [ngStyle]="{ color: element.highlightRib }"
+        >
           <div>{{ element.rib }}</div>
         </td>
       </ng-container>
@@ -105,13 +149,6 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="statut">
-        <th mat-header-cell *matHeaderCellDef>Statut</th>
-        <td mat-cell *matCellDef="let element">
-          <div>{{ element.statut }}</div>
-        </td>
-      </ng-container>
-
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
@@ -120,9 +157,14 @@
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" style="width: fit-content">
+          Uploader ou glissez le dépôt sinistre (Excel)
+        </td>
+      </tr>
     </table>
     <mat-paginator
-      [pageSizeOptions]="[15, 30, dataSource.data.length]"
+      [pageSizeOptions]="[25, 50, dataSource.data.length]"
       [pageSize]="pageSize"
       [pageIndex]="page"
       [length]="dataSource.data.length"

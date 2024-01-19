@@ -1,62 +1,21 @@
-.toast-container .ngx-toastr {
-  overflow: hidden;
-  visibility: hidden;
-  min-width: 50px !important;
-  max-width: 350px;
-  height: 50px;
-  margin: auto auto auto 20px;
-  color: #fff;
-  text-align: center;
-  border-radius: 20px !important;
-  position: fixed;
-  z-index: 1;
-  right: 0; /* Start off-screen from the right */
-  bottom: -50px; /* Start off-screen from the bottom */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  font-weight: bold;
-  font-size: 15px;
-  white-space: nowrap;
-  animation: toast-animation 10s ease-in-out;
+* {
+  min-width: 0;
 }
 
-@keyframes toast-animation {
-  0% {
-    visibility: visible;
-    bottom: -100px; /* Move up from the bottom */
-    width: 30px;
-  }
-  10% {
-    width: 50px;
-  }
-  10%,
-  50% {
-    bottom: 50px;
-    width: 250px;
-  }
-  60% {
-    width: 50px;
-    bottom: 50px;
-  }
-  90%,
-  100% {
-    bottom: -80px;
-    width: 50px; /* Move back down to the bottom */
-  }
-}
-
-.toast-container .ngx-toastr.show {
-  visibility: visible;
-  animation: none; /* Disable the default animation while showing */
-}
-
-.toast-success {
-  background-color: #51a351;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 html {
   background-image: url("/assets/background.png");
   background-size: cover;
 }
+body {
+  margin: 0;
+  min-height: 98dvh;
+}
+
 .blue-snackbar.mat-mdc-snack-bar-container {
   .mdc-snackbar__surface {
     background: rgba(255, 255, 255, 0.966);
@@ -78,9 +37,7 @@ html {
 .mat-spinner circle {
   stroke: #bada55;
 }
-body {
-  margin: 1px 1px 1px 1px;
-}
+
 .mat-mdc-menu-content {
   background-color: hwb(0 100% 0%);
   display: flex;

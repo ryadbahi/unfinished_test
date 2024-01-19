@@ -658,12 +658,11 @@ export class ValidlistComponent implements OnInit {
   }
 
   verifyRIB(rib: string): boolean {
-    // Extracting parts
     const bankCode = rib.substring(0, 3);
     const agency = rib.substring(3, 8);
-    const accountNumber = rib.substring(8, 18); // Adjusted to 18
-    const inputKey = rib.substring(18); // Convert input key to string
-
+    const accountNumber = rib.substring(8, 18);
+    const inputKey = rib.substring(18);
+    //_______________CCP___________________________
     if (bankCode === '007') {
       const ccpstep1 = parseInt(accountNumber);
       const ccpstep2 = ccpstep1 * 100;
@@ -674,10 +673,9 @@ export class ValidlistComponent implements OnInit {
 
       return calculateCcpKey === inputKey;
     } else {
-      // Concatenate agency and account number, then convert to number
       const concatenatedNumber = parseInt(agency + accountNumber);
 
-      // Perform the described calculations
+      //_______________BANK___________________________
       const step1Result = concatenatedNumber * 100;
       const step2Result = step1Result / 97;
       const step3Result = Math.floor(step2Result);

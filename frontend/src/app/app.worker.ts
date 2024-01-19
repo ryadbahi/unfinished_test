@@ -140,7 +140,7 @@ function processDptSinSheet(sheet: XLSX.WorkSheet): dptsin[] {
   let dptData: dptsin[] = [];
   if (sheet['!ref']) {
     let range = XLSX.utils.decode_range(sheet['!ref']);
-    for (let i = range.s.r + 1; i <= range.e.r; i++) {
+    for (let i = range.s.r + 1; i <= range.e.r - 1; i++) {
       let id = sinId++;
       let indx = sheet[XLSX.utils.encode_cell({ r: i, c: 0 })]?.v;
       let assu_nom = sheet[XLSX.utils.encode_cell({ r: i, c: 1 })]?.v;
