@@ -136,17 +136,7 @@
   </div>
   <DIV class="filter">
     <mat-toolbar class="matoolB" id="scndtb">
-      <div class="Filters">
-        <div class="searchField">
-          <input
-            id="search"
-            matInput
-            (keyup)="applyFilter($event)"
-            placeholder="Recherche...."
-            #input
-          />
-        </div>
-      </div>
+      <div class="Filters"></div>
 
       <div
         class="blocdroit"
@@ -163,8 +153,8 @@
         >
           Anomalie(s)
         </div>
-      </div></mat-toolbar
-    ></DIV
+      </div>
+    </mat-toolbar></DIV
   >
   <mat-toolbar class="hiddenTB">
     <div class="toggle">
@@ -184,6 +174,16 @@
           <mat-icon>keyboard_arrow_down</mat-icon>
         </ng-template>
       </button>
+    </div>
+
+    <div class="searchField">
+      <input
+        id="search"
+        matInput
+        (keyup)="applyFilter($event)"
+        placeholder="Recherche...."
+        #input
+      />
     </div>
   </mat-toolbar>
   <div class="form_container">

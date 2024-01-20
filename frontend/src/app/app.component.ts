@@ -15,6 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatdialogComponent } from './components/matdialog/matdialog.component';
 import { MultiaddComponent } from './pages/multiadd/multiadd.component';
+import { CdkDrag } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-root',
@@ -37,6 +38,7 @@ import { MultiaddComponent } from './pages/multiadd/multiadd.component';
     MatTableModule,
     MatdialogComponent,
     MultiaddComponent,
+    CdkDrag,
   ],
   templateUrl: './app.component.html',
 

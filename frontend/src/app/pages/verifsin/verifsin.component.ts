@@ -16,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSortModule } from '@angular/material/sort';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 
 import {
   MatTable,
@@ -87,7 +87,8 @@ export interface dptsin {
 })
 export class VerifsinComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatDatepicker) datepicker!: MatDatepicker<Date>[];
+  @ViewChild(MatSort) sort!: MatSort;
+
   @ViewChild(MatTable) table!: MatTable<any>;
 
   dataSource = new MatTableDataSource<dptsin>();
@@ -122,6 +123,10 @@ export class VerifsinComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.sort) {
+      this.dataSource.sort = this.sort;
+    }
+
     this.dptData = this.ExcelData || [];
     this.dataSource = new MatTableDataSource<dptsin>(this.dptData);
     this.dataSource.paginator = this.paginator;

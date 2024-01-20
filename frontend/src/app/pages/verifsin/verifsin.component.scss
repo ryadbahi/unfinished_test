@@ -24,9 +24,6 @@
   overflow: hidden;
   white-space: pre-line;
 }
-body {
-  margin: -5px 0 0 10px;
-}
 
 .mat-mdc-table {
   background-color: hwb(0 100% 0% / 0.3);
@@ -50,8 +47,10 @@ body {
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   justify-content: space-between;
   border-radius: 10px !important;
-  margin: 10px 0 10px 0;
+
   font-size: 12px;
+  margin: 4px 4px 4px 60px;
+  width: auto;
 }
 .matoolB,
 .mat-mdc-paginator {

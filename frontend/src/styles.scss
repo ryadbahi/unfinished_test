@@ -12,7 +12,7 @@ html {
   background-size: cover;
 }
 body {
-  margin: 0;
+  margin: 4px;
   min-height: 98dvh;
 }
 
@@ -39,15 +39,17 @@ body {
 }
 
 .mat-mdc-menu-content {
-  background-color: hwb(0 100% 0%);
+  background-color: rgba(255, 255, 255, 0.766);
   display: flex;
   flex-direction: column;
   padding: 0px 15px 5px 5px !important;
+  border-radius: 20px;
 }
 .mat-mdc-menu-panel {
-  background-color: hwb(0 100% 0%);
+  background-color: rgba(255, 255, 255, 0.766);
+  border-radius: 20px !important;
 }
 .mat-badge.mat-badge {
-  overflow: visible;
+  overflow: visible !important;
   z-index: 2;
 }

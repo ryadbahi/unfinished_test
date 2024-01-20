@@ -1,22 +1,38 @@
-<body>
+<!--<body>
+  <button
+    mat-icon-button
+    (click)="collapsed.set(!collapsed())"
+    style="float: inline-end; margin-right: 15%"
+  >
+    <mat-icon>menu</mat-icon>
+  </button>
   <mat-sidenav-container>
     <mat-sidenav
-      opened
-      mode="side"
+      mode="over"
       [style.width]="sidenavWidth()"
       style="background-color: hwb(0 100% 0% / 0.6)"
     >
-      <button
-        mat-icon-button
-        (click)="collapsed.set(!collapsed())"
-        style="float: inline-end; margin-right: 15%"
-      >
-        <mat-icon>menu</mat-icon>
-      </button>
       <app-default-sidenav [collapsed]="collapsed()" />
     </mat-sidenav>
     <mat-sidenav-content class="content" [style.margin-left]="sidenavWidth()">
-      <router-outlet></router-outlet>
     </mat-sidenav-content>
   </mat-sidenav-container>
+-->
+<body>
+  <div class="menudrawer">
+    <button
+      mat-mini-fab
+      [matMenuTriggerFor]="belowMenu"
+      class="menudrp"
+      color="basic"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+    <div>
+      <mat-menu #belowMenu="matMenu" yPosition="below" class="customMenu"
+        ><app-default-sidenav />
+      </mat-menu>
+    </div>
+  </div>
+  <router-outlet></router-outlet>
 </body>
