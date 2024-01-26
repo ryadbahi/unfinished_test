@@ -233,4 +233,13 @@ export class ApiService {
 
     return this.http.post(`/upload`, formData);
   }
+
+  //_______________________________PDF PARSING__________________
+
+  getParsedPDFContent(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('', file);
+
+    return this.http.post<any>(`${this.apiUrl}/PdfParse`, formData);
+  }
 }

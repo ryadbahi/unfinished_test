@@ -7,6 +7,7 @@ const contratsRoutes = require("./RoutesContrats.js");
 const souscripteursRoutes = require("./RoutesSouscripteurs.js");
 const dpt_sinRoutes = require("./RoutesDPT_Sin.js");
 const familyRoutes = require("./RoutesFamily_adh.js");
+const PdfPrarseRoutes = require("./RoutesPdfParse.js");
 
 const app = express();
 
@@ -20,7 +21,9 @@ app.use((req, res, next) => {
 
 // -------------------------DPT SINISTRE--------------------------------------
 
-app.use("dpt_sin", dpt_sinRoutes);
+app.use("/PdfParse", PdfPrarseRoutes);
+
+app.use("/dpt_sin", dpt_sinRoutes);
 
 // _________________SOUSCRIPTEURS________________________
 app.use("/souscripteurs", souscripteursRoutes);
@@ -38,7 +41,7 @@ app.use("/mailreports", mailreportsRoutes);
 app.use("/fam_adh", familyRoutes);
 
 // Error handler middleware
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(500).json({ error: "Internal Server Error" });
 });

@@ -34,8 +34,8 @@ select {
 }
 .mdc-data-table__cell,
 .mdc-data-table__header-cell {
-  padding: 0.5%;
-  height: fit-content;
+  width: min-content !important;
+  text-wrap: nowrap;
 }
 
 .matoolB,

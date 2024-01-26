@@ -51,7 +51,7 @@
       <ng-container matColumnDef="id_mail">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>N°</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="!mrepelem.isEdit && !mrepelem.isNew">
+          <div>
             {{ mrepelem.id_mail }}
           </div>
         </td>
@@ -59,13 +59,8 @@
       <ng-container matColumnDef="reception">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Reçu</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input [(ngModel)]="mrepelem.reception" style="width: 40px" />
-          </div>
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            [matTooltip]="formatDate(mrepelem.reception)"
-          >
+          <div *ngIf="mrepelem.isEdit || mrepelem.isNew"></div>
+          <div [matTooltip]="formatDate(mrepelem.reception)">
             {{ mrepelem.reception | date : "dd/MM/yyyy" }}
           </div>
         </td>
@@ -141,15 +136,7 @@
       <ng-container matColumnDef="agence">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Agence</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input
-              readonly
-              [(ngModel)]="mrepelem.agence"
-              maxlength="5"
-              style="width: 30px"
-            />
-          </div>
-          <div *ngIf="!mrepelem.isEdit && !mrepelem.isNew">
+          <div>
             {{ mrepelem.agence | uppercase }}
           </div>
         </td>
@@ -157,18 +144,7 @@
       <ng-container matColumnDef="contrat">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Contrat</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input
-              [(ngModel)]="mrepelem.contrat"
-              maxlength="20"
-              style="width: 80px"
-            />
-          </div>
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            [matTooltip]="mrepelem.contrat"
-            style="white-space: nowrap"
-          >
+          <div [matTooltip]="mrepelem.contrat" style="white-space: nowrap">
             {{ TrimContratct(mrepelem.contrat, 5) | uppercase }}
           </div>
         </td>
@@ -176,16 +152,9 @@
       <ng-container matColumnDef="souscripteur">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Souscripteur</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input
-              [(ngModel)]="mrepelem.souscripteur"
-              maxlength="30"
-              style="width: 140px"
-            />
-          </div>
           <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
             [matTooltip]="mrepelem.souscripteur"
+            style="width: 40px; text-align: nowrap"
           >
             {{ getShort(mrepelem.souscripteur) | uppercase }}
           </div>
@@ -194,15 +163,7 @@
       <ng-container matColumnDef="adherent">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Adherent</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input
-              [(ngModel)]="mrepelem.adherent"
-              maxlength="30"
-              style="width: 140px"
-            />
-          </div>
           <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
             style="max-width: 100px; white-space: nowrap"
             [matTooltip]="mrepelem.adherent"
           >
@@ -219,7 +180,6 @@
           <div
             *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
             [matTooltip]="mrepelem.objet"
-            style="text-align: center !important"
           >
             <ng-container *ngIf="!mrepelem.objet || mrepelem.objet == ''">
               <mat-icon
@@ -263,45 +223,16 @@
       <ng-container matColumnDef="reponse">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Réponse</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input [(ngModel)]="mrepelem.reponse" style="width: 40px" />
-          </div>
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            [matTooltip]="formatDate(mrepelem.reponse)"
-          >
+          <div [matTooltip]="formatDate(mrepelem.reponse)">
             {{ mrepelem.reponse | date : "dd/MM/yyyy" }}
           </div>
         </td>
       </ng-container>
-      <ng-container matColumnDef="tdr">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tmp de rep.</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input
-              [(ngModel)]="mrepelem.tdr"
-              maxlength="10"
-              style="width: 50px"
-            />
-          </div>
-          <div *ngIf="!mrepelem.isEdit && !mrepelem.isNew">
-            {{ mrepelem.tdr }}
-          </div>
-        </td>
-      </ng-container>
+
       <ng-container matColumnDef="score">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Ratio</th>
         <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input
-              readonly
-              [(ngModel)]="mrepelem.score"
-              maxlength="11"
-              style="width: 40px"
-            />
-          </div>
           <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
             style="min-width: 70px"
             [ngStyle]="{
               color: getScoreColor(mrepelem.score),
@@ -321,7 +252,6 @@
           <div
             *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
             [matTooltip]="mrepelem.observation"
-            style="text-align: center !important"
           >
             <ng-container
               *ngIf="!mrepelem.observation || mrepelem.observation == ''"

@@ -117,12 +117,13 @@ export class MailreportsComponent implements OnInit {
     'objet',
     'statut',
     'reponse',
-    'tdr',
+
     'score',
     'observation',
     'actions',
   ];
   abbrevList: { [key: string]: string } = {
+    'ATLAS COPCO ALGERIE': 'ATLAS COPCO',
     'BERGERAT MONNOYEUR ALGERIE': 'BMA',
     'GLAXOSMITHKLINE ALGÉRIE': 'GSK',
     'MSD IDEA ALGERIE': 'MSD',
@@ -138,9 +139,13 @@ export class MailreportsComponent implements OnInit {
     'HENKEL ALGÉRIE': 'HENKEL',
     'BRITISH AMERICAN  TOBACCO ALGERIE SPA': 'BAT',
     'THALES SIX GTS FRANCE SAS': 'THALES SIX GTS',
+    'THALES INTERNATIONAL ALGERIE SARL': 'THALES INT',
     'ALCATEL-LUCENT INTERNATIONAL SUCCURSALE ALGÉRIE': 'ALCATEL',
     'JMC MOTORS ALGÉRIE': 'JMC',
     'SARL ALPHAREP': 'ALPHAREP',
+    'SARL MASTER BUILDERS SOLUTIONS ALGERIA': 'MASTER BUILDERS',
+    'IPSEN PHARMA ALGERIE SPA': 'IPSEN',
+    'TEKNACHEM ALGÉRIE SPA (GSH)': 'TEKNACHEM(GSH)',
   };
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;

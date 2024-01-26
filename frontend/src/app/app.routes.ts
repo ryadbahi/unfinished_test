@@ -8,6 +8,7 @@ import { MultiaddComponent } from './pages/multiadd/multiadd.component';
 import { MailreportsComponent } from './pages/mailreports/MailreportsComponent';
 import { ValidlistComponent } from './pages/validlist/validlist.component';
 import { VerifsinComponent } from './pages/verifsin/verifsin.component';
+import { ParaphComponent } from './pages/paraph/paraph.component';
 
 export const routes: Routes = [
   {
@@ -51,5 +52,11 @@ export const routes: Routes = [
     path: 'verifsin',
     component: VerifsinComponent,
     title: 'Vérif Sinistres',
+  },
+
+  {
+    path: 'paraph',
+    component: ParaphComponent,
+    title: 'Parapheur',
   },
 ];

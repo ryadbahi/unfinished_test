@@ -73,5 +73,11 @@ export class DefaultSidenavComponent {
       label: 'Vérif Dpt Sinistre',
       route: 'verifsin',
     },
+
+    {
+      icon: 'book',
+      label: 'Parapheur',
+      route: 'paraph',
+    },
   ]);
 }
