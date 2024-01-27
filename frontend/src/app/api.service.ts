@@ -236,9 +236,12 @@ export class ApiService {
 
   //_______________________________PDF PARSING__________________
 
-  getParsedPDFContent(file: File): Observable<any> {
+  getParsedPDFContent(files: File[]): Observable<any> {
     const formData = new FormData();
-    formData.append('', file);
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append(`file`, files[i]); // Use a consistent field name, e.g., 'file'
+    }
 
     return this.http.post<any>(`${this.apiUrl}/PdfParse`, formData);
   }

@@ -2,9 +2,11 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectorRef,
   Component,
+  HostListener,
   OnInit,
   ViewChild,
 } from '@angular/core';
+import * as XLSX from 'xlsx';
 import { ApiService } from '../../api.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -22,8 +24,6 @@ import {
   MatTableModule,
 } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -38,6 +38,7 @@ import {
   animate,
 } from '@angular/animations';
 import { SnackBarService } from '../../snack-bar.service';
+import { HttpClient } from '@angular/common/http';
 
 export interface ParaphTable {
   id: number;
@@ -45,6 +46,7 @@ export interface ParaphTable {
   souscripteur: string;
   total: number;
   issues: number;
+  trtPar: string;
   paraphDetails: ParaphDetail[];
 }
 
@@ -80,7 +82,6 @@ export interface ParaphDetail {
     MatCheckboxModule,
     MatMenuModule,
     MatBadgeModule,
-    MatTooltipModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './paraph.component.html',
@@ -99,7 +100,13 @@ export interface ParaphDetail {
 export class ParaphComponent implements OnInit {
   parsedContent: any[] = [];
   dataSource = new MatTableDataSource<ParaphTable>();
-  displayedColumns: string[] = ['id', 'dossier', 'souscripteur', 'total'];
+  displayedColumns: string[] = [
+    'id',
+    'dossier',
+    'trtPar',
+    'souscripteur',
+    'total',
+  ];
   displayedDetailsColumns: string[] = [
     'serial',
     'beneficiaire',
@@ -109,6 +116,8 @@ export class ParaphComponent implements OnInit {
   page: number = 0;
   pageSize: number = 25;
   expandedElements: ParaphTable[] = [];
+  currentId: number = 1;
+  dragCounter = 0;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatTable) table!: MatTable<any>;
@@ -116,40 +125,95 @@ export class ParaphComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
-    private snackBService: SnackBarService
+    private snackBService: SnackBarService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {}
 
-  handleFileUpload(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.parsePDF(file);
-    } else {
-      console.error('No file selected.');
+  @HostListener('window:dragenter', ['$event'])
+  onWindowDragEnter(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter++;
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'block';
+      dropzone.style.zIndex = '99999';
     }
   }
 
+  @HostListener('window:dragleave', ['$event'])
+  onWindowDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter--;
+    if (this.dragCounter === 0) {
+      const dropzone = document.getElementById('dropzone');
+      if (dropzone) {
+        dropzone.style.display = 'none';
+      }
+    }
+  }
+
+  @HostListener('window:drop', ['$event'])
+  onWindowDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter = 0;
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'none';
+    }
+  }
+
+  public dropped(event: DragEvent) {
+    event.preventDefault();
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.style.display = 'none';
+    }
+
+    if (event.dataTransfer) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        const operationType = 'readExcel';
+        this.parsePDF(event.dataTransfer.files[i]);
+      }
+    }
+  }
+
+  handleFileUpload(event: any) {
+    const files: FileList | null = event.target.files;
+
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        this.parsePDF(file);
+      }
+    } else {
+      console.error('No files selected.');
+    }
+  }
   parsePDF(file: File) {
-    this.apiService.getParsedPDFContent(file).subscribe(
-      (response) => {
+    this.apiService.getParsedPDFContent([file]).subscribe({
+      next: (response) => {
         console.log('PDF Parsed Successfully:', response);
 
         if (response && response.parsedText) {
-          // Call the method to reorganize the parsed content
           this.reorganizeData(response.parsedText);
+          this.dataSource.data = [
+            ...this.dataSource.data,
+            ...this.parsedContent,
+          ];
 
-          // Update the dataSource with the parsed content
-          this.dataSource.data = this.parsedContent;
+          // Move the code that depends on the parsed data inside this block
           this.verifyAndHighlight();
+          this.cdr.detectChanges();
         } else {
           console.error('Invalid server response:', response);
         }
       },
-      (error) => {
+      error: (error) => {
         console.error('Error parsing PDF:', error);
-      }
-    );
+      },
+    });
   }
 
   reorganizeData(data: string): void {
@@ -160,8 +224,10 @@ export class ParaphComponent implements OnInit {
     }
 
     const lines = data.split('\n');
-    let dossier = '';
-    let souscripteur = '';
+
+    let sin = '';
+    let angt = '';
+    let souscr = '';
     let isTable = false;
     let currentTable: ParaphTable | null = null;
 
@@ -169,19 +235,25 @@ export class ParaphComponent implements OnInit {
       const line = lines[i];
 
       if (line.includes('Capital assuré :')) {
-        dossier = lines[i + 1] || ''; // Use empty string if not found
+        sin = lines[i + 1] || ''; // Use empty string if not found
       }
 
       if (line.includes('En chiffres :')) {
-        souscripteur = lines[i + 1] || ''; // Use empty string if not found
+        souscr = lines[i + 1] || '';
       }
-
+      if (line.includes('SerialBénéficiaireRibMontant')) {
+        const angtline = lines[i - 3] || '';
+        const match = angtline.match(/^(.*?)Le/);
+        angt = match ? match[1].trim() : '';
+      }
+      console.log(angt);
       if (line.includes('SerialBénéficiaireRibMontant')) {
         isTable = true;
         currentTable = {
-          id: 0,
-          dossier: dossier,
-          souscripteur: souscripteur,
+          id: this.currentId++,
+          dossier: sin,
+          trtPar: angt,
+          souscripteur: souscr,
           total: 0,
           issues: 0,
           paraphDetails: [],
@@ -293,5 +365,71 @@ export class ParaphComponent implements OnInit {
       this.paginator.firstPage();
       this.cdr.detectChanges();
     }
+  }
+
+  flattenData(data: ParaphTable[]): any[] {
+    const flattenedData: any[] = [];
+
+    data.forEach((item) => {
+      // Skip the entire row if 'paraphDetails' is empty
+      if (!item.paraphDetails || item.paraphDetails.length === 0) {
+        return;
+      }
+
+      // Add the nested items with repeated 'N° dossier' and 'Souscripteur'
+      item.paraphDetails.forEach((detail) => {
+        if (!detail.beneficiaire) {
+          return;
+        }
+
+        // Extracting information from the RIB
+        const codeBanque = detail.rib.substring(0, 3);
+        const codeAgence = detail.rib.substring(3, 8);
+        const numeroCompte = detail.rib.substring(8, 18);
+        const cleControle = detail.rib.substring(18);
+
+        flattenedData.push({
+          'N° dossier': item.dossier,
+          Souscripteur: item.souscripteur,
+          Bénéficiaire: detail.beneficiaire,
+          'Code banque': codeBanque,
+          'Code agence': codeAgence,
+          'Numéro de compte': numeroCompte,
+          'Clé de contrôle': cleControle,
+          Montant: detail.montant,
+        });
+      });
+    });
+
+    return flattenedData;
+  }
+  downloadExcel() {
+    // Flatten the data
+    const flattenedData = this.flattenData(this.dataSource.data);
+
+    // Create a worksheet
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(flattenedData);
+
+    // Create a workbook
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+    // Generate a Blob from the workbook
+    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    // Download the Excel file
+    const fileName = 'Parapheur.xlsx';
+    this.saveAs(blob, fileName);
+  }
+
+  // Helper function to trigger file download
+  private saveAs(blob: Blob, fileName: string): void {
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
   }
 }

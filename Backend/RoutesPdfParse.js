@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-router.post("/", upload.single(), async (req, res) => {
+router.post("/", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
