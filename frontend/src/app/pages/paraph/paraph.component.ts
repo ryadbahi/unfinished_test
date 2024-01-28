@@ -45,8 +45,10 @@ export interface ParaphTable {
   dossier: string;
   souscripteur: string;
   total: number;
+  nbrvrmnt?: number;
   issues: number;
   trtPar: string;
+  uploadedFile?: File;
   paraphDetails: ParaphDetail[];
 }
 
@@ -105,7 +107,9 @@ export class ParaphComponent implements OnInit {
     'dossier',
     'trtPar',
     'souscripteur',
+    'nbrvrmnt',
     'total',
+    'uploadedFile',
   ];
   displayedDetailsColumns: string[] = [
     'serial',
@@ -118,6 +122,7 @@ export class ParaphComponent implements OnInit {
   expandedElements: ParaphTable[] = [];
   currentId: number = 1;
   dragCounter = 0;
+  totalvirmnt: number = 0;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatTable) table!: MatTable<any>;
@@ -130,6 +135,15 @@ export class ParaphComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {}
+
+  downloadFile(file: File | undefined): void {
+    if (file) {
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(file);
+      link.download = file.name;
+      link.click();
+    }
+  }
 
   @HostListener('window:dragenter', ['$event'])
   onWindowDragEnter(event: DragEvent) {
@@ -179,6 +193,18 @@ export class ParaphComponent implements OnInit {
     }
   }
 
+  calculTotalNbrVirmnt(): number {
+    return this.dataSource.data.reduce((sum, item) => {
+      return sum + (item.paraphDetails.length || 0);
+    }, 0);
+  }
+
+  calculTotalVirmnt(): number {
+    return this.dataSource.data.reduce((sum, item) => {
+      return sum + (item.total || 0);
+    }, 0);
+  }
+
   handleFileUpload(event: any) {
     const files: FileList | null = event.target.files;
 
@@ -198,6 +224,10 @@ export class ParaphComponent implements OnInit {
 
         if (response && response.parsedText) {
           this.reorganizeData(response.parsedText);
+
+          this.parsedContent.forEach((item) => {
+            item.uploadedFile = file;
+          });
           this.dataSource.data = [
             ...this.dataSource.data,
             ...this.parsedContent,

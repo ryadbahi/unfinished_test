@@ -7,19 +7,45 @@
     >>>>>>>> lachez ici ! <<<<<<<<<
   </div>
   <mat-toolbar class="matoolB">
-    <input
-      type="file"
-      (change)="handleFileUpload($event)"
-      webkitdirectory
-      multiple
-    />
+    <button
+      style="border-radius: 20px; width: 100px; height: 35px"
+      mat-raised-button
+      (click)="fileInput.click()"
+    >
+      Charger
+      <input
+        #fileInput
+        type="file"
+        (change)="handleFileUpload($event)"
+        style="display: none"
+        webkitdirectory
+        multiple
+      />
+    </button>
+    <div
+      style="font-size: 16px; font-weight: bolder"
+      *ngIf="calculTotalNbrVirmnt() > 0"
+    >
+      Nombre de virements : {{ calculTotalNbrVirmnt() }}
+    </div>
+
+    <div
+      style="font-size: 16px; font-weight: bolder"
+      *ngIf="calculTotalVirmnt() > 0"
+    >
+      Total parapheur : {{ calculTotalVirmnt() | number : "1.2-2" }}
+    </div>
 
     <button class="xlsdl" (click)="downloadExcel()">
       <img class="icon" src="assets/xlsicn.png" />
     </button>
   </mat-toolbar>
 
-  <div class="mat-elevation-z8" style="border-radius: 10px; overflow: hidden">
+  <div
+    class="mat-elevation-z8"
+    style="border-radius: 10px; overflow: hidden"
+    *ngIf="dataSource && dataSource.data.length > 0"
+  >
     <table mat-table [dataSource]="dataSource" multiTemplateDataRows>
       <div class="MainRow">
         <ng-container matColumnDef="id">
@@ -73,6 +99,19 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="nbrvrmnt">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            style="font-size: 16px; font-weight: bolder"
+          >
+            Nbr de virements
+          </th>
+          <td mat-cell *matCellDef="let element" style="font-weight: bolder">
+            {{ element.paraphDetails.length }}
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="total">
           <th
             mat-header-cell
@@ -83,6 +122,38 @@
           </th>
           <td mat-cell *matCellDef="let element" style="font-weight: bolder">
             <div>{{ element.total | number : "1.2-2" }}</div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="uploadedFile">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            style="
+              font-size: 16px;
+              font-weight: bolder;
+              display: flex;
+              flex-direction: row-reverse;
+            "
+          >
+            Fichier (OP)
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let element"
+            style="display: flex; flex-direction: row-reverse"
+          >
+            <a
+              (click)="
+                downloadFile(element.uploadedFile); $event.stopPropagation()
+              "
+            >
+              <img
+                style="height: 35px; cursor: pointer"
+                src="assets/icnpdf.png"
+                alt="File Icon"
+              />
+            </a>
           </td>
         </ng-container>
       </div>
