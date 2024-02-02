@@ -32,6 +32,10 @@
   overflow: hidden;
   white-space: pre-line;
 }
+.form_container {
+  display: flex;
+  justify-content: center;
+}
 
 .mat-mdc-table {
   background-color: hwb(0 100% 0% / 0.3);
@@ -55,10 +59,10 @@
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   justify-content: space-between;
   border-radius: 10px !important;
-
   font-size: 12px;
   margin: 4px 4px 4px 60px;
   width: auto;
+  margin-bottom: 2vh;
 }
 .matoolB,
 .mat-mdc-paginator {
@@ -90,4 +94,10 @@
 .MainRow {
   font-size: 14px !important;
   font-weight: bolder;
+}
+
+.submit_btn {
+  display: flex;
+  flex-direction: row-reverse;
+  margin: 10px 4px 6px 6px;
 }

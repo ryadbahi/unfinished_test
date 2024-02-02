@@ -129,6 +129,10 @@
         />
       </button>
 
+      <div *ngIf="!dataSource || dataSource.data.length === 0">
+        <span style="font-size: 20px">Vérification de listing</span>
+      </div>
+
       <button class="xlsdl" (click)="downloadExcel()">
         <img class="icon" src="assets/xlsicn.png" />
       </button>

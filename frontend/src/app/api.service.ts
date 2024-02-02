@@ -6,6 +6,21 @@ import { Observable } from 'rxjs';
 import { MreportsData } from './pages/mailreports/MailreportsComponent';
 import { AdherentData } from './pages/adherents/adherents.component';
 
+export interface ParaphTable {
+  num_sin: string;
+  souscript: string;
+  trt_par: string;
+  pdf_ov?: File;
+  ref_ov: string;
+  paraphdetails: ParaphDetail[];
+}
+
+export interface ParaphDetail {
+  benef_virmnt: string;
+  rib: string;
+  montant: number;
+}
+
 export interface MailreportsResponse {
   data: MreportsData[];
   total: number;
@@ -240,9 +255,31 @@ export class ApiService {
     const formData = new FormData();
 
     for (let i = 0; i < files.length; i++) {
-      formData.append(`file`, files[i]); // Use a consistent field name, e.g., 'file'
+      formData.append(`file`, files[i]);
     }
 
     return this.http.post<any>(`${this.apiUrl}/PdfParse`, formData);
+  }
+
+  // ______________________________________PARAPHEUR______________________________________________
+  getParaphData(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/parapheur_titles`);
+  }
+
+  addParaphData(parapheurTitlesData: ParaphTable): Observable<any> {
+    const { num_sin, souscript, trt_par, pdf_ov, ref_ov, paraphdetails } =
+      parapheurTitlesData;
+    const formData = new FormData();
+
+    if (pdf_ov) {
+      formData.append('pdf_ov', pdf_ov);
+    }
+
+    formData.append(
+      'parapheurTitlesData',
+      JSON.stringify({ num_sin, souscript, trt_par, ref_ov, paraphdetails })
+    );
+
+    return this.http.post<any>(`${this.apiUrl}/parapheur_titles`, formData);
   }
 }

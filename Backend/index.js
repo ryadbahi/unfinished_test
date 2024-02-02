@@ -8,6 +8,7 @@ const souscripteursRoutes = require("./RoutesSouscripteurs.js");
 const dpt_sinRoutes = require("./RoutesDPT_Sin.js");
 const familyRoutes = require("./RoutesFamily_adh.js");
 const PdfPrarseRoutes = require("./RoutesPdfParse.js");
+const paraphRoutes = require("./RoutesParaph.js");
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use((req, res, next) => {
 });
 
 // -------------------------DPT SINISTRE--------------------------------------
+
+app.use("/parapheur_titles", paraphRoutes);
 
 app.use("/PdfParse", PdfPrarseRoutes);
 

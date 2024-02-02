@@ -39,22 +39,24 @@ import {
 } from '@angular/animations';
 import { SnackBarService } from '../../snack-bar.service';
 import { HttpClient } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
 
 export interface ParaphTable {
   id: number;
-  dossier: string;
-  souscripteur: string;
+  num_sin: string;
+  souscript: string;
   total: number;
   nbrvrmnt?: number;
   issues: number;
-  trtPar: string;
-  uploadedFile?: File;
-  paraphDetails: ParaphDetail[];
+  trt_par: string;
+  pdf_ov?: File;
+  ref_ov?: string;
+  paraphdetails: ParaphDetail[];
 }
 
 export interface ParaphDetail {
   serial: number;
-  beneficiaire: string;
+  benef_virmnt: string;
   rib: string;
   montant: number;
   highlightRib?: string;
@@ -84,6 +86,7 @@ export interface ParaphDetail {
     MatCheckboxModule,
     MatMenuModule,
     MatBadgeModule,
+    RouterLink,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './paraph.component.html',
@@ -104,16 +107,16 @@ export class ParaphComponent implements OnInit {
   dataSource = new MatTableDataSource<ParaphTable>();
   displayedColumns: string[] = [
     'id',
-    'dossier',
-    'trtPar',
-    'souscripteur',
+    'num_sin',
+    'trt_par',
+    'souscript',
     'nbrvrmnt',
     'total',
-    'uploadedFile',
+    'pdf_ov',
   ];
   displayedDetailsColumns: string[] = [
     'serial',
-    'beneficiaire',
+    'benef_virmnt',
     'rib',
     'montant',
   ];
@@ -131,12 +134,13 @@ export class ParaphComponent implements OnInit {
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
     private snackBService: SnackBarService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {}
 
-  downloadFile(file: File | undefined): void {
+  downloadFile(file: File): void {
     if (file) {
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(file);
@@ -195,7 +199,7 @@ export class ParaphComponent implements OnInit {
 
   calculTotalNbrVirmnt(): number {
     return this.dataSource.data.reduce((sum, item) => {
-      return sum + (item.paraphDetails.length || 0);
+      return sum + (item.paraphdetails.length || 0);
     }, 0);
   }
 
@@ -226,7 +230,7 @@ export class ParaphComponent implements OnInit {
           this.reorganizeData(response.parsedText);
 
           this.parsedContent.forEach((item) => {
-            item.uploadedFile = file;
+            item.pdf_ov = file;
           });
           this.dataSource.data = [
             ...this.dataSource.data,
@@ -252,6 +256,7 @@ export class ParaphComponent implements OnInit {
       console.error('Server Response Data is undefined or null.');
       return;
     }
+    console.log(this.parsedContent);
 
     const lines = data.split('\n');
 
@@ -281,12 +286,12 @@ export class ParaphComponent implements OnInit {
         isTable = true;
         currentTable = {
           id: this.currentId++,
-          dossier: sin,
-          trtPar: angt,
-          souscripteur: souscr,
+          num_sin: sin,
+          trt_par: angt,
+          souscript: souscr,
           total: 0,
           issues: 0,
-          paraphDetails: [],
+          paraphdetails: [],
         };
         continue;
       }
@@ -309,13 +314,13 @@ export class ParaphComponent implements OnInit {
 
         const detail: ParaphDetail = {
           serial: Number(serial),
-          beneficiaire: beneficiaire[0],
+          benef_virmnt: beneficiaire[0],
           rib: rib,
           montant: Number(montant.replace(/\s/g, '').replace(',', '.')),
         };
 
         if (currentTable) {
-          currentTable.paraphDetails.push(detail);
+          currentTable.paraphdetails.push(detail);
           currentTable.total += detail.montant;
         }
       }
@@ -377,7 +382,7 @@ export class ParaphComponent implements OnInit {
   }
   verifyAndHighlight() {
     this.dataSource.data.forEach((item: ParaphTable) => {
-      item.paraphDetails.forEach((detail: ParaphDetail) => {
+      item.paraphdetails.forEach((detail: ParaphDetail) => {
         const isRIBValid = this.verifyRIB(detail.rib);
 
         if (isRIBValid) {
@@ -402,13 +407,13 @@ export class ParaphComponent implements OnInit {
 
     data.forEach((item) => {
       // Skip the entire row if 'paraphDetails' is empty
-      if (!item.paraphDetails || item.paraphDetails.length === 0) {
+      if (!item.paraphdetails || item.paraphdetails.length === 0) {
         return;
       }
 
       // Add the nested items with repeated 'N° dossier' and 'Souscripteur'
-      item.paraphDetails.forEach((detail) => {
-        if (!detail.beneficiaire) {
+      item.paraphdetails.forEach((detail) => {
+        if (!detail.benef_virmnt) {
           return;
         }
 
@@ -419,9 +424,9 @@ export class ParaphComponent implements OnInit {
         const cleControle = detail.rib.substring(18);
 
         flattenedData.push({
-          'N° dossier': item.dossier,
-          Souscripteur: item.souscripteur,
-          Bénéficiaire: detail.beneficiaire,
+          'N° dossier': item.num_sin,
+          Souscripteur: item.souscript,
+          Bénéficiaire: detail.benef_virmnt,
           'Code banque': codeBanque,
           'Code agence': codeAgence,
           'Numéro de compte': numeroCompte,
@@ -461,5 +466,56 @@ export class ParaphComponent implements OnInit {
     link.href = window.URL.createObjectURL(blob);
     link.download = fileName;
     link.click();
+  }
+
+  paraphSubmit() {
+    // Get the data directly from the data source
+    const data: ParaphTable[] = this.dataSource.data;
+    console.log(data);
+
+    // Prompt the user for ref_ov
+    const refOvInput = window.prompt("Entrez le N° de l'OV :", '');
+
+    // Check if the user entered a value
+    if (refOvInput !== null) {
+      // Call the API service method to add data for each item
+      data.forEach((item: ParaphTable) => {
+        // Extract only the required properties from paraphdetails
+        const detailsToSend = item.paraphdetails.map((detail) => ({
+          benef_virmnt: detail.benef_virmnt,
+          rib: detail.rib,
+          montant: detail.montant,
+        }));
+
+        // Create a new object that includes the properties you want to send
+        const dataToSend = {
+          num_sin: item.num_sin,
+          souscript: item.souscript,
+          trt_par: item.trt_par,
+          pdf_ov: item.pdf_ov,
+          ref_ov: refOvInput, // Set the common ref_ov for all items
+          paraphdetails: detailsToSend,
+        };
+
+        // Subscribe to the addParaphData method of the apiService
+        this.apiService.addParaphData(dataToSend).subscribe({
+          next: (response) => {
+            // Handle the success response
+            console.log('Data submitted successfully:', response);
+
+            this.snackBService.openSnackBar(
+              'Parapheur a bien été crée',
+              'Merci !'
+            );
+            this.apiService.triggerDataChange();
+            this.router.navigate(['/histo_paraph']);
+          },
+          error: (error) => {
+            // Handle the error response
+            console.error('Error submitting data:', error);
+          },
+        });
+      });
+    }
   }
 }

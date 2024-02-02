@@ -31,6 +31,8 @@ router.post("/", upload.single("file"), async (req, res) => {
     // Access the parsed text using 'text' property
     const parsedText = data.text.replace(/\\n/g, "\n");
 
+    fs.unlinkSync(filePath); //delete the file
+
     // You can now use 'parsedText' which contains the parsed text
     //console.log("Parsed PDF Content:", parsedText);
 
