@@ -44,6 +44,8 @@
 }
 .slaveTr {
   background-color: #3d7ffe6e !important;
+  font-size: 18px;
+  font-weight: bolder;
 }
 
 .master_table {
@@ -51,8 +53,10 @@
 }
 
 .masterTr {
-  background-color: hwb(291.24deg 15.29% 30.98% / 33%);
-  font-size: 16px;
+  background-color: hwb(0 100% 0% / 0) !important;
+  font-size: 20px;
+  height: 30px;
+  font-weight: bolder;
 }
 
 .tables_container {
@@ -63,7 +67,7 @@
 .ng-star-inserted {
   position: relative;
   height: auto;
-  font-size: 12px;
+
   text-wrap: nowrap;
 }
 .mat-elevation-z8 {
@@ -82,4 +86,16 @@
 
 .mat-mdc-table {
   background-color: hwb(0 100% 0% / 0.3);
+}
+.expanded-row {
+  font-weight: bolder;
+}
+.xlsdl {
+  background: none;
+  cursor: pointer;
+  border: none;
+  float: left;
+}
+.xls_icon {
+  width: 35px;
 }

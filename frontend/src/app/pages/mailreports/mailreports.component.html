@@ -45,308 +45,321 @@
       </div>
     </mat-toolbar>
   </div>
+  <div class="surptable">
+    <div
+      class="mat-elevation-z8"
+      style="
+        border-radius: 10px;
+        overflow: hidden;
+        width: min-content;
+        margin-top: 2%;
+      "
+    >
+      <table mat-table [dataSource]="dataSource" matSort>
+        <ng-container matColumnDef="id_mail">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>N°</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div>
+              {{ mrepelem.id_mail }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="reception">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Reçu</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div *ngIf="mrepelem.isEdit || mrepelem.isNew"></div>
+            <div [matTooltip]="formatDate(mrepelem.reception)">
+              {{ mrepelem.reception | date : "dd/MM/yyyy" }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="canal">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Canal</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
+              <select [(ngModel)]="selectedCanal">
+                <option *ngFor="let way of canal" [value]="way">
+                  {{ way }}
+                </option>
+              </select>
+            </div>
+            <div
+              *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
+              [matTooltip]="mrepelem.canal"
+            >
+              <mat-icon
+                [ngStyle]="{
+                  color:
+                    mrepelem.canal === 'Tel'
+                      ? 'green'
+                      : mrepelem.canal === 'Mail'
+                      ? '#FFDB58'
+                      : 'red'
+                }"
+                style="font-size: 15px; width: 15px; height: 15px; padding: 0"
+              >
+                {{
+                  mrepelem.canal === "Tel"
+                    ? "phone"
+                    : mrepelem.canal === "Mail"
+                    ? "email"
+                    : "warning"
+                }}
+              </mat-icon>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="traite_par">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Traité par</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
+              <select [(ngModel)]="selectedTraiteePar">
+                <option *ngFor="let name of traite_par" [value]="name">
+                  {{ name }}
+                </option>
+              </select>
+            </div>
+            <div *ngIf="!mrepelem.isEdit && !mrepelem.isNew">
+              <ng-container
+                *ngIf="!mrepelem.traite_par || mrepelem.traite_par == ''"
+              >
+                <mat-icon
+                  style="
+                    font-size: 15px;
+                    width: 15px;
+                    height: 15px;
+                    padding: 0;
+                    color: red;
+                  "
+                  >warning</mat-icon
+                >
+              </ng-container>
+              <ng-container
+                *ngIf="mrepelem.traite_par && mrepelem.traite_par != ''"
+              >
+                {{ mrepelem.traite_par | uppercase }}
+              </ng-container>
+            </div>
+          </td>
+        </ng-container>
 
-  <div class="mat-elevation-z8" style="border-radius: 10px; overflow: hidden">
-    <table mat-table [dataSource]="dataSource" matSort>
-      <ng-container matColumnDef="id_mail">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>N°</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div>
-            {{ mrepelem.id_mail }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="reception">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Reçu</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew"></div>
-          <div [matTooltip]="formatDate(mrepelem.reception)">
-            {{ mrepelem.reception | date : "dd/MM/yyyy" }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="canal">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Canal</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <select [(ngModel)]="selectedCanal">
-              <option *ngFor="let way of canal" [value]="way">{{ way }}</option>
-            </select>
-          </div>
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            [matTooltip]="mrepelem.canal"
-          >
-            <mat-icon
-              [ngStyle]="{
-                color:
-                  mrepelem.canal === 'Tel'
-                    ? 'green'
-                    : mrepelem.canal === 'Mail'
-                    ? '#FFDB58'
-                    : 'red'
+        <ng-container matColumnDef="agence">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Agence</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div>
+              {{ mrepelem.agence | uppercase }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="contrat">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Contrat</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div [matTooltip]="mrepelem.contrat" style="white-space: nowrap">
+              {{ TrimContratct(mrepelem.contrat, 5) | uppercase }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="souscripteur">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Souscripteur
+          </th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div
+              [matTooltip]="mrepelem.souscripteur"
+              style="width: 40px; text-align: nowrap"
+            >
+              {{ getShort(mrepelem.souscripteur) | uppercase }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="adherent">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Adherent</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div
+              style="max-width: 100px; white-space: nowrap"
+              [matTooltip]="mrepelem.adherent"
+            >
+              {{ mrepelem.adherent | uppercase }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="objet">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Objet</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
+              <input [(ngModel)]="mrepelem.objet" style="width: 140px" />
+            </div>
+            <div
+              *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
+              [matTooltip]="mrepelem.objet"
+            >
+              <ng-container *ngIf="!mrepelem.objet || mrepelem.objet == ''">
+                <mat-icon
+                  style="
+                    font-size: 15px;
+                    width: 15px;
+                    height: 15px;
+                    padding: 0;
+                    color: red;
+                  "
+                  >warning</mat-icon
+                >
+              </ng-container>
+              <ng-container *ngIf="mrepelem.objet && mrepelem.objet != ''">
+                {{ CharLimit(mrepelem.objet, 15) | titlecase }}
+              </ng-container>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="statut">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
+              <select [(ngModel)]="selectedStatut">
+                <option *ngFor="let stat of statut" [value]="stat">
+                  {{ stat }}
+                </option>
+              </select>
+            </div>
+            <div
+              *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
+              [ngClass]="{
+                green: mrepelem.statut === 'Réglée',
+                red: mrepelem.statut === 'Infondée'
               }"
-              style="font-size: 15px; width: 15px; height: 15px; padding: 0"
             >
-              {{
-                mrepelem.canal === "Tel"
-                  ? "phone"
-                  : mrepelem.canal === "Mail"
-                  ? "email"
-                  : "warning"
-              }}
-            </mat-icon>
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="traite_par">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Traité par</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <select [(ngModel)]="selectedTraiteePar">
-              <option *ngFor="let name of traite_par" [value]="name">
-                {{ name }}
-              </option>
-            </select>
-          </div>
-          <div *ngIf="!mrepelem.isEdit && !mrepelem.isNew">
-            <ng-container
-              *ngIf="!mrepelem.traite_par || mrepelem.traite_par == ''"
+              {{ mrepelem.statut }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="reponse">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Réponse</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div [matTooltip]="formatDate(mrepelem.reponse)">
+              {{ mrepelem.reponse | date : "dd/MM/yyyy" }}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="score">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Ratio</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div
+              style="min-width: 70px"
+              [ngStyle]="{
+                color: getScoreColor(mrepelem.score),
+                'font-weight': 'bold'
+              }"
+            >
+              {{ mrepelem.score }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="observation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Observation</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
+              <input [(ngModel)]="mrepelem.observation" />
+            </div>
+            <div
+              *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
+              [matTooltip]="mrepelem.observation"
+            >
+              <ng-container
+                *ngIf="!mrepelem.observation || mrepelem.observation == ''"
+              >
+                <mat-icon
+                  style="
+                    font-size: 15px;
+                    width: 15px;
+                    height: 15px;
+                    padding: 0;
+                    color: red;
+                  "
+                  >warning</mat-icon
+                >
+              </ng-container>
+              <ng-container
+                *ngIf="mrepelem.observation && mrepelem.observation != ''"
+              >
+                {{ CharLimit(mrepelem.observation, 15) }}
+              </ng-container>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Edit / Supr.</th>
+          <td mat-cell *matCellDef="let mrepelem">
+            <div
+              *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
+              class="button-container"
             >
               <mat-icon
-                style="
-                  font-size: 15px;
-                  width: 15px;
-                  height: 15px;
-                  padding: 0;
-                  color: red;
-                "
-                >warning</mat-icon
+                style="color: #348bfd"
+                [routerLink]="['/mailreports', mrepelem.id_mail]"
+                (click)="strteditmrep(mrepelem)"
+                >edit</mat-icon
               >
-            </ng-container>
-            <ng-container
-              *ngIf="mrepelem.traite_par && mrepelem.traite_par != ''"
-            >
-              {{ mrepelem.traite_par | uppercase }}
-            </ng-container>
-          </div>
-        </td>
-      </ng-container>
 
-      <ng-container matColumnDef="agence">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Agence</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div>
-            {{ mrepelem.agence | uppercase }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="contrat">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Contrat</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div [matTooltip]="mrepelem.contrat" style="white-space: nowrap">
-            {{ TrimContratct(mrepelem.contrat, 5) | uppercase }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="souscripteur">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Souscripteur</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div
-            [matTooltip]="mrepelem.souscripteur"
-            style="width: 40px; text-align: nowrap"
-          >
-            {{ getShort(mrepelem.souscripteur) | uppercase }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="adherent">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Adherent</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div
-            style="max-width: 100px; white-space: nowrap"
-            [matTooltip]="mrepelem.adherent"
-          >
-            {{ mrepelem.adherent | uppercase }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="objet">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Objet</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input [(ngModel)]="mrepelem.objet" style="width: 140px" />
-          </div>
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            [matTooltip]="mrepelem.objet"
-          >
-            <ng-container *ngIf="!mrepelem.objet || mrepelem.objet == ''">
-              <mat-icon
-                style="
-                  font-size: 15px;
-                  width: 15px;
-                  height: 15px;
-                  padding: 0;
-                  color: red;
-                "
-                >warning</mat-icon
+              <mat-icon color="warn" (click)="deleteIDMreport(mrepelem.id_mail)"
+                >delete</mat-icon
               >
-            </ng-container>
-            <ng-container *ngIf="mrepelem.objet && mrepelem.objet != ''">
-              {{ CharLimit(mrepelem.objet, 15) | titlecase }}
-            </ng-container>
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="statut">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <select [(ngModel)]="selectedStatut">
-              <option *ngFor="let stat of statut" [value]="stat">
-                {{ stat }}
-              </option>
-            </select>
-          </div>
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            [ngClass]="{
-              green: mrepelem.statut === 'Réglée',
-              red: mrepelem.statut === 'Infondée'
-            }"
-          >
-            {{ mrepelem.statut }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="reponse">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Réponse</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div [matTooltip]="formatDate(mrepelem.reponse)">
-            {{ mrepelem.reponse | date : "dd/MM/yyyy" }}
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="score">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Ratio</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div
-            style="min-width: 70px"
-            [ngStyle]="{
-              color: getScoreColor(mrepelem.score),
-              'font-weight': 'bold'
-            }"
-          >
-            {{ mrepelem.score }}
-          </div>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="observation">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Observation</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-            <input [(ngModel)]="mrepelem.observation" />
-          </div>
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            [matTooltip]="mrepelem.observation"
-          >
-            <ng-container
-              *ngIf="!mrepelem.observation || mrepelem.observation == ''"
+            </div>
+            <!----------------------------ALTERNATE BUTTONS------------------------------->
+            <div
+              *ngIf="mrepelem.isEdit && !mrepelem.isNew"
+              class="button-container"
             >
               <mat-icon
-                style="
-                  font-size: 15px;
-                  width: 15px;
-                  height: 15px;
-                  padding: 0;
-                  color: red;
-                "
-                >warning</mat-icon
+                style="color: green; font-weight: bolder"
+                (click)="updateRow(mrepelem)"
+                >check</mat-icon
               >
-            </ng-container>
-            <ng-container
-              *ngIf="mrepelem.observation && mrepelem.observation != ''"
-            >
-              {{ CharLimit(mrepelem.observation, 15) }}
-            </ng-container>
-          </div>
-        </td>
-      </ng-container>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Edit / Supr.</th>
-        <td mat-cell *matCellDef="let mrepelem">
-          <div
-            *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-            class="button-container"
-          >
-            <mat-icon
-              style="color: #348bfd"
-              [routerLink]="['/mailreports', mrepelem.id_mail]"
-              (click)="strteditmrep(mrepelem)"
-              >edit</mat-icon
-            >
+              <mat-icon
+                style="color: grey; font-weight: bolder"
+                (click)="Cancel(mrepelem)"
+                >close</mat-icon
+              >
+            </div>
+            <div *ngIf="isNewRow(mrepelem)" class="button-container">
+              <mat-icon
+                style="color: green; font-weight: bolder"
+                (click)="submitNewRow(mrepelem)"
+                >check</mat-icon
+              >
 
-            <mat-icon color="warn" (click)="deleteIDMreport(mrepelem.id_mail)"
-              >delete</mat-icon
-            >
-          </div>
-          <!----------------------------ALTERNATE BUTTONS------------------------------->
-          <div
-            *ngIf="mrepelem.isEdit && !mrepelem.isNew"
-            class="button-container"
-          >
-            <mat-icon
-              style="color: green; font-weight: bolder"
-              (click)="updateRow(mrepelem)"
-              >check</mat-icon
-            >
+              <mat-icon
+                style="color: grey; font-weight: bolder"
+                (click)="CancelNew()"
+                >close</mat-icon
+              >
+            </div>
+          </td>
+        </ng-container>
 
-            <mat-icon
-              style="color: grey; font-weight: bolder"
-              (click)="Cancel(mrepelem)"
-              >close</mat-icon
-            >
-          </div>
-          <div *ngIf="isNewRow(mrepelem)" class="button-container">
-            <mat-icon
-              style="color: green; font-weight: bolder"
-              (click)="submitNewRow(mrepelem)"
-              >check</mat-icon
-            >
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <!-- Row for adding new data -->
+        <tr mat-row *matNoDataRow>
+          <td mat-cell [colSpan]="displayedColumns.length"></td>
+        </tr>
 
-            <mat-icon
-              style="color: grey; font-weight: bolder"
-              (click)="CancelNew()"
-              >close</mat-icon
-            >
-          </div>
-        </td>
-      </ng-container>
+        <!-- Row shown when there is no matching data. -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="4">
+            No data matching the filter "{{ filterInput.value }}"
+          </td>
+        </tr>
+      </table>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      <!-- Row for adding new data -->
-      <tr mat-row *matNoDataRow>
-        <td mat-cell [colSpan]="displayedColumns.length"></td>
-      </tr>
-
-      <!-- Row shown when there is no matching data. -->
-      <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" colspan="4">
-          No data matching the filter "{{ filterInput.value }}"
-        </td>
-      </tr>
-    </table>
-
-    <mat-paginator
-      [pageSizeOptions]="[15, 30, 100]"
-      aria-label="Select page of users"
-      fxLayoutGap="10px"
-      showFirstLastButtons
-    ></mat-paginator>
+      <mat-paginator
+        [pageSizeOptions]="[15, 30, 100]"
+        aria-label="Select page of users"
+        fxLayoutGap="10px"
+        showFirstLastButtons
+      ></mat-paginator>
+    </div>
   </div>
 </body>
