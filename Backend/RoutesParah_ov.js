@@ -90,4 +90,35 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.put("/:id_ov", upload.any(), async (req, res, next) => {
+  try {
+    const idOv = req.params.id_ov;
+    const fileData = req.files ? req.files[0] : undefined; // Access the first uploaded file data
+
+    console.log("Received PUT request for id_ov:", idOv);
+    console.log("Uploaded file data:", fileData);
+
+    if (!fileData) {
+      console.log("Error: No file uploaded");
+      return res.status(400).json({ error: "Please upload a file" });
+    }
+
+    const updateQuery = `
+      UPDATE paraph_ov
+      SET file_ov = ?
+      WHERE id_ov = ?;
+    `;
+
+    // Assuming your database supports storing binary data, update the database with the file buffer
+    await db.query(updateQuery, [fileData.buffer, idOv]);
+
+    console.log("file_ov column updated successfully");
+
+    res.status(200).json({ message: "file_ov column updated successfully" });
+  } catch (err) {
+    console.error("Error in PUT route:", err);
+    next(err);
+  }
+});
+
 module.exports = router;

@@ -316,4 +316,13 @@ export class ApiService {
       params: { ref_ov: paraph_ov.ref_ov }, // Pass ref_ov as query parameter
     });
   }
+
+  UploadFileOv(id: any, data: File) {
+    // Ensure that your server expects the file in the request body
+    const formData = new FormData();
+    formData.append('file_ov', data, data.name); // 'file_ov' should match the expected field name on the server
+
+    // Send the request
+    return this.http.put(`${this.apiUrl}/paraph_ov/${id}`, formData);
+  }
 }

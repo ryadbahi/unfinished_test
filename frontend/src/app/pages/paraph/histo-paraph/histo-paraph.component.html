@@ -5,7 +5,7 @@
       mat-raised-button
       [routerLink]="['/paraph']"
     >
-      Nouveau paraph
+      Nouveau
     </button>
 
     <div>
@@ -21,31 +21,83 @@
         class="mat-elevation-z8"
         multiTemplateDataRows
       >
-        <ng-container matColumnDef="id_ov">
-          <th mat-header-cell *matHeaderCellDef>No.</th>
-          <td mat-cell *matCellDef="let element" style="width: 20px">
-            {{ element.id_ov }}
+        <ng-container matColumnDef="indx_ov">
+          <th mat-header-cell *matHeaderCellDef>N°</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.indx_ov }}
           </td>
         </ng-container>
         <ng-container matColumnDef="ref_ov">
-          <th mat-header-cell *matHeaderCellDef>ref ov</th>
-          <td mat-cell *matCellDef="let element" style="width: 65px">
+          <th mat-header-cell *matHeaderCellDef>Référence OV</th>
+          <td mat-cell *matCellDef="let element">
             {{ element.ref_ov }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="file_ov">
-          <th mat-header-cell *matHeaderCellDef>fichier</th>
-          <td mat-cell *matCellDef="let element" style="width: 20px">
-            {{ element.file_ov }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="added">
-          <th mat-header-cell *matHeaderCellDef>ajouté le</th>
+          <th mat-header-cell *matHeaderCellDef>Ajouté</th>
           <td mat-cell *matCellDef="let element" style="width: 40px">
             {{ element.added | date : "dd/MM/yyyy" }}
           </td>
         </ng-container>
+
+        <ng-container matColumnDef="total_ov">
+          <th mat-header-cell *matHeaderCellDef>Total des OV</th>
+          <td
+            mat-cell
+            *matCellDef="let element"
+            style="width: 40px; text-align: right"
+          >
+            {{ element.total_ov | number : "1.2-2" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="file_ov">
+          <th mat-header-cell *matHeaderCellDef style="text-align: right">
+            Fichier
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let element"
+            style="display: flex; flex-direction: row-reverse"
+          >
+            <button
+              class="xlsdl"
+              (click)="downloadExcel(element); $event.stopPropagation()"
+              style="width: 35px"
+            >
+              <img class="xls_icon" src="assets/xlsicn.png" />
+            </button>
+
+            <a
+              *ngIf="element.file_ov; else noFile"
+              (click)="
+                downloadFile(element.file_ov, element.ref_ov);
+                $event.stopPropagation()
+              "
+            >
+              <img
+                style="height: 35px; cursor: pointer"
+                src="assets/icnpdf.png"
+                alt="File Icon"
+              />
+            </a>
+            <input
+              type="file"
+              #fileInput
+              style="display: none"
+              (change)="
+                onFileInputChange($event, element.id_ov);
+                $event.stopPropagation()
+              "
+            />
+            <ng-template #noFile>
+              <mat-icon color="warn" (click)="fileInput.click()">
+                cancel
+              </mat-icon>
+            </ng-template>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="expandedDetail">
           <td
             mat-cell
@@ -63,44 +115,70 @@
                 [dataSource]="element.ParaphTable"
                 multiTemplateDataRows
               >
-                <ng-container matColumnDef="id_paraph">
-                  <th mat-header-cell *matHeaderCellDef>id</th>
+                <ng-container matColumnDef="indx_titles">
+                  <th mat-header-cell *matHeaderCellDef>N°</th>
                   <td mat-cell *matCellDef="let subElement">
-                    {{ subElement.id_paraph }}
+                    {{ subElement.indx_titles }}
                   </td>
                 </ng-container>
 
                 <ng-container matColumnDef="num_sin">
-                  <th mat-header-cell *matHeaderCellDef>num_sin</th>
+                  <th mat-header-cell *matHeaderCellDef>Sinistre N°</th>
                   <td mat-cell *matCellDef="let subElement">
                     {{ subElement.num_sin }}
                   </td>
                 </ng-container>
 
                 <ng-container matColumnDef="trt_par">
-                  <th mat-header-cell *matHeaderCellDef>trt_par</th>
+                  <th mat-header-cell *matHeaderCellDef>Traité par</th>
                   <td mat-cell *matCellDef="let subElement">
                     {{ subElement.trt_par }}
                   </td>
                 </ng-container>
 
                 <ng-container matColumnDef="souscript">
-                  <th mat-header-cell *matHeaderCellDef>souscript</th>
+                  <th mat-header-cell *matHeaderCellDef>Souscripteur</th>
                   <td mat-cell *matCellDef="let subElement">
                     {{ subElement.souscript }}
                   </td>
                 </ng-container>
-                <ng-container matColumnDef="pdf_file_name">
-                  <th mat-header-cell *matHeaderCellDef>nom fichier</th>
+
+                <ng-container matColumnDef="total_op">
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    style="display: flex; flex-direction: row-reverse"
+                  >
+                    Total des OP
+                  </th>
                   <td mat-cell *matCellDef="let subElement">
-                    {{ subElement.pdf_file_name }}
+                    {{ subElement.total_op | number : "1.2-2" }}
                   </td>
                 </ng-container>
 
                 <ng-container matColumnDef="pdf_ov">
-                  <th mat-header-cell *matHeaderCellDef>pdf_ov</th>
-                  <td mat-cell *matCellDef="let subElement">
-                    {{ subElement.pdf_ov }}
+                  <th mat-header-cell *matHeaderCellDef>Fichier</th>
+                  <td
+                    mat-cell
+                    *matCellDef="let element"
+                    style="display: flex; flex-direction: row-reverse"
+                  >
+                    <a
+                      *ngIf="element.pdf_ov; else noFile"
+                      (click)="
+                        downloadFile(element.pdf_ov, element.pdf_file_name);
+                        $event.stopPropagation()
+                      "
+                    >
+                      <img
+                        style="height: 35px; cursor: pointer"
+                        src="assets/icnpdf.png"
+                        alt="File Icon"
+                      />
+                    </a>
+                    <ng-template #noFile>
+                      <mat-icon color="warn">cancel</mat-icon>
+                    </ng-template>
                   </td>
                 </ng-container>
 
@@ -117,28 +195,34 @@
                       "
                     >
                       <table mat-table [dataSource]="element.paraphdetails">
-                        <ng-container matColumnDef="serial">
+                        <ng-container matColumnDef="indx_vrmnt">
                           <th mat-header-cell *matHeaderCellDef>N°</th>
                           <td mat-cell *matCellDef="let innerElement">
-                            {{ innerElement.serial }}
+                            {{ innerElement.indx_vrmnt }}
                           </td>
                         </ng-container>
                         <ng-container matColumnDef="benef_virmnt">
-                          <th mat-header-cell *matHeaderCellDef>nom</th>
+                          <th mat-header-cell *matHeaderCellDef>
+                            Bénéficiaire
+                          </th>
                           <td mat-cell *matCellDef="let innerElement">
                             {{ innerElement.benef_virmnt }}
                           </td>
                         </ng-container>
                         <ng-container matColumnDef="rib">
-                          <th mat-header-cell *matHeaderCellDef>rib</th>
+                          <th mat-header-cell *matHeaderCellDef>RIB</th>
                           <td mat-cell *matCellDef="let innerElement">
                             {{ innerElement.rib }}
                           </td>
                         </ng-container>
                         <ng-container matColumnDef="montant">
-                          <th mat-header-cell *matHeaderCellDef>montant</th>
-                          <td mat-cell *matCellDef="let innerElement">
-                            {{ innerElement.montant }}
+                          <th mat-header-cell *matHeaderCellDef>Montant</th>
+                          <td
+                            mat-cell
+                            *matCellDef="let innerElement"
+                            style="display: flex; flex-direction: row-reverse"
+                          >
+                            {{ innerElement.montant | number : "1.2-2" }}
                           </td>
                         </ng-container>
 
@@ -168,10 +252,10 @@
                   mat-row
                   *matRowDef="let subElement; columns: displayedMidColumns"
                   [class.element]="expandedSubElement === subElement"
-                  (click)="
-                    expandedSubElement =
-                      expandedSubElement === subElement ? null : subElement
-                  "
+                  [ngClass]="{
+                    'expanded-row': isInnerExpanded(subElement),
+                  }"
+                  (click)="toggleInnerElement(subElement)"
                 ></tr>
                 <tr
                   mat-row
@@ -192,9 +276,10 @@
           mat-row
           *matRowDef="let element; columns: displayedColumns"
           [class.element]="expandedElement === element"
-          (click)="
-            expandedElement = expandedElement === element ? null : element
-          "
+          [ngClass]="{
+            'expanded-row': isExpanded(element),
+          }"
+          (click)="toggleElement(element)"
         ></tr>
         <tr
           mat-row
