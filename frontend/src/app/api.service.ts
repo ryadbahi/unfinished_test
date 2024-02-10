@@ -1,17 +1,35 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Subject, throwError } from 'rxjs';
+import { Subject, from, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { MreportsData } from './pages/mailreports/MailreportsComponent';
 import { AdherentData } from './pages/adherents/adherents.component';
+import {
+  ParaphOv,
+  ParaphTitles,
+  paraphDetail,
+} from './pages/paraph/histo-paraph/histo-paraph.component';
+
+export interface RestructuredItem {
+  num_sin: string;
+  souscript: string;
+  trt_par: string;
+  pdf_ov?: File;
+
+  paraphdetails: {
+    benef_virmnt: string;
+    rib: string;
+    montant: number;
+  }[];
+}
 
 export interface ParaphTable {
   num_sin: string;
   souscript: string;
   trt_par: string;
   pdf_ov?: File;
-  ref_ov: string;
+
   paraphdetails: ParaphDetail[];
 }
 
@@ -262,24 +280,40 @@ export class ApiService {
   }
 
   // ______________________________________PARAPHEUR______________________________________________
-  getParaphData(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/parapheur_titles`);
+  getParaphData(): Observable<ParaphOv[]> {
+    return this.http.get<ParaphOv[]>(`${this.apiUrl}/paraph_ov`);
   }
 
-  addParaphData(parapheurTitlesData: ParaphTable): Observable<any> {
-    const { num_sin, souscript, trt_par, pdf_ov, ref_ov, paraphdetails } =
-      parapheurTitlesData;
+  addParaphData(paraph_ov: {
+    ref_ov: string;
+    paraphTables: ParaphTable[];
+  }): Observable<any> {
     const formData = new FormData();
 
-    if (pdf_ov) {
-      formData.append('pdf_ov', pdf_ov);
+    // Insert into paraph_ov table only once for the entire request
+    formData.append('ref_ov', paraph_ov.ref_ov);
+
+    // Iterate over each ParaphTable in the paraphTables array
+    for (let i = 0; i < paraph_ov.paraphTables.length; i++) {
+      // Assuming there's always one file
+      const pdfFile = paraph_ov.paraphTables[i].pdf_ov;
+
+      if (pdfFile) {
+        formData.append(`pdf_ov_${i}`, pdfFile, pdfFile.name);
+      }
+
+      const dataToSend = {
+        num_sin: paraph_ov.paraphTables[i].num_sin,
+        souscript: paraph_ov.paraphTables[i].souscript,
+        trt_par: paraph_ov.paraphTables[i].trt_par,
+        paraphdetails: paraph_ov.paraphTables[i].paraphdetails,
+      };
+
+      formData.append(`paraphTable_${i}`, JSON.stringify(dataToSend));
     }
 
-    formData.append(
-      'parapheurTitlesData',
-      JSON.stringify({ num_sin, souscript, trt_par, ref_ov, paraphdetails })
-    );
-
-    return this.http.post<any>(`${this.apiUrl}/parapheur_titles`, formData);
+    return this.http.post<any>(`${this.apiUrl}/parapheur_titles`, formData, {
+      params: { ref_ov: paraph_ov.ref_ov }, // Pass ref_ov as query parameter
+    });
   }
 }

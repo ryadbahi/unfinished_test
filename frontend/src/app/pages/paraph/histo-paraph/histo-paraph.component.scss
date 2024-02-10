@@ -1,0 +1,85 @@
+.matoolB {
+  flex-direction: row;
+  height: 45px !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  justify-content: space-between;
+  border-radius: 10px !important;
+  font-size: 12px;
+  margin: 4px 4px 4px 60px;
+  width: auto;
+  margin-bottom: 2vh;
+}
+
+.matoolB,
+.mat-mdc-paginator {
+  table-layout: auto;
+  white-space: normal;
+  background-color: hwb(0 100% 0% / 0.6);
+}
+.mat-toolbar-row,
+.mat-toolbar-single-row {
+  height: fit-content;
+  color: #3d3b3b;
+  font-size: 12px;
+  font-weight: bold;
+}
+.innerTable {
+  display: block;
+  border-radius: 10px;
+  min-width: min-content;
+  overflow: hidden;
+  background: darkviolet;
+}
+
+.innerTr {
+  background-color: #e237628a !important;
+}
+.slave_table {
+  display: block;
+  border-radius: 10px;
+  min-width: min-content;
+  overflow: hidden;
+  background: blue;
+}
+.slaveTr {
+  background-color: #3d7ffe6e !important;
+}
+
+.master_table {
+  display: inline-block;
+}
+
+.masterTr {
+  background-color: hwb(291.24deg 15.29% 30.98% / 33%);
+  font-size: 16px;
+}
+
+.tables_container {
+  text-align: center;
+  text-wrap: nowrap;
+}
+
+.ng-star-inserted {
+  position: relative;
+  height: auto;
+  font-size: 12px;
+  text-wrap: nowrap;
+}
+.mat-elevation-z8 {
+  overflow: hidden;
+  white-space: pre-line;
+  border-radius: 10px;
+}
+
+.mat-mdc-table {
+  background-color: hwb(0 100% 0% / 0.3);
+}
+
+.mat-mdc-header-cell {
+  background-color: inherit !important;
+}
+
+.mat-mdc-table {
+  background-color: hwb(0 100% 0% / 0.3);
+}

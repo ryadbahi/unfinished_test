@@ -1,1 +1,207 @@
-<p>histo-paraph works!</p>
+<body>
+  <mat-toolbar class="matoolB">
+    <button
+      style="border-radius: 20px; width: 100px; height: 35px"
+      mat-raised-button
+      [routerLink]="['/paraph']"
+    >
+      Nouveau
+    </button>
+
+    <div>
+      <p>Tous les virements : DZ</p>
+    </div>
+  </mat-toolbar>
+
+  <div class="tables_container">
+    <div class="master_table">
+      <table
+        mat-table
+        [dataSource]="dataSource"
+        class="mat-elevation-z8"
+        multiTemplateDataRows
+      >
+        <ng-container matColumnDef="id_ov">
+          <th mat-header-cell *matHeaderCellDef>No.</th>
+          <td mat-cell *matCellDef="let element" style="width: 20px">
+            {{ element.id_ov }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="ref_ov">
+          <th mat-header-cell *matHeaderCellDef>ref ov</th>
+          <td mat-cell *matCellDef="let element" style="width: 65px">
+            {{ element.ref_ov }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="file_ov">
+          <th mat-header-cell *matHeaderCellDef>fichier</th>
+          <td mat-cell *matCellDef="let element" style="width: 20px">
+            {{ element.file_ov }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="added">
+          <th mat-header-cell *matHeaderCellDef>ajouté le</th>
+          <td mat-cell *matCellDef="let element" style="width: 40px">
+            {{ element.added | date : "dd/MM/yyyy" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="expandedDetail">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [attr.colspan]="displayedColumns.length"
+          >
+            <div
+              class="slave_table"
+              [@detailExpand]="
+                element == expandedElement ? 'expanded' : 'collapsed'
+              "
+            >
+              <table
+                mat-table
+                [dataSource]="element.ParaphTable"
+                multiTemplateDataRows
+              >
+                <ng-container matColumnDef="id_paraph">
+                  <th mat-header-cell *matHeaderCellDef>id</th>
+                  <td mat-cell *matCellDef="let subElement">
+                    {{ subElement.id_paraph }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="num_sin">
+                  <th mat-header-cell *matHeaderCellDef>num_sin</th>
+                  <td mat-cell *matCellDef="let subElement">
+                    {{ subElement.num_sin }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="trt_par">
+                  <th mat-header-cell *matHeaderCellDef>trt_par</th>
+                  <td mat-cell *matCellDef="let subElement">
+                    {{ subElement.trt_par }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="souscript">
+                  <th mat-header-cell *matHeaderCellDef>souscript</th>
+                  <td mat-cell *matCellDef="let subElement">
+                    {{ subElement.souscript }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="pdf_file_name">
+                  <th mat-header-cell *matHeaderCellDef>nom fichier</th>
+                  <td mat-cell *matCellDef="let subElement">
+                    {{ subElement.pdf_file_name }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="pdf_ov">
+                  <th mat-header-cell *matHeaderCellDef>pdf_ov</th>
+                  <td mat-cell *matCellDef="let subElement">
+                    {{ subElement.pdf_ov }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="expandedExpandedDetail">
+                  <td
+                    mat-cell
+                    *matCellDef="let element"
+                    [attr.colspan]="displayedMidColumns.length"
+                  >
+                    <div
+                      class="innerTable"
+                      [@detailExpand]="
+                        element == expandedSubElement ? 'expanded' : 'collapsed'
+                      "
+                    >
+                      <table mat-table [dataSource]="element.paraphdetails">
+                        <ng-container matColumnDef="serial">
+                          <th mat-header-cell *matHeaderCellDef>N°</th>
+                          <td mat-cell *matCellDef="let innerElement">
+                            {{ innerElement.serial }}
+                          </td>
+                        </ng-container>
+                        <ng-container matColumnDef="benef_virmnt">
+                          <th mat-header-cell *matHeaderCellDef>nom</th>
+                          <td mat-cell *matCellDef="let innerElement">
+                            {{ innerElement.benef_virmnt }}
+                          </td>
+                        </ng-container>
+                        <ng-container matColumnDef="rib">
+                          <th mat-header-cell *matHeaderCellDef>rib</th>
+                          <td mat-cell *matCellDef="let innerElement">
+                            {{ innerElement.rib }}
+                          </td>
+                        </ng-container>
+                        <ng-container matColumnDef="montant">
+                          <th mat-header-cell *matHeaderCellDef>montant</th>
+                          <td mat-cell *matCellDef="let innerElement">
+                            {{ innerElement.montant }}
+                          </td>
+                        </ng-container>
+
+                        <tr
+                          class="innerTr"
+                          mat-header-row
+                          *matHeaderRowDef="displayedDetailsColumns"
+                        ></tr>
+                        <tr
+                          mat-row
+                          *matRowDef="
+                            let innerElement;
+                            columns: displayedDetailsColumns
+                          "
+                        ></tr>
+                      </table>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr
+                  mat-header-row
+                  *matHeaderRowDef="displayedMidColumns"
+                  class="slaveTr"
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let subElement; columns: displayedMidColumns"
+                  [class.element]="expandedSubElement === subElement"
+                  (click)="
+                    expandedSubElement =
+                      expandedSubElement === subElement ? null : subElement
+                  "
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: ['expandedExpandedDetail']"
+                  class="mat-row-detail"
+                ></tr>
+              </table>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr
+          class="masterTr"
+          mat-header-row
+          *matHeaderRowDef="displayedColumns"
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="let element; columns: displayedColumns"
+          [class.element]="expandedElement === element"
+          (click)="
+            expandedElement = expandedElement === element ? null : element
+          "
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: ['expandedDetail']"
+          class="mat-row-detail"
+        ></tr>
+      </table>
+    </div>
+  </div>
+</body>

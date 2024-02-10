@@ -50,7 +50,7 @@ export interface ParaphTable {
   issues: number;
   trt_par: string;
   pdf_ov?: File;
-  ref_ov?: string;
+
   paraphdetails: ParaphDetail[];
 }
 
@@ -60,6 +60,18 @@ export interface ParaphDetail {
   rib: string;
   montant: number;
   highlightRib?: string;
+}
+
+interface RestructuredItem {
+  num_sin: string;
+  souscript: string;
+  trt_par: string;
+  pdf_ov?: File;
+  paraphdetails: {
+    benef_virmnt: string;
+    rib: string;
+    montant: number;
+  }[];
 }
 
 @Component({
@@ -134,7 +146,6 @@ export class ParaphComponent implements OnInit {
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
     private snackBService: SnackBarService,
-    private http: HttpClient,
     private router: Router
   ) {}
 
@@ -473,48 +484,55 @@ export class ParaphComponent implements OnInit {
     const data: ParaphTable[] = this.dataSource.data;
     console.log(data);
 
-    // Prompt the user for ref_ov
-    const refOvInput = window.prompt("Entrez le N° de l'OV :", '');
+    const year = new Date().getFullYear();
+    const userInput = window.prompt("Entrez le N° de l'OV :", '');
+    const refOvInput = `OV_${userInput}_${year}`;
 
     // Check if the user entered a value
     if (refOvInput !== null) {
-      // Call the API service method to add data for each item
-      data.forEach((item: ParaphTable) => {
+      // Create an array to hold the restructured data
+      const paraphTables = data.map((item: ParaphTable) => {
         // Extract only the required properties from paraphdetails
-        const detailsToSend = item.paraphdetails.map((detail) => ({
+        const paraphdetails = item.paraphdetails.map((detail) => ({
           benef_virmnt: detail.benef_virmnt,
           rib: detail.rib,
           montant: detail.montant,
         }));
 
         // Create a new object that includes the properties you want to send
-        const dataToSend = {
+        return {
           num_sin: item.num_sin,
           souscript: item.souscript,
           trt_par: item.trt_par,
           pdf_ov: item.pdf_ov,
-          ref_ov: refOvInput, // Set the common ref_ov for all items
-          paraphdetails: detailsToSend,
+          paraphdetails: paraphdetails,
         };
+      });
 
-        // Subscribe to the addParaphData method of the apiService
-        this.apiService.addParaphData(dataToSend).subscribe({
-          next: (response) => {
-            // Handle the success response
-            console.log('Data submitted successfully:', response);
+      // Create the final object with main_ref_ov and paraphTable
+      const paraph_ov = {
+        ref_ov: refOvInput,
+        paraphTables: paraphTables,
+      };
+      console.log(paraph_ov);
 
-            this.snackBService.openSnackBar(
-              'Parapheur a bien été crée',
-              'Merci !'
-            );
-            this.apiService.triggerDataChange();
-            this.router.navigate(['/histo_paraph']);
-          },
-          error: (error) => {
-            // Handle the error response
-            console.error('Error submitting data:', error);
-          },
-        });
+      // Subscribe to the addParaphData method of the apiService
+      this.apiService.addParaphData(paraph_ov).subscribe({
+        next: (response) => {
+          // Handle the success response
+          console.log('Data submitted successfully:', response);
+
+          this.snackBService.openSnackBar(
+            'Parapheur a bien été créé',
+            'Merci !'
+          );
+          this.apiService.triggerDataChange();
+          this.router.navigate(['/histo_paraph']);
+        },
+        error: (error) => {
+          // Handle the error response
+          console.error('Error submitting data:', error);
+        },
       });
     }
   }

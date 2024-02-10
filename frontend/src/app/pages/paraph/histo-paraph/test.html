@@ -1,0 +1,100 @@
+<body>
+  <mat-toolbar class="matoolB">
+    <button
+      style="border-radius: 20px; width: 100px; height: 35px"
+      mat-raised-button
+      [routerLink]="['/paraph']"
+    >
+      Nouveau
+    </button>
+
+    <div>
+      <p>Tous les virements : DZ</p>
+    </div>
+  </mat-toolbar>
+
+  <div class="exprow">
+    <ng-container style="display: flex; justify-content: center">
+      <div class="form_container" style="display: grid">
+        <div
+          class="mat-elevation-z8"
+          style="border-radius: 10px; overflow: hidden"
+        >
+          <table
+            id="table-general"
+            mat-table
+            [dataSource]="dataSource"
+            multiTemplateDataRows
+          >
+            <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let element" [attr.colspan]="3">
+                <div
+                  class="example-element-detail"
+                  [@detailExpand]="
+                      element == expandedElements ? 'expanded' : 'collapsed'
+                    "
+                >
+                  <div class="mat-elevation-z8">
+                    <table
+                      id="Table-milieu"
+                      mat-table
+                      [dataSource]="element.paraphtable"
+                      multiTemplateDataRows
+                    >
+                      <ng-container matColumnDef="expandedDetail">
+                        <td
+                          mat-cell
+                          *matCellDef="let element"
+                          [attr.colspan]="displayedColumns.length"
+                        >
+                          <div
+                            class="detailDisplay"
+                            [@detailExpand]="isExpanded(element)"
+                          >
+                            <table
+                              mat-table
+                              [dataSource]="element.paraphdetails"
+                              class="mat-elevation-z8"
+                              id="childtable"
+                            >
+                              <tr
+                                mat-header-row
+                                *matHeaderRowDef="displayedDetailsColumns"
+                              ></tr>
+                              <tr
+                                mat-row
+                                *matRowDef="
+                                    let row;
+                                    columns: displayedDetailsColumns
+                                  "
+                              ></tr>
+                            </table>
+                          </div>
+                        </td>
+                      </ng-container>
+
+                      <tr
+                        mat-header-row
+                        *matHeaderRowDef="displayedMidColumns"
+                      ></tr>
+                      <tr
+                        mat-row
+                        *matRowDef="let row; columns: displayedMidColumns"
+                      ></tr>
+                    </table>
+                  </div>
+                </div></td
+            ></ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" colspan="4">No data matching the filter</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</body>

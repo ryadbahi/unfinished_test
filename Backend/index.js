@@ -9,6 +9,7 @@ const dpt_sinRoutes = require("./RoutesDPT_Sin.js");
 const familyRoutes = require("./RoutesFamily_adh.js");
 const PdfPrarseRoutes = require("./RoutesPdfParse.js");
 const paraphRoutes = require("./RoutesParaph.js");
+const paraph_ovRoutes = require("./RoutesParah_ov.js");
 
 const app = express();
 
@@ -20,12 +21,19 @@ app.use((req, res, next) => {
   console.log(req.body); // Log the raw request body
 });
 
-// -------------------------DPT SINISTRE--------------------------------------
+// -------------------------PARAPHEUR GET--------------------------------------
+
+app.use("/paraph_ov", paraph_ovRoutes);
+
+// -------------------------PARAPHEUR POSTING--------------------------------------
 
 app.use("/parapheur_titles", paraphRoutes);
 
+// -------------------------PDF PARSING--------------------------------------
+
 app.use("/PdfParse", PdfPrarseRoutes);
 
+// -------------------------DPT SINISTRE--------------------------------------
 app.use("/dpt_sin", dpt_sinRoutes);
 
 // _________________SOUSCRIPTEURS________________________
