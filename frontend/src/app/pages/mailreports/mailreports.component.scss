@@ -185,7 +185,7 @@ td {
 }
 
 .surptable {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+
+  justify-content: center;
 }

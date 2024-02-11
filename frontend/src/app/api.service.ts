@@ -238,6 +238,10 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/mailreports/${id}`);
   }
 
+  emptyMailReport(): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/mailreports`);
+  }
+
   updateMailreportData(id: any, data: any) {
     return this.http.put(`${this.apiUrl}/mailreports/${id}`, data);
   }
