@@ -24,7 +24,6 @@ import { BusinessHoursService } from '../../businessdayshours.service';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ToastrService } from 'ngx-toastr';
 
 import * as XLSX from 'xlsx';
 import { SnackBarService } from '../../snack-bar.service';
@@ -196,7 +195,16 @@ export class MailreportsComponent implements OnInit {
 
     if (event.dataTransfer) {
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
-        this.readMsgFile(event.dataTransfer.files[i]);
+        const file = event.dataTransfer.files[i];
+        if (this.isMsgFile(file)) {
+          this.readMsgFile(file);
+        } else {
+          this.snackBService.openSnackBar(
+            "Ceci n'est pas un fichier .MSG",
+            'Okey :)'
+          );
+          console.error('Invalid file type. Please drop only .msg files.');
+        }
       }
     }
   }
@@ -207,7 +215,7 @@ export class MailreportsComponent implements OnInit {
     private businessHoursService: BusinessHoursService,
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
-    private toastr: ToastrService,
+
     private snackBService: SnackBarService
   ) {}
   isNewRow(row: MreportsData) {
@@ -376,6 +384,34 @@ export class MailreportsComponent implements OnInit {
     }
   }
 
+  handleFileUpload(event: any) {
+    const files: FileList | null = event.target.files;
+
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (this.isMsgFile(file)) {
+          this.readMsgFile(file);
+        } else {
+          this.snackBService.openSnackBar(
+            "Ceci n'est pas un fichier .MSG",
+            'Okey :)'
+          );
+          console.error('Invalid file type. Please select a .msg file.');
+        }
+      }
+    } else {
+      console.error('No files selected.');
+    }
+  }
+
+  isMsgFile(file: File): boolean {
+    // Check if the file has a ".msg" extension
+    const allowedExtensions = ['.msg'];
+    const fileName = file.name.toLowerCase();
+    return allowedExtensions.some((ext) => fileName.endsWith(ext));
+  }
+
   readMsgFile(file: File) {
     let fileReader = new FileReader();
     fileReader.onload = (e) => {
@@ -413,14 +449,12 @@ export class MailreportsComponent implements OnInit {
           }
 
           sentOnDate = new Date(Date.parse(sentOnString));
-
-          console.log(sentOnDate);
-          console.log(msgFileData.subject);
-          console.log(JSON.stringify(msgFileData.subject));
-          console.log(msgFileData.creationTime);
         } else {
           console.error('Unable to match "Envoyé" line in the message body.');
-          this.toastr.warning('Elements envoyés ??', 'Erreur sur le fichier');
+          this.snackBService.openSnackBar(
+            'Ce mail viens des éléments envoyés ?',
+            ''
+          );
         }
 
         if (msgFileData.subject) {
@@ -507,7 +541,7 @@ export class MailreportsComponent implements OnInit {
     this.service.addMailreportData(mrepelem).subscribe(
       (response) => {
         console.log('Row added successfully:', response);
-        this.toastr.success('Rapport Ajouté ', '');
+        this.snackBService.openSnackBar('Rapport Ajouté ', 'Okey :)');
         mrepelem.isNew = false;
         mrepelem.isEdit = false;
         this.service.triggerDataChange();
@@ -559,7 +593,7 @@ export class MailreportsComponent implements OnInit {
       this.service.updateMailreportData(mrepelem.id_mail, mrepelem).subscribe(
         (response) => {
           console.log('Row updated successfully:', response);
-          this.toastr.success('Mise à jour effectuée', '');
+          this.snackBService.openSnackBar('Mise à jour effectuée', 'okey :)');
 
           this.service.triggerDataChange();
           // Toggle off the editing mode after a successful update
@@ -573,7 +607,7 @@ export class MailreportsComponent implements OnInit {
       );
     } else {
       console.log('No changes detected. Skipping update.');
-      this.toastr.warning('Aucune donnée éditée ', '');
+      this.snackBService.openSnackBar('Aucune donnée éditée ', 'hum ?!');
     }
   }
   downloadExcel() {

@@ -295,8 +295,11 @@
             mat-cell
             *matCellDef="let element"
             [ngStyle]="{ color: element.highlightRib }"
+            [matTooltip]="element.calculkey"
           >
-            <div *ngIf="!element.editable">{{ element.rib }}</div>
+            <div *ngIf="!element.editable">
+              {{ element.rib }}
+            </div>
             <input
               *ngIf="element.editable"
               [(ngModel)]="element.rib"

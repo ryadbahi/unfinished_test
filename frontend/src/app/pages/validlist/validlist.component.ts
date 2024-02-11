@@ -42,6 +42,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export interface fam_adhData {
   id?: string;
@@ -65,6 +66,7 @@ export interface listing {
   prenom: string;
   dateDeNaissance: Date;
   rib: string;
+  calculkey: string;
   categorie: string;
   email: string;
   highlight?: boolean;
@@ -100,6 +102,7 @@ export interface listing {
     MatCheckboxModule,
     MatMenuModule,
     MatBadgeModule,
+    MatTooltipModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './validlist.component.html',
@@ -657,11 +660,12 @@ export class ValidlistComponent implements OnInit {
     }
   }
 
-  verifyRIB(rib: string): boolean {
+  verifyRIB(rib: string, listing: listing): boolean {
     const bankCode = rib.substring(0, 3);
     const agency = rib.substring(3, 8);
     const accountNumber = rib.substring(8, 18);
     const inputKey = rib.substring(18);
+
     //_______________CCP___________________________
     if (bankCode === '007') {
       const ccpstep1 = parseInt(accountNumber);
@@ -671,6 +675,7 @@ export class ValidlistComponent implements OnInit {
       const ccpstep5 = ccpstep4 == 97 ? ccpstep4 : 97 - ccpstep4;
       const calculateCcpKey = ccpstep5 < 10 ? `0${ccpstep5}` : `${ccpstep5}`;
 
+      listing.calculkey = calculateCcpKey;
       return calculateCcpKey === inputKey;
     } else {
       const concatenatedNumber = parseInt(agency + accountNumber);
@@ -688,12 +693,18 @@ export class ValidlistComponent implements OnInit {
         step6Result < 10 ? `0${step6Result}` : `${step6Result}`;
 
       // Compare calculated key with the input key
+      listing.calculkey = calculatedKey;
       return calculatedKey === inputKey;
     }
   }
   verifyAndHighlight() {
     this.rearrangedData.forEach((item) => {
-      const isRIBValid = this.verifyRIB(item.rib);
+      // Check if item.rib is empty
+      if (!item.rib) {
+        item.rib = 'RIB vide';
+      }
+
+      const isRIBValid = this.verifyRIB(item.rib, item);
 
       if (isRIBValid) {
         item.highlightRib = 'green';
@@ -867,7 +878,7 @@ export class ValidlistComponent implements OnInit {
           const age = new Date().getFullYear() - birthDate.getFullYear();
 
           if (age >= 21) {
-            child.prenom += ' (+21 ANS)';
+            child.prenom = `(+21 ANS) ${child.prenom}`;
           }
         }
       });

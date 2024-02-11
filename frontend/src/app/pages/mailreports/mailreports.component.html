@@ -6,8 +6,22 @@
   <!---------------UPPER END----------------->
   <div class="mainTB">
     <mat-toolbar class="matoolB">
-      Suivi des requétes
-
+      <div style="display: flex">
+        <button
+          style="border-radius: 20px; width: 100px; height: 35px"
+          mat-raised-button
+          (click)="fileInput.click()"
+        >
+          Charger
+          <input
+            #fileInput
+            type="file"
+            (change)="handleFileUpload($event)"
+            style="display: none"
+          />
+        </button>
+        <h4 style="margin-left: 25px; font-size: 25px">Suivi des requétes</h4>
+      </div>
       <div
         class="average-tdr"
         [ngStyle]="{ color: getScoreColor(calculateAverageScore()) }"
@@ -67,7 +81,6 @@
         <ng-container matColumnDef="reception">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Reçu</th>
           <td mat-cell *matCellDef="let mrepelem">
-            <div *ngIf="mrepelem.isEdit || mrepelem.isNew"></div>
             <div [matTooltip]="formatDate(mrepelem.reception)">
               {{ mrepelem.reception | date : "dd/MM/yyyy" }}
             </div>
@@ -179,7 +192,7 @@
               style="max-width: 100px; white-space: nowrap"
               [matTooltip]="mrepelem.adherent"
             >
-              {{ mrepelem.adherent | uppercase }}
+              {{ CharLimit(mrepelem.adherent, 15) | uppercase }}
             </div>
           </td>
         </ng-container>
@@ -187,7 +200,7 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Objet</th>
           <td mat-cell *matCellDef="let mrepelem">
             <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-              <input [(ngModel)]="mrepelem.objet" style="width: 140px" />
+              <input [(ngModel)]="mrepelem.objet" style="width: 145px" />
             </div>
             <div
               *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
@@ -206,7 +219,7 @@
                 >
               </ng-container>
               <ng-container *ngIf="mrepelem.objet && mrepelem.objet != ''">
-                {{ CharLimit(mrepelem.objet, 15) | titlecase }}
+                {{ CharLimit(mrepelem.objet, 30) | titlecase }}
               </ng-container>
             </div>
           </td>
@@ -259,7 +272,7 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Observation</th>
           <td mat-cell *matCellDef="let mrepelem">
             <div *ngIf="mrepelem.isEdit || mrepelem.isNew">
-              <input [(ngModel)]="mrepelem.observation" />
+              <input [(ngModel)]="mrepelem.observation" style="width: 145px" />
             </div>
             <div
               *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
@@ -282,7 +295,7 @@
               <ng-container
                 *ngIf="mrepelem.observation && mrepelem.observation != ''"
               >
-                {{ CharLimit(mrepelem.observation, 15) }}
+                {{ CharLimit(mrepelem.observation, 30) }}
               </ng-container>
             </div>
           </td>
