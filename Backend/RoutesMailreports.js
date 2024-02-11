@@ -222,6 +222,19 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+//_______________Vider la table___________________________
+
+router.delete("/", async (req, res, next) => {
+  const deleteQuery = "DELETE FROM mailreports";
+
+  try {
+    await db.query(deleteQuery);
+    res.status(200).json({ message: "All data deleted successfully" });
+  } catch (err) {
+    next(err); // Pass the error to the error handler middleware
+  }
+});
+
 // MAIL REPORTS UPDATE - PUT
 router.put("/:id", async (req, res) => {
   const id = req.params.id;

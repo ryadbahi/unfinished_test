@@ -555,6 +555,30 @@ export class MailreportsComponent implements OnInit {
       }
     );
   }
+
+  wipeMailrep() {
+    const confirmDelete = confirm('Voulez vous vraiment vider le tableau ?');
+
+    if (confirmDelete) {
+      this.service.emptyMailReport().subscribe({
+        next: (res) => {
+          this.snackBService.openSnackBar(
+            'Le tableau a bien été vidé',
+            'Super !'
+          );
+          console.log('emptied', res);
+
+          // Notify about data change
+          this.service.triggerDataChange();
+          this.refreshTable();
+        },
+        error: (error) => {
+          console.error('Error deleting row:', error);
+        },
+      });
+    }
+  }
+
   deleteIDMreport(id: any) {
     const confirmDelete = confirm('Are you sure you want to delete this item?');
 
