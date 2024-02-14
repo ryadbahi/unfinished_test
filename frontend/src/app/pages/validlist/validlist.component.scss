@@ -25,6 +25,11 @@
   font-weight: bolder;
 }
 
+.highlightgold {
+  color: goldenrod;
+  font-weight: bolder;
+}
+
 .duplicatehighlight {
   text-decoration-line: line-through;
   text-decoration-color: red;
@@ -225,5 +230,6 @@
 }
 .form_container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  margin: 0 5% 0 5%;
 }

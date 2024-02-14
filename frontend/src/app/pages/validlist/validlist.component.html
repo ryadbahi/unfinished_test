@@ -425,7 +425,10 @@
                   <th mat-header-cell *matHeaderCellDef>Prénom</th>
                   <td mat-cell *matCellDef="let fam">
                     <div
-                      [ngClass]="{ highlight: fam.highlight }"
+                      [ngClass]="{
+                        highlight: fam.highlight,
+                        highlightgold: fam.highlightgold
+                      }"
                       *ngIf="!fam.editable"
                     >
                       {{ fam.prenom }}
@@ -439,9 +442,20 @@
                 </ng-container>
                 <ng-container matColumnDef="dateDeNaissance">
                   <th mat-header-cell *matHeaderCellDef>Date de nais</th>
-                  <td mat-cell *matCellDef="let fam">
+                  <td
+                    mat-cell
+                    *matCellDef="let fam"
+                    [matTooltip]="
+                      fam.calcAgeRem >= 1 && fam.calcAgeRem <= 365
+                        ? fam.calcAgeRem + ' jours restants'
+                        : ''
+                    "
+                  >
                     <div
-                      [ngClass]="{ highlight: fam.highlight }"
+                      [ngClass]="{
+                        highlight: fam.highlight,
+                        highlightgold: fam.highlightgold
+                      }"
                       *ngIf="!fam.editable"
                     >
                       {{ fam.dateDeNaissance | date : "dd/MM/yyyy" }}
@@ -457,6 +471,7 @@
                     />
                   </td>
                 </ng-container>
+
                 <!----------------sub Action buttons----------------->
                 <ng-container matColumnDef="actions">
                   <th mat-header-cell *matHeaderCellDef>Édit/Suppr.</th>

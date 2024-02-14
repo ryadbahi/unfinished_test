@@ -80,6 +80,8 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
   let familyCounter = 0;
   let currentAdherentId = '';
   let rearrangedData: listing[] = [];
+  let tempData: listing[] = []; // Temporary array to hold the data
+
   if (sheet['!ref']) {
     let range = XLSX.utils.decode_range(sheet['!ref']);
     for (let i = range.s.r + 1; i <= range.e.r; i++) {
@@ -108,22 +110,37 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
         categorie,
         email,
       };
-      if (lienBnf.toLowerCase().includes('ass')) {
+      tempData.push(item); // Add the item to the temporary array
+    }
+
+    // Sort the temporary array so that 'ass' comes before 'Conjoint' and 'Enfant' for each serial
+    tempData.sort((a, b) => {
+      if (a.serial !== b.serial) {
+        return a.serial < b.serial ? -1 : 1;
+      } else {
+        return a.lienBnf.toLowerCase().includes('ass') ? -1 : 1;
+      }
+    });
+
+    // Process the sorted array
+    tempData.forEach((item) => {
+      if (
+        item.lienBnf &&
+        typeof item.lienBnf === 'string' &&
+        item.lienBnf.trim().toLowerCase().includes('ass')
+      ) {
         item.id = adherentCounter.toString();
         currentAdherentId = item.id;
         adherentCounter++;
         familyCounter = 0;
-      } else {
+        rearrangedData.push(item);
+      } else if (item.lienBnf && typeof item.lienBnf === 'string') {
         item.id =
           currentAdherentId +
           String.fromCharCode('a'.charCodeAt(0) + familyCounter);
         familyCounter++;
-      }
-      if (lienBnf.toLowerCase().includes('ass')) {
-        rearrangedData.push(item);
-      } else {
         const adherent = rearrangedData.find(
-          (adherentItem) => adherentItem.serial === serial
+          (adherentItem) => adherentItem.serial === item.serial
         );
         if (adherent) {
           adherent.fam_adh = adherent.fam_adh || [];
@@ -131,10 +148,12 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
           adherent.fam_adh.sort((a, b) => (a.lienBnf === 'Conjoint' ? -1 : 1));
         }
       }
-    }
+    });
   }
+
   return rearrangedData;
 }
+
 function processDptSinSheet(sheet: XLSX.WorkSheet): dptsin[] {
   let sinId = 0;
   let dptData: dptsin[] = [];

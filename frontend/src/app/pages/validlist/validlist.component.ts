@@ -53,6 +53,8 @@ export interface fam_adhData {
   prenom: string;
   dateDeNaissance: Date;
   highlight?: boolean;
+  highlightgold?: boolean;
+  calcAgeRem?: number;
   editable?: boolean;
 }
 
@@ -66,10 +68,11 @@ export interface listing {
   prenom: string;
   dateDeNaissance: Date;
   rib: string;
-  calculkey: string;
+  calculkey?: string;
   categorie: string;
   email: string;
   highlight?: boolean;
+
   duplicatehighlight?: boolean;
   issues?: number;
   highlightRib?: string;
@@ -465,18 +468,31 @@ export class ValidlistComponent implements OnInit {
           !child.prenom.toLowerCase().includes('(+21 ans)')
         ) {
           const birthDate = new Date(child.dateDeNaissance);
-          const age = currentDate.getFullYear() - birthDate.getFullYear();
+          const twentyFirstBirthday = new Date(birthDate.getTime());
+          twentyFirstBirthday.setFullYear(birthDate.getFullYear() + 21);
+          const timeDiff =
+            twentyFirstBirthday.getTime() - currentDate.getTime();
+          const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); // convert milliseconds to days
 
-          if (age >= 21) {
+          if (remainingDays <= 0) {
             child.highlight = true;
+          } else if (remainingDays <= 365) {
+            child.highlightgold = true;
+          }
 
-            // Check if the parent item is not already expanded
-            if (this.expandedElements.indexOf(item) === -1) {
-              // Expand the parent item
-              this.expandedElements.push(item);
-            }
+          child.calcAgeRem = remainingDays > 0 ? remainingDays : 0;
 
-            // Increment the count for each highlighted date
+          // Check if the parent item is not already expanded
+          if (
+            (child.highlight || child.highlightgold) &&
+            this.expandedElements.indexOf(item) === -1
+          ) {
+            // Expand the parent item
+            this.expandedElements.push(item);
+          }
+
+          // Increment the count for each highlighted date
+          if (child.highlight || child.highlightgold) {
             item.issues = (item.issues || 0) + 1;
             this.totalIssues++;
             this.cdr.detectChanges();
@@ -485,7 +501,7 @@ export class ValidlistComponent implements OnInit {
       });
     });
 
-    console.log('Data after processing:', this.dataSource); // Log the data after processing
+    console.log('Data after processing:', this.dataSource);
   }
 
   flattenData(data: listing[]): any[] {
