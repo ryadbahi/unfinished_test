@@ -884,6 +884,7 @@ export class ValidlistComponent implements OnInit {
   }
 
   addAgeTag() {
+    const currentDate = new Date();
     this.rearrangedData.forEach((item) => {
       item.fam_adh.forEach((child: fam_adhData) => {
         if (
@@ -891,9 +892,13 @@ export class ValidlistComponent implements OnInit {
           !child.prenom.toLowerCase().includes('(+21 ans)')
         ) {
           const birthDate = new Date(child.dateDeNaissance);
-          const age = new Date().getFullYear() - birthDate.getFullYear();
+          const twentyFirstBirthday = new Date(birthDate.getTime());
+          twentyFirstBirthday.setFullYear(birthDate.getFullYear() + 21);
+          const timeDiff =
+            twentyFirstBirthday.getTime() - currentDate.getTime();
+          const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-          if (age >= 21) {
+          if (remainingDays <= 0) {
             child.prenom = `(+21 ANS) ${child.prenom}`;
           }
         }
