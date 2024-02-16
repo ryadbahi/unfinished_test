@@ -35,6 +35,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RibVerifierService } from '../../rib-verifier.service';
 
 export interface dptsin {
   id: number;
@@ -48,6 +49,7 @@ export interface dptsin {
   frais: number;
   rbt: number;
   rib: string;
+  calculkey?: string;
   obs: string;
   status: boolean;
   issues?: number;
@@ -117,7 +119,8 @@ export class VerifsinComponent implements OnInit {
     private spinner: NgxSpinnerService,
     private cdr: ChangeDetectorRef,
     public datePipe: DatePipe,
-    private snackBService: SnackBarService
+    private snackBService: SnackBarService,
+    private ribVerif: RibVerifierService
   ) {
     this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
   }
@@ -270,7 +273,7 @@ export class VerifsinComponent implements OnInit {
   }
   verifyAndHighlight() {
     this.dptData.forEach((item) => {
-      const isRIBValid = this.verifyRIB(item.rib);
+      const isRIBValid = this.ribVerif.verifyRIB(item.rib, item);
 
       if (isRIBValid) {
         item.highlightRib = 'green';

@@ -40,6 +40,8 @@ import {
 import { SnackBarService } from '../../snack-bar.service';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
+import { RibVerifierService } from '../../rib-verifier.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export interface ParaphTable {
   id: number;
@@ -58,6 +60,7 @@ export interface ParaphDetail {
   serial: number;
   benef_virmnt: string;
   rib: string;
+  calculkey?: string;
   montant: number;
   highlightRib?: string;
 }
@@ -70,6 +73,7 @@ interface RestructuredItem {
   paraphdetails: {
     benef_virmnt: string;
     rib: string;
+
     montant: number;
   }[];
 }
@@ -99,6 +103,7 @@ interface RestructuredItem {
     MatMenuModule,
     MatBadgeModule,
     RouterLink,
+    MatTooltipModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './paraph.component.html',
@@ -146,7 +151,8 @@ export class ParaphComponent implements OnInit {
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
     private snackBService: SnackBarService,
-    private router: Router
+    private router: Router,
+    private ribVerif: RibVerifierService
   ) {}
 
   ngOnInit(): void {}
@@ -357,44 +363,10 @@ export class ParaphComponent implements OnInit {
     return 'collapsed';
   }
 
-  verifyRIB(rib: string): boolean {
-    const bankCode = rib.substring(0, 3);
-    const agency = rib.substring(3, 8);
-    const accountNumber = rib.substring(8, 18);
-    const inputKey = rib.substring(18);
-    //_______________CCP___________________________
-    if (bankCode === '007') {
-      const ccpstep1 = parseInt(accountNumber);
-      const ccpstep2 = ccpstep1 * 100;
-      const ccpstep3 = ccpstep2 % 97;
-      const ccpstep4 = ccpstep3 + 85 > 97 ? ccpstep3 + 85 - 97 : ccpstep3 + 85;
-      const ccpstep5 = ccpstep4 == 97 ? ccpstep4 : 97 - ccpstep4;
-      const calculateCcpKey = ccpstep5 < 10 ? `0${ccpstep5}` : `${ccpstep5}`;
-
-      return calculateCcpKey === inputKey;
-    } else {
-      const concatenatedNumber = parseInt(agency + accountNumber);
-
-      //_______________BANK___________________________
-      const step1Result = concatenatedNumber * 100;
-      const step2Result = step1Result / 97;
-      const step3Result = Math.floor(step2Result);
-      const step4Result = step3Result * 97;
-      const step5Result = step1Result - step4Result;
-      const step6Result = 97 - step5Result;
-
-      // Check if the input key is correct
-      const calculatedKey =
-        step6Result < 10 ? `0${step6Result}` : `${step6Result}`;
-
-      // Compare calculated key with the input key
-      return calculatedKey === inputKey;
-    }
-  }
   verifyAndHighlight() {
     this.dataSource.data.forEach((item: ParaphTable) => {
       item.paraphdetails.forEach((detail: ParaphDetail) => {
-        const isRIBValid = this.verifyRIB(detail.rib);
+        const isRIBValid = this.ribVerif.verifyRIB(detail.rib, detail);
 
         if (isRIBValid) {
           detail.highlightRib = 'green';

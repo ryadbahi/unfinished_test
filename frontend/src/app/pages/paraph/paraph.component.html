@@ -201,6 +201,7 @@
                     mat-cell
                     *matCellDef="let element"
                     [ngStyle]="{ color: element.highlightRib }"
+                    [matTooltip]="element.calculkey"
                   >
                     <div>{{ element.rib }}</div>
                   </td>

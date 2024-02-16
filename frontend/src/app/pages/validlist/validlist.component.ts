@@ -18,7 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
-
+import { RibVerifierService } from '../../rib-verifier.service';
 import {
   MatTable,
   MatTableDataSource,
@@ -177,7 +177,8 @@ export class ValidlistComponent implements OnInit {
     private spinner: NgxSpinnerService,
     private cdr: ChangeDetectorRef,
     public datePipe: DatePipe,
-    private snackBService: SnackBarService
+    private snackBService: SnackBarService,
+    private ribVerif: RibVerifierService
   ) {
     this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
   }
@@ -458,7 +459,7 @@ export class ValidlistComponent implements OnInit {
   }
 
   highlightOldChildren() {
-    console.log('highlightOldChildren method called');
+    //console.log('highlightOldChildren method called');
     const currentDate = new Date();
 
     this.rearrangedData.forEach((item) => {
@@ -676,43 +677,6 @@ export class ValidlistComponent implements OnInit {
     }
   }
 
-  verifyRIB(rib: string, listing: listing): boolean {
-    const bankCode = rib.substring(0, 3);
-    const agency = rib.substring(3, 8);
-    const accountNumber = rib.substring(8, 18);
-    const inputKey = rib.substring(18);
-
-    //_______________CCP___________________________
-    if (bankCode === '007') {
-      const ccpstep1 = parseInt(accountNumber);
-      const ccpstep2 = ccpstep1 * 100;
-      const ccpstep3 = ccpstep2 % 97;
-      const ccpstep4 = ccpstep3 + 85 > 97 ? ccpstep3 + 85 - 97 : ccpstep3 + 85;
-      const ccpstep5 = ccpstep4 == 97 ? ccpstep4 : 97 - ccpstep4;
-      const calculateCcpKey = ccpstep5 < 10 ? `0${ccpstep5}` : `${ccpstep5}`;
-
-      listing.calculkey = calculateCcpKey;
-      return calculateCcpKey === inputKey;
-    } else {
-      const concatenatedNumber = parseInt(agency + accountNumber);
-
-      //_______________BANK___________________________
-      const step1Result = concatenatedNumber * 100;
-      const step2Result = step1Result / 97;
-      const step3Result = Math.floor(step2Result);
-      const step4Result = step3Result * 97;
-      const step5Result = step1Result - step4Result;
-      const step6Result = 97 - step5Result;
-
-      // Check if the input key is correct
-      const calculatedKey =
-        step6Result < 10 ? `0${step6Result}` : `${step6Result}`;
-
-      // Compare calculated key with the input key
-      listing.calculkey = calculatedKey;
-      return calculatedKey === inputKey;
-    }
-  }
   verifyAndHighlight() {
     this.rearrangedData.forEach((item) => {
       // Check if item.rib is empty
@@ -720,7 +684,7 @@ export class ValidlistComponent implements OnInit {
         item.rib = 'RIB vide';
       }
 
-      const isRIBValid = this.verifyRIB(item.rib, item);
+      const isRIBValid = this.ribVerif.verifyRIB(item.rib, item);
 
       if (isRIBValid) {
         item.highlightRib = 'green';
