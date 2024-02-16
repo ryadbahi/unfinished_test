@@ -1,0 +1,71 @@
+<body>
+  <div>
+    <mat-toolbar class="matoolB">
+      <button mat-raised-button (click)="getNomencl()">Nomenc</button>
+      <button mat-raised-button (click)="getSouscript()">souscript</button>
+    </mat-toolbar>
+  </div>
+  <div class="formMaster">
+    <mat-card>
+      <mat-card-content>
+        <h1 mat-dialog-title>Nouveau contrat</h1>
+        <div mat-dialog-content>
+          <div class="form_container">
+            <form
+              style="display: flex; flex-direction: column"
+              [formGroup]="contractForm"
+            >
+              <mat-form-field>
+                <mat-label>Souscripteur</mat-label>
+                <mat-select formControlName="selectSouscript">
+                  <mat-option
+                    *ngFor="let element of souscripData"
+                    [value]="element.id_souscript"
+                  >
+                    {{ element.nom_souscript }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Contrat n°</mat-label>
+                <input
+                  matInput
+                  formControlName="num_contrat"
+                  placeholder=""
+                  required
+                  (input)="formatContractNumber($event)"
+                  maxlength="19"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Date d'effet</mat-label>
+                <input matInput formControlName="date_effet" placeholder="" />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Date d'expiration</mat-label>
+                <input matInput formControlName="date_expir" placeholder="" />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Prime net</mat-label>
+                <input matInput formControlName="prime" placeholder="" />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Option</mat-label>
+                <mat-select formControlName="option">
+                  <mat-option *ngFor="let element of option" [value]="element">
+                    {{ element }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </form>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</body>

@@ -10,6 +10,7 @@ const familyRoutes = require("./RoutesFamily_adh.js");
 const PdfPrarseRoutes = require("./RoutesPdfParse.js");
 const paraphRoutes = require("./RoutesParaph.js");
 const paraph_ovRoutes = require("./RoutesParah_ov.js");
+const nomencleRoutes = require("./RoutesNomencl.js");
 
 const app = express();
 
@@ -20,6 +21,10 @@ app.use((req, res, next) => {
   next();
   console.log(req.body); // Log the raw request body
 });
+
+//------------------------NOMENCLATURE TABLE----------------------------------
+
+app.use("/nomencl", nomencleRoutes);
 
 // -------------------------PARAPHEUR GET--------------------------------------
 

@@ -324,9 +324,15 @@ export class ApiService {
   UploadFileOv(id: any, data: File) {
     // Ensure that your server expects the file in the request body
     const formData = new FormData();
-    formData.append('file_ov', data, data.name); // 'file_ov' should match the expected field name on the server
+    formData.append('file_ov', data, data.name);
 
     // Send the request
     return this.http.put(`${this.apiUrl}/paraph_ov/${id}`, formData);
+  }
+
+  //____________________Nomenclature______________________________
+
+  getNomencl(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/nomencl`);
   }
 }

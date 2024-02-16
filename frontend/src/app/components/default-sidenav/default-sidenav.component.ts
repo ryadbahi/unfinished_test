@@ -79,5 +79,11 @@ export class DefaultSidenavComponent {
       label: 'Parapheur',
       route: 'paraph',
     },
+
+    {
+      icon: 'note_add',
+      label: 'Contrats',
+      route: 'contrat',
+    },
   ]);
 }

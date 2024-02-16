@@ -10,6 +10,7 @@ import { ValidlistComponent } from './pages/validlist/validlist.component';
 import { VerifsinComponent } from './pages/verifsin/verifsin.component';
 import { ParaphComponent } from './pages/paraph/paraph.component';
 import { HistoParaphComponent } from './pages/paraph/histo-paraph/histo-paraph.component';
+import { ContratComponent } from './pages/contrat/contrat.component';
 
 export const routes: Routes = [
   {
@@ -65,5 +66,11 @@ export const routes: Routes = [
     path: 'histo_paraph',
     component: HistoParaphComponent,
     title: 'Historique parapheurs',
+  },
+
+  {
+    path: 'contrat',
+    component: ContratComponent,
+    title: 'Contrats',
   },
 ];

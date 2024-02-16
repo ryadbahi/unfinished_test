@@ -20,6 +20,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
+import { ApiService } from '../../api.service';
 
 @Component({
   selector: 'app-sinistres',
@@ -47,8 +48,12 @@ import { RouterLink } from '@angular/router';
 })
 export class SinistresComponent implements OnInit {
   dptsinForm!: FormGroup;
+  nomenclatureList: any[] = [];
 
-  constructor(private formBuilder: FormBuilder) {}
+  constructor(
+    private formBuilder: FormBuilder,
+    private apiService: ApiService
+  ) {}
   ngOnInit(): void {
     this.dptsinForm = this.formBuilder.group({
       assure: ['', Validators.required],
@@ -65,6 +70,21 @@ export class SinistresComponent implements OnInit {
       societe: ['', Validators.required],
       numContrat: ['', Validators.required],
       refDepot: ['', Validators.required],
+    });
+  }
+
+  getNomencl() {
+    this.apiService.getNomencl().subscribe({
+      next: (data) => {
+        this.nomenclatureList = data;
+        console.log('Nomenclature List:', this.nomenclatureList);
+      },
+      error: (error) => {
+        console.error('Error fetching Nomenclature List:', error);
+      },
+      complete: () => {
+        // Handle completion if needed
+      },
     });
   }
 }
