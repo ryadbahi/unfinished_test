@@ -26,16 +26,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-// _____________ Nomencle GET ________________
-
 router.get("/", async (req, res, next) => {
   try {
     const result = await db.query("SELECT * FROM nomencl");
 
     if (result.length > 0) {
       const categorizedData = categorizeByCategory(result);
-      const responseObj = { nomenclature: categorizedData };
-      res.status(200).json(responseObj);
+      res.status(200).json(categorizedData);
     } else {
       res.status(404).json({ error: "No items found" });
     }
@@ -72,7 +69,8 @@ function categorizeByCategory(data) {
         (item) => item.code_garantie[0] === categoryKey
       );
 
-      categorizedData.push({ [categoryName]: categoryData });
+      // Push an object with consistent structure
+      categorizedData.push({ category: categoryName, items: categoryData });
     });
   } catch (error) {
     console.error("Error categorizing data:", error);

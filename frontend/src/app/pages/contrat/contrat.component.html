@@ -17,7 +17,10 @@
             >
               <mat-form-field>
                 <mat-label>Souscripteur</mat-label>
-                <mat-select formControlName="selectSouscript">
+                <mat-select
+                  disableOptionCentering
+                  formControlName="selectSouscript"
+                >
                   <mat-option
                     *ngFor="let element of souscripData"
                     [value]="element.id_souscript"
@@ -62,6 +65,98 @@
                   </mat-option>
                 </mat-select>
               </mat-form-field>
+
+              <DIV class="matSelect">
+                <mat-select
+                  disableOptionCentering
+                  formControlName="selectedNomncList"
+                  placeholder="Selectionnez les garanties"
+                  multiple
+                >
+                  <div class="listBox">
+                    <mat-optgroup
+                      style="font-size: 20px; font-weight: bolder"
+                      *ngFor="let nomenclatureItem of nomenclature"
+                      [label]="nomenclatureItem.category"
+                    >
+                      <mat-option
+                        *ngFor="let item of nomenclatureItem.items"
+                        [value]="item"
+                      >
+                        {{ item.code_garantie }} : {{ item.garantie_describ }}
+                      </mat-option>
+                    </mat-optgroup>
+                  </div>
+                </mat-select></DIV
+              >
+
+              <!----------------------------FORM PART 2------------------------------------------------------->
+              <div class="dynamicForm" formArrayName="dynamicForm">
+                <div
+                  *ngFor="
+                    let contractRow of dynamicFormArray.controls;
+                    let i = index
+                  "
+                  [formGroupName]="i"
+                >
+                  <mat-form-field>
+                    <mat-label>Garantie</mat-label>
+                    <input matInput formControlName="garantie" placeholder="" />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Limite du plan</mat-label>
+                    <input
+                      matInput
+                      formControlName="limit_plan"
+                      placeholder=""
+                    />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Garantie par..</mat-label>
+                    <input
+                      matInput
+                      formControlName="applied_on"
+                      placeholder=""
+                    />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Taux remboursé</mat-label>
+                    <input matInput formControlName="taux_rbt" placeholder="" />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Plafond</mat-label>
+                    <input
+                      matInput
+                      formControlName="limit_gar"
+                      placeholder=""
+                    />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Déscription</mat-label>
+                    <input
+                      matInput
+                      formControlName="limit_gar_describ"
+                      placeholder=""
+                    />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Nombre d'unité</mat-label>
+                    <input
+                      matInput
+                      formControlName="nbr_of_unit"
+                      placeholder=""
+                    />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Valeur par unité</mat-label>
+                    <input
+                      matInput
+                      formControlName="unit_value"
+                      placeholder=""
+                    />
+                  </mat-form-field>
+                </div>
+              </div>
             </form>
           </div>
         </div>
