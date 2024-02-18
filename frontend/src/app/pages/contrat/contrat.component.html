@@ -6,7 +6,7 @@
     </mat-toolbar>
   </div>
   <div class="formMaster">
-    <mat-card>
+    <mat-card class="Card">
       <mat-card-content>
         <h1 mat-dialog-title>Nouveau contrat</h1>
         <div mat-dialog-content>
@@ -15,57 +15,74 @@
               style="display: flex; flex-direction: column"
               [formGroup]="contractForm"
             >
-              <mat-form-field>
-                <mat-label>Souscripteur</mat-label>
-                <mat-select
-                  disableOptionCentering
-                  formControlName="selectSouscript"
-                >
-                  <mat-option
-                    *ngFor="let element of souscripData"
-                    [value]="element.id_souscript"
+              <div class="formPartOne">
+                <mat-form-field>
+                  <mat-select
+                    disableOptionCentering
+                    formControlName="selectSouscript"
+                    placeholder="Selectionnez un souscripteur"
+                    style="font-size: 12px"
                   >
-                    {{ element.nom_souscript }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
+                    <mat-option
+                      *ngFor="let element of souscripData"
+                      [value]="element.id_souscript"
+                    >
+                      {{ element.nom_souscript }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Contrat n°</mat-label>
-                <input
-                  matInput
-                  formControlName="num_contrat"
-                  placeholder=""
-                  required
-                  (input)="formatContractNumber($event)"
-                  maxlength="19"
-                />
-              </mat-form-field>
+                <mat-form-field>
+                  <input
+                    matInput
+                    formControlName="num_contrat"
+                    placeholder=""
+                    required
+                    (input)="formatContractNumber($event)"
+                    maxlength="19"
+                    placeholder="Contrat n°"
+                  />
+                </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Date d'effet</mat-label>
-                <input matInput formControlName="date_effet" placeholder="" />
-              </mat-form-field>
+                <mat-form-field>
+                  <input
+                    matInput
+                    formControlName="date_effet"
+                    placeholder="Date d'effet"
+                  />
+                </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Date d'expiration</mat-label>
-                <input matInput formControlName="date_expir" placeholder="" />
-              </mat-form-field>
+                <mat-form-field>
+                  <input
+                    matInput
+                    formControlName="date_expir"
+                    placeholder="Date d'expiration"
+                  />
+                </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Prime net</mat-label>
-                <input matInput formControlName="prime" placeholder="" />
-              </mat-form-field>
+                <mat-form-field>
+                  <input
+                    matInput
+                    formControlName="prime"
+                    placeholder="Prime net"
+                  />
+                </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Option</mat-label>
-                <mat-select formControlName="option">
-                  <mat-option *ngFor="let element of option" [value]="element">
-                    {{ element }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
+                <mat-form-field>
+                  <mat-select
+                    formControlName="option"
+                    placeholder="Option"
+                    style="font-size: 12px"
+                  >
+                    <mat-option
+                      *ngFor="let element of option"
+                      [value]="element"
+                    >
+                      {{ element }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
               <DIV class="matSelect">
                 <mat-select
                   disableOptionCentering
@@ -100,59 +117,61 @@
                   [formGroupName]="i"
                 >
                   <mat-form-field>
-                    <mat-label>Garantie</mat-label>
-                    <input matInput formControlName="garantie" placeholder="" />
+                    <input
+                      matInput
+                      formControlName="garantie"
+                      placeholder="Garantie"
+                      style="font-weight: bold"
+                    />
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Limite du plan</mat-label>
                     <input
                       matInput
                       formControlName="limit_plan"
-                      placeholder=""
+                      placeholder="Limite du plan"
                     />
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Garantie par..</mat-label>
                     <input
                       matInput
                       formControlName="applied_on"
-                      placeholder=""
+                      placeholder="Garantie par.."
                     />
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Taux remboursé</mat-label>
-                    <input matInput formControlName="taux_rbt" placeholder="" />
+                    <input
+                      matInput
+                      formControlName="taux_rbt"
+                      placeholder="Taux remboursé"
+                    />
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Plafond</mat-label>
                     <input
                       matInput
                       formControlName="limit_gar"
-                      placeholder=""
+                      placeholder="Plafond"
                     />
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Déscription</mat-label>
                     <input
                       matInput
                       formControlName="limit_gar_describ"
-                      placeholder=""
+                      placeholder="Déscription"
                     />
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Nombre d'unité</mat-label>
                     <input
+                      type="number"
                       matInput
                       formControlName="nbr_of_unit"
-                      placeholder=""
+                      placeholder="Nombre d'unité"
                     />
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Valeur par unité</mat-label>
                     <input
                       matInput
                       formControlName="unit_value"
-                      placeholder=""
+                      placeholder="Valeur par unité"
                     />
                   </mat-form-field>
                 </div>

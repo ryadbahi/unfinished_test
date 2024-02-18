@@ -46,18 +46,18 @@ function categorizeByCategory(data) {
   const categories = {
     A: "Honoraires Medicaux",
     B: "Pharmacie",
+    H: "Actes D'Exploration",
     C: "Dentaire",
-    D: "Prothese",
     E: "Optique",
     F: "Hospitalisation",
     G: "Maternite",
-    H: "Actes D'Exploration",
-    I: "Assistance",
     J: "Indemnités Forfaitaires",
-    K: "Tiers Payants",
+    D: "Prothese",
+    I: "Assistance",
     L: "Incapacité Permanente",
     M: "Décès – IAD – Maladies redoutées",
     N: "Décès -Invalidité Absolue et Définitive",
+    K: "Tiers Payants",
   };
 
   const categorizedData = [];

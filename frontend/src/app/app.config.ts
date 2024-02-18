@@ -6,7 +6,7 @@ import {
   provideAnimations,
 } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
-import { DatePipe, registerLocaleData } from '@angular/common';
+import { DatePipe, DecimalPipe, registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 import { provideToastr } from 'ngx-toastr';
 import { MatTableModule } from '@angular/material/table';
@@ -32,5 +32,6 @@ export const appConfig: ApplicationConfig = {
     }),
     MatTableModule,
     NgxSpinnerModule,
+    DecimalPipe,
   ],
 };

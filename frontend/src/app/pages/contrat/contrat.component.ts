@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ApiService } from '../../api.service';
@@ -62,6 +62,7 @@ export interface SouscripData {
     MatInputModule,
     MatSelectModule,
     MatListModule,
+    DecimalPipe,
   ],
   templateUrl: './contrat.component.html',
   styleUrl: './contrat.component.scss',
@@ -75,7 +76,11 @@ export class ContratComponent implements OnInit {
   selectedCategory!: string;
   dynamicForm!: FormArray;
 
-  constructor(private apiService: ApiService, private fb: FormBuilder) {
+  constructor(
+    private apiService: ApiService,
+    private fb: FormBuilder,
+    private decimalPipe: DecimalPipe
+  ) {
     this.contractForm = this.fb.group({
       selectSouscript: new FormControl('', Validators.required),
       num_contrat: new FormControl('', [
@@ -98,9 +103,7 @@ export class ContratComponent implements OnInit {
       option: new FormControl('', Validators.required),
       nomncList: new FormControl('', Validators.required),
       selectedNomncList: new FormControl([], Validators.required),
-
-      //_____________________________FROM PART 2 _____________________________________
-      dynamicForm: this.fb.array([]),
+      dynamicForm: this.fb.array([]), //from part 2
     });
 
     this.contractForm
@@ -120,6 +123,11 @@ export class ContratComponent implements OnInit {
       ?.valueChanges.subscribe((selectedItems) => {
         this.addContractRow();
       });
+  }
+
+  ngOnInit(): void {
+    this.getSouscript();
+    this.getNomencl();
   }
 
   createGarantiesRow(selectedItem: any): FormGroup {
@@ -202,10 +210,6 @@ export class ContratComponent implements OnInit {
       }
     }
     this.contractForm.controls['num_contrat'].setValue(formattedInput);
-  }
-  ngOnInit(): void {
-    this.getSouscript();
-    this.getNomencl();
   }
 
   openList() {
