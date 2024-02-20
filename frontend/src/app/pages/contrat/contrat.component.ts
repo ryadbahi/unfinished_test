@@ -75,6 +75,7 @@ export class ContratComponent implements OnInit {
   option = [1, 2, 3, 4];
   selectedCategory!: string;
   dynamicForm!: FormArray;
+  garPar: string[] = ['Assuré', 'Bénéficiaire'];
 
   constructor(
     private apiService: ApiService,
@@ -101,6 +102,7 @@ export class ContratComponent implements OnInit {
         Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$'),
       ]),
       option: new FormControl('', Validators.required),
+      limit_plan: ['', Validators.required],
       nomncList: new FormControl('', Validators.required),
       selectedNomncList: new FormControl([], Validators.required),
       dynamicForm: this.fb.array([]), //from part 2
@@ -133,11 +135,12 @@ export class ContratComponent implements OnInit {
   createGarantiesRow(selectedItem: any): FormGroup {
     return this.fb.group({
       garantie: [selectedItem.garantie_describ || '', Validators.required],
-      limit_plan: ['', Validators.required],
+
       applied_on: ['', Validators.required],
       taux_rbt: ['', Validators.required],
+      limit_act: ['', Validators.required],
       limit_gar: ['', Validators.required],
-      limit_gar_describ: ['', Validators.required],
+      limit_gar_describ: [''],
       nbr_of_unit: ['', Validators.required],
       unit_value: ['', Validators.required],
     });

@@ -44,15 +44,15 @@ router.get("/", async (req, res, next) => {
 // Function to categorize the result
 function categorizeByCategory(data) {
   const categories = {
-    A: "Honoraires Medicaux",
+    A: "Honoraires Médicaux",
     B: "Pharmacie",
-    H: "Actes D'Exploration",
     C: "Dentaire",
-    E: "Optique",
     F: "Hospitalisation",
-    G: "Maternite",
+    G: "Maternité",
+    E: "Optique",
+    H: "Actes exploratoires",
     J: "Indemnités Forfaitaires",
-    D: "Prothese",
+    D: "Prothèse",
     I: "Assistance",
     L: "Incapacité Permanente",
     M: "Décès – IAD – Maladies redoutées",

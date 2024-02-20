@@ -82,6 +82,14 @@
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
+
+                <mat-form-field>
+                  <input
+                    matInput
+                    formControlName="limit_plan"
+                    placeholder="Limite du plan"
+                  />
+                </mat-form-field>
               </div>
               <DIV class="matSelect">
                 <mat-select
@@ -124,28 +132,39 @@
                       style="font-weight: bold"
                     />
                   </mat-form-field>
-                  <mat-form-field>
-                    <input
-                      matInput
-                      formControlName="limit_plan"
-                      placeholder="Limite du plan"
-                    />
-                  </mat-form-field>
-                  <mat-form-field>
-                    <input
-                      matInput
+
+                  <mat-form-field style="width: 7rem">
+                    <mat-select
                       formControlName="applied_on"
                       placeholder="Garantie par.."
-                    />
+                      style="font-size: 12px"
+                    >
+                      <mat-option
+                        *ngFor="let element of garPar"
+                        [value]="element"
+                      >
+                        {{ element }}
+                      </mat-option>
+                    </mat-select>
                   </mat-form-field>
-                  <mat-form-field>
+
+                  <mat-form-field style="width: 4rem">
                     <input
                       matInput
                       formControlName="taux_rbt"
-                      placeholder="Taux remboursé"
+                      placeholder="Taux"
                     />
                   </mat-form-field>
-                  <mat-form-field>
+
+                  <mat-form-field style="width: 5rem">
+                    <input
+                      matInput
+                      formControlName="limit_act"
+                      placeholder="Limit./acte"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field style="width: 5rem">
                     <input
                       matInput
                       formControlName="limit_gar"
@@ -159,19 +178,19 @@
                       placeholder="Déscription"
                     />
                   </mat-form-field>
-                  <mat-form-field>
+                  <mat-form-field style="width: 5rem">
                     <input
                       type="number"
                       matInput
                       formControlName="nbr_of_unit"
-                      placeholder="Nombre d'unité"
+                      placeholder="Nbr d'unit"
                     />
                   </mat-form-field>
-                  <mat-form-field>
+                  <mat-form-field style="width: 5rem">
                     <input
                       matInput
                       formControlName="unit_value"
-                      placeholder="Valeur par unité"
+                      placeholder="Val./unité"
                     />
                   </mat-form-field>
                 </div>
