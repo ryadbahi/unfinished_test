@@ -103,7 +103,7 @@ export class ContratComponent implements OnInit {
       ]),
       option: new FormControl('', Validators.required),
       limit_plan: ['', Validators.required],
-      nomncList: new FormControl('', Validators.required),
+
       selectedNomncList: new FormControl([], Validators.required),
       dynamicForm: this.fb.array([]), //from part 2
     });
@@ -116,15 +116,12 @@ export class ContratComponent implements OnInit {
           this.contractForm.controls['date_expir'].setValue(dateExpir);
         }
       });
-    this.addContractRow();
 
     this.dynamicForm = this.fb.array([]);
     this.contractForm.setControl('dynamicForm', this.dynamicForm);
-    this.contractForm
-      .get('selectedNomncList')
-      ?.valueChanges.subscribe((selectedItems) => {
-        this.addContractRow();
-      });
+    this.contractForm.get('selectedNomncList')?.valueChanges.subscribe(() => {
+      this.addContractRow();
+    });
   }
 
   ngOnInit(): void {
@@ -148,15 +145,27 @@ export class ContratComponent implements OnInit {
   addContractRow(): void {
     const selectedItems = this.contractForm.get('selectedNomncList')?.value;
 
-    // Ensure that selectedItems is not null before proceeding
     if (selectedItems) {
-      // Clear existing rows
-      this.clearContractRows();
+      const formArray = this.contractForm.get('dynamicForm') as FormArray;
 
-      // Add a form group for each selected item
+      for (let i = formArray.length - 1; i >= 0; i--) {
+        const currentItem = formArray.at(i).get('garantie')?.value;
+        if (
+          !selectedItems.find(
+            (item: any) => item.garantie_describ === currentItem
+          )
+        ) {
+          formArray.removeAt(i);
+        }
+      }
       for (const selectedItem of selectedItems) {
-        const contractRow = this.createGarantiesRow(selectedItem);
-        this.dynamicForm.push(contractRow);
+        const currentItem = formArray.value.find(
+          (item: any) => item.garantie === selectedItem.garantie_describ
+        );
+        if (!currentItem) {
+          const contractRow = this.createGarantiesRow(selectedItem);
+          formArray.push(contractRow);
+        }
       }
     }
   }
