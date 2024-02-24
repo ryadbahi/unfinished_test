@@ -63,6 +63,51 @@
   padding-right: 1px;
 }
 
+.newcontrat,
+.newSouscrip {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  width: 25%;
+}
+.newOption {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto;
+  grid-gap: 10px;
+  margin: 1rem 0 1rem 0;
+}
+
+.bottomBlock {
+  grid-column: span 3;
+}
+
+.tbdTable {
+  background-color: rgba(240, 248, 255, 0.301);
+  font-weight: bolder;
+  color: #3d3b3b;
+  text-align: center;
+  display: table;
+}
+.detailsContratTable {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  margin: 1rem 0 1rem 0;
+}
+.illustr {
+  margin-top: 0.5rem;
+  height: 10rem;
+}
+.illustrDiv {
+  margin-top: 0.5rem;
+  margin-left: 30%;
+}
+.optlimit {
+  display: table-caption;
+}
+
 ::ng-deep.mat-mdc-select-panel {
   max-height: 49vh !important;
 }
@@ -100,4 +145,17 @@
 }
 ::ng-deep.mdc-text-field--filled:not(.mdc-text-field--disabled) {
   padding: 0px 1px 0px 8px;
+}
+::ng-deep.mat-mdc-tab-group-dynamic-height .mat-mdc-tab-body-content {
+  overflow: hidden;
+  display: flex;
+}
+::ng-deep.mat-mdc-tab-group.mat-mdc-tab-group-stretch-tabs
+  > .mat-mdc-tab-header
+  .mat-mdc-tab {
+  background-color: rgba(240, 248, 255, 0.301);
+  box-shadow: #3d3b3b;
+}
+::ng-deep.mat-mdc-tab-header {
+  border-radius: 20px;
 }

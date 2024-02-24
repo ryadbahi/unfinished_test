@@ -29,17 +29,7 @@ router.post("/", async (req, res, next) => {
 });
 
 async function insertContrat(data) {
-  const {
-    id_souscript,
-    num_contrat,
-    date_effet,
-    date_exp,
-    prime_total,
-    Duree_contr,
-  } = data;
-
-  const formattedDate_effet = format(new Date(date_effet), "yyyy-MM-dd");
-  const formattedDate_exp = format(new Date(date_exp), "yyyy-MM-dd");
+  const { id_souscript, num_contrat, date_effet, date_exp, prime_total } = data;
 
   const insertQuery = `
     INSERT INTO contrats (
@@ -47,19 +37,18 @@ async function insertContrat(data) {
         num_contrat,
         date_effet,
         date_exp,
-        prime_total,
-        Duree_contr
-    ) VALUES (?, ?, ?, ?, ?, ?)
+        prime_total
+        
+    ) VALUES (?, ?, ?, ?, ?)
   `;
 
   try {
     await db.query(insertQuery, [
       id_souscript,
       num_contrat,
-      formattedDate_effet,
-      formattedDate_exp,
+      date_effet,
+      date_exp,
       prime_total,
-      Duree_contr,
     ]);
     console.log("Insert successful");
   } catch (err) {
@@ -70,7 +59,10 @@ async function insertContrat(data) {
 
 // CONTRATS READ - GET
 router.get("/", async (req, res, next) => {
-  const selectQuery = "SELECT * FROM contrats";
+  const selectQuery = `
+    SELECT contrats.*, souscripteurs.nom_souscript
+    FROM contrats
+    LEFT JOIN souscripteurs ON contrats.id_souscript = souscripteurs.id_souscript`;
 
   try {
     const [results] = await db.query(selectQuery);
@@ -83,7 +75,11 @@ router.get("/", async (req, res, next) => {
 // CONTRATS GET a single record by ID
 router.get("/:id", async (req, res, next) => {
   const id = req.params.id;
-  const selectSingleQuery = "SELECT * FROM contrats WHERE id_contrat = ?";
+  const selectSingleQuery = `
+    SELECT contrats.*, souscripteurs.nom_souscript
+    FROM contrats
+    LEFT JOIN souscripteurs ON contrats.id_souscript = souscripteurs.id_souscript
+    WHERE contrats.id_contrat = ?`;
 
   try {
     const [results] = await db.query(selectSingleQuery, [id]);

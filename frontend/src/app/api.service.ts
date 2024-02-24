@@ -335,4 +335,15 @@ export class ApiService {
   getNomencl(): Observable<any> {
     return this.http.get(`${this.apiUrl}/nomencl`);
   }
+
+  //______________________Contrats_______________________________
+  getAllContrats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/contrats`);
+  }
+
+  //_______________OPTIONS_____________________________________
+
+  getAllOptions(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/options`);
+  }
 }

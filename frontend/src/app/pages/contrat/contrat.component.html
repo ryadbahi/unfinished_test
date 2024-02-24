@@ -1,205 +1,391 @@
 <body>
   <div>
     <mat-toolbar class="matoolB">
-      <button mat-raised-button (click)="getNomencl()">Nomenc</button>
-      <button mat-raised-button (click)="getSouscript()">souscript</button>
+      <button mat-raised-button (click)="getcontrats()">contrat</button>
+      <button mat-raised-button (click)="getOptions()">options</button>
     </mat-toolbar>
   </div>
+
   <div class="formMaster">
     <mat-card class="Card">
       <mat-card-content>
-        <h1 mat-dialog-title style="color: #3d3b3b; margin: 0 0 10px 0">
-          Nouveau contrat
-        </h1>
-        <div mat-dialog-content>
+        <mat-tab-group dynamicHeight style="border-radius: 20px">
           <div class="form_container">
+            <form [formGroup]="sousForm">
+              <mat-tab
+                label="Nouveau Souscripteur"
+                style="display: flex !important"
+              >
+                <div class="newSouscrip">
+                  <mat-form-field>
+                    <input
+                      formControlName="nom_souscript"
+                      matInput
+                      placeholder="Raison sociale"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <input
+                      formControlName="adresse_souscript"
+                      matInput
+                      placeholder="Adresse"
+                    />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input
+                      formControlName="tel_souscript"
+                      matInput
+                      placeholder="Tel"
+                    />
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input
+                      formControlName="email_souscript"
+                      matInput
+                      placeholder="E-mail"
+                    />
+                  </mat-form-field>
+                  <div class="submitbtn">
+                    <button
+                      mat-raised-button
+                      style="
+                        width: 5rem;
+                        float: right;
+                        margin: 0.5rem 0.5rem 0.5rem 0;
+                        border-radius: 20px;
+                      "
+                      (click)="sumbmitSous()"
+                    >
+                      Valider
+                    </button>
+                  </div>
+                </div>
+                <div class="illustrDiv">
+                  <img class="illustr" src="assets/entreprise.png" />
+                </div>
+              </mat-tab>
+            </form>
             <form
               style="display: flex; flex-direction: column"
               [formGroup]="contractForm"
             >
-              <div class="formPartOne">
-                <mat-form-field>
-                  <mat-select
-                    disableOptionCentering
-                    formControlName="selectSouscript"
-                    placeholder="Selectionnez un souscripteur"
-                    style="font-size: 12px"
-                  >
-                    <mat-option
-                      *ngFor="let element of souscripData"
-                      [value]="element.id_souscript"
-                    >
-                      {{ element.nom_souscript }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field>
-                  <input
-                    matInput
-                    formControlName="num_contrat"
-                    placeholder=""
-                    required
-                    (input)="formatContractNumber($event)"
-                    maxlength="19"
-                    placeholder="Contrat n°"
-                  />
-                </mat-form-field>
-
-                <mat-form-field>
-                  <input
-                    matInput
-                    formControlName="date_effet"
-                    placeholder="Date d'effet"
-                  />
-                </mat-form-field>
-
-                <mat-form-field>
-                  <input
-                    matInput
-                    formControlName="date_expir"
-                    placeholder="Date d'expiration"
-                  />
-                </mat-form-field>
-
-                <mat-form-field>
-                  <input
-                    matInput
-                    formControlName="prime"
-                    placeholder="Prime net"
-                  />
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-select
-                    formControlName="option"
-                    placeholder="Option"
-                    style="font-size: 12px"
-                  >
-                    <mat-option
-                      *ngFor="let element of option"
-                      [value]="element"
-                    >
-                      {{ element }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field>
-                  <input
-                    matInput
-                    formControlName="limit_plan"
-                    placeholder="Limite du plan"
-                  />
-                </mat-form-field>
-              </div>
-              <DIV class="matSelect">
-                <mat-select
-                  disableOptionCentering
-                  formControlName="selectedNomncList"
-                  placeholder="Selectionnez les garanties"
-                  multiple
-                >
-                  <div class="listBox">
-                    <mat-optgroup
-                      style="font-size: 20px; font-weight: bolder"
-                      *ngFor="let nomenclatureItem of nomenclature"
-                      [label]="nomenclatureItem.category"
-                    >
-                      <mat-option
-                        *ngFor="let item of nomenclatureItem.items"
-                        [value]="item"
-                      >
-                        {{ item.code_garantie }} : {{ item.garantie_describ }}
-                      </mat-option>
-                    </mat-optgroup>
-                  </div>
-                </mat-select></DIV
-              >
-
-              <!----------------------------FORM PART 2------------------------------------------------------->
-              <div class="dynamicForm" formArrayName="dynamicForm">
-                <div
-                  *ngFor="
-                    let contractRow of dynamicFormArray.controls;
-                    let i = index
-                  "
-                  [formGroupName]="i"
-                >
+              <mat-tab label="Nouveau contrat">
+                <div class="newcontrat">
                   <mat-form-field>
-                    <input
-                      matInput
-                      formControlName="garantie"
-                      placeholder="Garantie"
-                      style="font-weight: bold"
-                    />
-                  </mat-form-field>
-
-                  <mat-form-field style="width: 7rem">
                     <mat-select
-                      formControlName="applied_on"
-                      placeholder="Garantie par.."
+                      formControlName="selectSouscript"
+                      placeholder="Selectionnez un souscripteur"
                       style="font-size: 12px"
+                      (click)="getSouscript()"
                     >
+                      <mat-option *ngIf="isLoading" disabled>
+                        <mat-progress-spinner
+                          mode="indeterminate"
+                          diameter="20"
+                        ></mat-progress-spinner>
+                        Chargement...
+                      </mat-option>
                       <mat-option
-                        *ngFor="let element of garPar"
-                        [value]="element"
+                        *ngFor="let element of souscripData"
+                        [value]="element.id_souscript"
+                        [disabled]="isLoading"
                       >
-                        {{ element }}
+                        {{ element.nom_souscript }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
 
-                  <mat-form-field style="width: 4rem">
-                    <input
-                      matInput
-                      formControlName="taux_rbt"
-                      placeholder="Taux"
-                    />
-                  </mat-form-field>
-
-                  <mat-form-field style="width: 5rem">
-                    <input
-                      matInput
-                      formControlName="limit_act"
-                      placeholder="Limit./acte"
-                    />
-                  </mat-form-field>
-
-                  <mat-form-field style="width: 5rem">
-                    <input
-                      matInput
-                      formControlName="limit_gar"
-                      placeholder="Plafond"
-                    />
-                  </mat-form-field>
                   <mat-form-field>
                     <input
                       matInput
-                      formControlName="limit_gar_describ"
-                      placeholder="Déscription"
+                      formControlName="num_contrat"
+                      placeholder=""
+                      required
+                      (input)="formatContractNumber($event)"
+                      maxlength="19"
+                      placeholder="Contrat n°"
                     />
                   </mat-form-field>
-                  <mat-form-field style="width: 5rem">
-                    <input
-                      type="number"
-                      matInput
-                      formControlName="nbr_of_unit"
-                      placeholder="Nbr d'unit"
-                    />
-                  </mat-form-field>
-                  <mat-form-field style="width: 5rem">
+
+                  <mat-form-field>
                     <input
                       matInput
-                      formControlName="unit_value"
-                      placeholder="Val./unité"
+                      formControlName="date_effet"
+                      placeholder="Date d'effet"
                     />
                   </mat-form-field>
+
+                  <mat-form-field>
+                    <input
+                      matInput
+                      formControlName="date_expir"
+                      placeholder="Date d'expiration"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <input
+                      matInput
+                      formControlName="prime"
+                      placeholder="Prime net"
+                    />
+                  </mat-form-field>
+                  <div class="submitbtn">
+                    <button
+                      mat-raised-button
+                      style="
+                        width: 5rem;
+                        float: right;
+                        margin: 0.5rem 0.5rem 0.5rem 0;
+                        border-radius: 20px;
+                      "
+                      (click)="submitContrat()"
+                    >
+                      Valider
+                    </button>
+                  </div>
                 </div>
-              </div>
+                <div class="illustrDiv">
+                  <img class="illustr" src="assets/contrat.png" />
+                </div>
+              </mat-tab>
+            </form>
+            <form [formGroup]="optionForm">
+              <mat-tab label="Option">
+                <div class="newOption">
+                  <div class="contratSelect">
+                    <div class="selectBlock">
+                      <mat-form-field style="width: 30rem">
+                        <mat-select
+                          formControlName="contrat_data"
+                          placeholder="Selectionez un contrat"
+                          style="font-size: 12px"
+                          (click)="getcontrats()"
+                          (selectionChange)="onContratSelectionChange($event)"
+                        >
+                          <mat-option *ngIf="isLoading" disabled>
+                            <mat-progress-spinner
+                              mode="indeterminate"
+                              diameter="20"
+                            ></mat-progress-spinner>
+                            Chargement...
+                          </mat-option>
+                          <mat-option
+                            *ngFor="let element of contrat_data"
+                            [value]="element.id_contrat"
+                            [disabled]="isLoading"
+                          >
+                            {{ element.nom_souscript }} :
+                            {{ element.num_contrat }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="selectedContratTable" *ngIf="selectedContrat">
+                      <table class="detailsContratTable">
+                        <tbody class="tbdTable">
+                          <tr>
+                            <td>
+                              Date d'effet :
+                              {{
+                                selectedContrat.date_effet | date : "dd/MM/yyyy"
+                              }}
+                            </td>
+                            <td>
+                              Date d'échéance :
+                              {{
+                                selectedContrat.date_exp | date : "dd/MM/yyyy"
+                              }}
+                            </td>
+                            <td>
+                              Prime net :
+                              {{
+                                selectedContrat.prime_total | number : "1.2-2"
+                              }}
+                              DA
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="optlimit">
+                      <mat-form-field>
+                        <mat-select
+                          formControlName="option"
+                          placeholder="Option"
+                          style="font-size: 12px"
+                        >
+                          <mat-option
+                            *ngFor="let element of optionList"
+                            [value]="element"
+                          >
+                            {{ element }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <input
+                          matInput
+                          formControlName="limit_plan"
+                          placeholder="Limite du plan"
+                        />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="illustrDiv">
+                    <img class="illustr" src="assets/bilan-de-sante.png" />
+                  </div>
+                  <div class="bottomBlock">
+                    <DIV class="matSelect">
+                      <mat-select
+                        disableOptionCentering
+                        formControlName="selectedNomncList"
+                        placeholder="Selectionnez les garanties"
+                        multiple
+                      >
+                        <div class="listBox">
+                          <mat-optgroup
+                            style="font-size: 20px; font-weight: bolder"
+                            *ngFor="let nomenclatureItem of nomenclature"
+                            [label]="nomenclatureItem.category"
+                          >
+                            <mat-option
+                              *ngFor="let item of nomenclatureItem.items"
+                              [value]="item"
+                            >
+                              {{ item.code_garantie }} :
+                              {{ item.garantie_describ }}
+                            </mat-option>
+                          </mat-optgroup>
+                        </div>
+                      </mat-select></DIV
+                    >
+
+                    <!----------------------------FORM PART 2------------------------------------------------------->
+                    <div class="dynamicForm" formArrayName="dynamicForm">
+                      <div
+                        *ngFor="
+                          let contractRow of dynamicFormArray.controls;
+                          let i = index
+                        "
+                        [formGroupName]="i"
+                      >
+                        <mat-form-field style="width: 1rem; display: none">
+                          <input
+                            matInput
+                            formControlName="id_nomencl"
+                            placeholder="Garantie"
+                            [readonly]="true"
+                          />
+                        </mat-form-field>
+                        <mat-form-field>
+                          <input
+                            matInput
+                            formControlName="garantie"
+                            placeholder="Garantie"
+                            style="font-weight: bold"
+                            [readonly]="true"
+                          />
+                        </mat-form-field>
+
+                        <mat-form-field style="width: 7rem">
+                          <mat-select
+                            formControlName="applied_on"
+                            placeholder="Garantie par.."
+                            style="font-size: 12px"
+                          >
+                            <mat-option
+                              *ngFor="let element of garPar"
+                              [value]="element"
+                            >
+                              {{ element }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field style="width: 4rem">
+                          <input
+                            matInput
+                            formControlName="taux_rbt"
+                            placeholder="Taux"
+                          />
+                        </mat-form-field>
+
+                        <mat-form-field style="width: 5rem">
+                          <input
+                            matInput
+                            formControlName="limit_act"
+                            placeholder="Limit./acte"
+                          />
+                        </mat-form-field>
+
+                        <mat-form-field style="width: 5rem">
+                          <input
+                            matInput
+                            formControlName="limit_gar"
+                            placeholder="Plafond"
+                          />
+                        </mat-form-field>
+                        <mat-form-field>
+                          <input
+                            matInput
+                            formControlName="limit_gar_describ"
+                            placeholder="Déscription"
+                          />
+                        </mat-form-field>
+                        <mat-form-field style="width: 5rem">
+                          <input
+                            type="number"
+                            matInput
+                            formControlName="nbr_of_unit"
+                            placeholder="Nbr d'unit"
+                          />
+                        </mat-form-field>
+                        <mat-form-field style="width: 5rem">
+                          <input
+                            matInput
+                            formControlName="unit_value"
+                            placeholder="Val./unité"
+                          />
+                        </mat-form-field>
+
+                        <mat-icon
+                          color="warn"
+                          style="
+                            font-weight: bolder;
+                            position: absolute;
+                            margin-left: 0.5rem;
+                            cursor: pointer;
+                          "
+                          (click)="removeContractRow(i)"
+                        >
+                          close</mat-icon
+                        >
+                      </div>
+                    </div>
+                    <div class="submitbtn">
+                      <button
+                        mat-raised-button
+                        style="
+                          width: 5rem;
+                          float: right;
+                          margin: 0.5rem 0.5rem 0.5rem 0;
+                          border-radius: 20px;
+                        "
+                        (click)="submitOption()"
+                      >
+                        Valider
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
             </form>
           </div>
-        </div>
+        </mat-tab-group>
       </mat-card-content>
     </mat-card>
   </div>

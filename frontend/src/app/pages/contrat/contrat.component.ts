@@ -1,6 +1,6 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { MatTableModule } from '@angular/material/table';
 import { ApiService } from '../../api.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,15 +14,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {
-  MatFormFieldControl,
-  MatFormFieldModule,
-} from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatListModule } from '@angular/material/list';
-import { MatOptionModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatTabsModule } from '@angular/material/tabs';
+import { SnackBarService } from '../../snack-bar.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export interface DataItem {
   id_nomencl: number;
@@ -45,6 +46,34 @@ export interface SouscripData {
   nom_souscript: string;
 }
 
+export interface Contrat {
+  id_contrat: number;
+  id_souscript: string;
+  nom_souscript: string;
+  num_contrat: string;
+  date_effet: Date;
+  date_exp: Date;
+  prime_total: number;
+}
+export interface Option {
+  id_contrat: number;
+  num: number;
+  option_describ?: string;
+  limit_plan: number;
+  fmp: Fmp[];
+}
+
+export interface Fmp {
+  id_nomencl: number;
+  applied_on: string;
+  taux_rbt: number;
+  limit_act: number;
+  limit_gar: number;
+  limit_describ: string;
+  nbr_of_unit: number;
+  unit_value: number;
+}
+
 @Component({
   selector: 'app-contrat',
   standalone: true,
@@ -63,25 +92,44 @@ export interface SouscripData {
     MatSelectModule,
     MatListModule,
     DecimalPipe,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatTabsModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './contrat.component.html',
   styleUrl: './contrat.component.scss',
 })
 export class ContratComponent implements OnInit {
+  isLoading: boolean = false;
   showList = false;
+  selectedContrat?: Contrat | null = null;
   nomenclature: NomenclatureItem[] = [];
   souscripData: SouscripData[] = [];
+  contrat_data: Contrat[] = [];
+  option: Option[] = [];
   contractForm!: FormGroup;
-  option = [1, 2, 3, 4];
+  optionForm!: FormGroup;
+  sousForm!: FormGroup;
+  optionList = [1, 2, 3, 4];
   selectedCategory!: string;
   dynamicForm!: FormArray;
   garPar: string[] = ['Assuré', 'Bénéficiaire'];
 
   constructor(
+    private snackBar: SnackBarService,
     private apiService: ApiService,
     private fb: FormBuilder,
-    private decimalPipe: DecimalPipe
+    private decimalPipe: DecimalPipe,
+    private cdr: ChangeDetectorRef
   ) {
+    this.sousForm = this.fb.group({
+      nom_souscript: new FormControl('', Validators.required),
+      adresse_souscript: new FormControl('', Validators.required),
+      email_souscript: new FormControl('', Validators.email),
+      tel_souscript: new FormControl(''),
+    });
+
     this.contractForm = this.fb.group({
       selectSouscript: new FormControl('', Validators.required),
       num_contrat: new FormControl('', [
@@ -99,13 +147,16 @@ export class ContratComponent implements OnInit {
       ]),
       prime: new FormControl('', [
         Validators.required,
-        Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$'),
+        Validators.pattern('^[0-9]+(\\,[0-9]{1,2})?$'),
       ]),
-      option: new FormControl('', Validators.required),
-      limit_plan: ['', Validators.required],
+    });
 
+    this.optionForm = this.fb.group({
+      contrat_data: new FormControl('', Validators.required),
+      option: new FormControl('', Validators.required),
+      limit_plan: [''],
       selectedNomncList: new FormControl([], Validators.required),
-      dynamicForm: this.fb.array([]), //from part 2
+      dynamicForm: this.fb.array([]),
     });
 
     this.contractForm
@@ -118,35 +169,63 @@ export class ContratComponent implements OnInit {
       });
 
     this.dynamicForm = this.fb.array([]);
-    this.contractForm.setControl('dynamicForm', this.dynamicForm);
-    this.contractForm.get('selectedNomncList')?.valueChanges.subscribe(() => {
+    this.optionForm.setControl('dynamicForm', this.dynamicForm);
+    this.optionForm.get('selectedNomncList')?.valueChanges.subscribe(() => {
       this.addContractRow();
     });
   }
 
   ngOnInit(): void {
-    this.getSouscript();
-    this.getNomencl();
+    //this.getSouscript();
+    // this.getNomencl();
+    //this.getcontrats();
+  }
+
+  onContratSelectionChange(event: any) {
+    const selectedId = event.value;
+    this.selectedContrat = this.contrat_data.find(
+      (element: Contrat) => element.id_contrat === selectedId
+    );
+    //console.log(this.selectedContrat);
+  }
+
+  removeContractRow(index: number): void {
+    const formArray = this.optionForm.get('dynamicForm') as FormArray;
+    const selectedItemsControl = this.optionForm.get('selectedNomncList');
+    const selectedItems = selectedItemsControl?.value || [];
+
+    // Get the item to be removed
+    const itemToRemove = formArray.at(index).get('garantie')?.value;
+
+    // Remove the item from the selected items list
+    const updatedItems = selectedItems.filter(
+      (item: any) => item.garantie_describ !== itemToRemove
+    );
+    selectedItemsControl?.setValue(updatedItems);
+
+    // Remove the row from the form array
+    formArray.removeAt(index);
   }
 
   createGarantiesRow(selectedItem: any): FormGroup {
     return this.fb.group({
+      id_nomencl: [selectedItem.id_nomencl || '', Validators.required],
       garantie: [selectedItem.garantie_describ || '', Validators.required],
 
       applied_on: ['', Validators.required],
-      taux_rbt: ['', Validators.required],
-      limit_act: ['', Validators.required],
-      limit_gar: ['', Validators.required],
+      taux_rbt: ['100', Validators.required],
+      limit_act: [''],
+      limit_gar: [''],
       limit_gar_describ: [''],
-      nbr_of_unit: ['', Validators.required],
-      unit_value: ['', Validators.required],
+      nbr_of_unit: [''],
+      unit_value: [''],
     });
   }
   addContractRow(): void {
-    const selectedItems = this.contractForm.get('selectedNomncList')?.value;
+    const selectedItems = this.optionForm.get('selectedNomncList')?.value;
 
     if (selectedItems) {
-      const formArray = this.contractForm.get('dynamicForm') as FormArray;
+      const formArray = this.optionForm.get('dynamicForm') as FormArray;
 
       for (let i = formArray.length - 1; i >= 0; i--) {
         const currentItem = formArray.at(i).get('garantie')?.value;
@@ -171,7 +250,7 @@ export class ContratComponent implements OnInit {
   }
 
   getGarantieFormControl(index: number): FormControl {
-    const dynamicFormArray = this.contractForm.get('dynamicForm') as FormArray;
+    const dynamicFormArray = this.optionForm.get('dynamicForm') as FormArray;
 
     // Check if the FormArray and the FormGroup at the given index exist
     if (dynamicFormArray && dynamicFormArray.at(index) instanceof FormGroup) {
@@ -188,7 +267,7 @@ export class ContratComponent implements OnInit {
   }
 
   get dynamicFormArray(): FormArray {
-    return this.contractForm.get('dynamicForm') as FormArray;
+    return this.optionForm.get('dynamicForm') as FormArray;
   }
   // Add a method to clear existing rows
   clearContractRows(): void {
@@ -231,7 +310,7 @@ export class ContratComponent implements OnInit {
     this.apiService.getNomencl().subscribe({
       next: (data) => {
         this.nomenclature = data;
-        console.log('Nomenclature List:', this.nomenclature);
+        //console.log('Nomenclature List:', this.nomenclature);
       },
       error: (error) => {
         console.error('Error fetching Nomenclature List:', error);
@@ -239,20 +318,117 @@ export class ContratComponent implements OnInit {
     });
   }
   getSouscript() {
+    this.isLoading = true;
+
+    // Simulate a delay using setTimeout
+    // setTimeout(() => {
     this.apiService.getAllSouscripteursData().subscribe({
       next: (data: any) => {
         this.souscripData = data;
         console.log(this.souscripData);
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error fetching Souscripteurs List:', error);
+        this.isLoading = false;
+      },
+    });
+    // }, 2000); // 2000ms delay
+  }
+
+  getcontrats() {
+    this.isLoading = true;
+    this.apiService.getAllContrats().subscribe({
+      next: (data: any) => {
+        this.contrat_data = data;
+        //console.log(this.contrat_data);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching contrats List:', error);
+        this.isLoading = false;
       },
     });
   }
+
+  getOptions() {
+    this.apiService.getAllOptions().subscribe({
+      next: (data: any) => {
+        this.option = data;
+        console.log(this.option);
+      },
+      error: (error) => {
+        console.error('Error fetching options List:', error);
+      },
+    });
+  }
+
   getCategoryName(category: NomenclatureItem): string {
     return Object.keys(category)[0] || '';
   }
   getCategoryItems(category: NomenclatureItem): DataItem[] {
     return Object.values(category)[0] || [];
+  }
+
+  submitContrat() {
+    const data = this.contractForm.value;
+    const dataToSubmit = {
+      id_souscript: data.selectSouscript,
+      num_contrat: data.num_contrat,
+      date_effet: this.parseDate(data.date_effet),
+      date_exp: this.parseDate(data.date_expir),
+      prime_total: this.parseDecimal(data.prime),
+    };
+  }
+
+  private parseDate(dateString: string): Date {
+    const [day, month, year] = dateString.split('/');
+    return new Date(`${year}-${month}-${day}`);
+  }
+
+  // Helper method to parse decimal number
+  private parseDecimal(decimalString: string): number {
+    // Replace commas with periods before parsing
+    const sanitizedString = decimalString.replace(',', '.');
+    return parseFloat(sanitizedString);
+  }
+
+  submitOption() {
+    const contratData = this.optionForm.get('contrat_data')?.value;
+    const limitPlan = this.optionForm.get('limit_plan')?.value;
+    const optionValue = this.optionForm.get('option')?.value;
+    const dynamicFormArray = this.optionForm.get('dynamicForm') as FormArray;
+
+    // Map the dynamic form array values to a plain array with the desired structure
+    const dynamicFormData = dynamicFormArray.value.map((item: any) => ({
+      id_nomencl: item.id_nomencl,
+      applied_on: item.applied_on,
+      taux_rbt: parseFloat(item.taux_rbt), // Assuming taux_rbt is a number
+      limit_gar: parseFloat(item.limit_gar), // Assuming limit_gar is a number
+      limit_gar_describ: item.limit_gar_describ,
+      nbr_of_unit: parseInt(item.nbr_of_unit), // Assuming nbr_of_unit is a number
+      unit_value: parseFloat(item.unit_value), // Assuming unit_value is a number
+    }));
+
+    // Create the 'option' object
+    const option = {
+      id_contrat: parseInt(contratData), // Assuming id_contrat is a number
+      limit_plan: parseInt(limitPlan), // Assuming limit_plan is a number
+      num: parseInt(optionValue), // Assuming num is a number
+      dynamicForm: dynamicFormData,
+    };
+
+    console.log(option);
+  }
+
+  sumbmitSous() {
+    const data = this.sousForm.value;
+    console.log(data);
+
+    this.apiService.addSouscripteurData(data).subscribe((res) => {
+      this.snackBar.openSnackBar('Souscripteur crée', 'Okey :)');
+      console.log(res);
+      this.sousForm.reset();
+    });
   }
 }

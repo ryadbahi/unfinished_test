@@ -11,6 +11,7 @@ const PdfPrarseRoutes = require("./RoutesPdfParse.js");
 const paraphRoutes = require("./RoutesParaph.js");
 const paraph_ovRoutes = require("./RoutesParah_ov.js");
 const nomencleRoutes = require("./RoutesNomencl.js");
+const optionsRoutes = require("./RoutesOptions.js");
 
 const app = express();
 
@@ -21,6 +22,10 @@ app.use((req, res, next) => {
   next();
   console.log(req.body); // Log the raw request body
 });
+
+//______________________________OPTIONS______________________________________
+
+app.use("/options", optionsRoutes);
 
 //------------------------NOMENCLATURE TABLE----------------------------------
 
