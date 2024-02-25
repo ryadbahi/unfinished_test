@@ -169,6 +169,7 @@ export class ContratComponent implements OnInit {
       });
 
     this.dynamicForm = this.fb.array([]);
+
     this.optionForm.setControl('dynamicForm', this.dynamicForm);
     this.optionForm.get('selectedNomncList')?.valueChanges.subscribe(() => {
       this.addContractRow();
@@ -177,7 +178,7 @@ export class ContratComponent implements OnInit {
 
   ngOnInit(): void {
     //this.getSouscript();
-    // this.getNomencl();
+    this.getNomencl();
     //this.getcontrats();
   }
 
@@ -189,13 +190,13 @@ export class ContratComponent implements OnInit {
     //console.log(this.selectedContrat);
   }
 
-  removeContractRow(index: number): void {
+  removeContractRow(id_nomencl: number): void {
     const formArray = this.optionForm.get('dynamicForm') as FormArray;
     const selectedItemsControl = this.optionForm.get('selectedNomncList');
     const selectedItems = selectedItemsControl?.value || [];
 
     // Get the item to be removed
-    const itemToRemove = formArray.at(index).get('garantie')?.value;
+    const itemToRemove = formArray.at(id_nomencl).get('garantie')?.value;
 
     // Remove the item from the selected items list
     const updatedItems = selectedItems.filter(
@@ -203,8 +204,15 @@ export class ContratComponent implements OnInit {
     );
     selectedItemsControl?.setValue(updatedItems);
 
-    // Remove the row from the form array
-    formArray.removeAt(index);
+    // Find the index of the form control to be removed
+    const indexToRemove = formArray.controls.findIndex(
+      (control) => control.get('garantie')?.value === itemToRemove
+    );
+
+    // Remove the form control at the found index
+    if (indexToRemove !== -1) {
+      formArray.removeAt(indexToRemove);
+    }
   }
 
   createGarantiesRow(selectedItem: any): FormGroup {
