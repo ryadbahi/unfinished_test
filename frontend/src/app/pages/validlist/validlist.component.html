@@ -161,14 +161,16 @@
     </mat-toolbar></DIV
   >
   <mat-toolbar class="hiddenTB">
-    <div class="toggle">
-      <mat-slide-toggle
-        class="toggle"
-        [(ngModel)]="showOnlyIssues"
-        (change)="applyFilterByIssues()"
-        >Anomalies seulment ?</mat-slide-toggle
-      >
+    <div class="searchField">
+      <input
+        id="search"
+        matInput
+        (keyup)="applyFilter($event)"
+        placeholder="Recherche...."
+        #input
+      />
     </div>
+
     <div *ngIf="totalIssues != 0">
       <button id="fabbtn" mat-fab (click)="collapseExpandAll()">
         <ng-container *ngIf="expandedElements.length > 0; else expandIcon">
@@ -180,14 +182,61 @@
       </button>
     </div>
 
-    <div class="searchField">
-      <input
-        id="search"
-        matInput
-        (keyup)="applyFilter($event)"
-        placeholder="Recherche...."
-        #input
-      />
+    <div class="selectSous">
+      <mat-select
+        placeholder="Selectionez un contrat"
+        style="font-size: 12px"
+        (click)="getcontrats()"
+        (selectionChange)="onContratSelectionChange($event)"
+      >
+        <mat-option *ngIf="isLoading" disabled style="width: 25 rem">
+          <mat-progress-spinner
+            mode="indeterminate"
+            diameter="20"
+          ></mat-progress-spinner>
+          Chargement...
+        </mat-option>
+        <mat-option
+          *ngFor="let element of contrat_data"
+          [value]="element.id_contrat"
+          [disabled]="isLoading"
+        >
+          {{ element.nom_souscript }} :
+          {{ element.num_contrat }}
+        </mat-option>
+      </mat-select>
+
+      <div class="selectedContratTable" *ngIf="selectedContrat" [@fadeInOut]>
+        <div class="content">
+          <table class="detailsContratTable">
+            <tbody class="tbdTable">
+              <tr>
+                <td>
+                  Date d'effet :
+                  {{ selectedContrat.date_effet | date : "dd/MM/yyyy" }}
+                </td>
+                <td>
+                  Date d'échéance :
+                  {{ selectedContrat.date_exp | date : "dd/MM/yyyy" }}
+                </td>
+                <td>
+                  Prime net :
+                  {{ selectedContrat.prime_total | number : "1.2-2" }}
+                  DA
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="toggle">
+      <mat-slide-toggle
+        class="toggle"
+        [(ngModel)]="showOnlyIssues"
+        (change)="applyFilterByIssues()"
+        >Anomalies seulment ?</mat-slide-toggle
+      >
     </div>
   </mat-toolbar>
   <div class="form_container">

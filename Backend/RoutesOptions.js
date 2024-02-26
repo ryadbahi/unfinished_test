@@ -8,7 +8,7 @@ router.use((err, req, res, next) => {
 });
 
 //_____________________________POST_______________________________
-// Assuming this function is defined somewhere
+
 async function insertOption(id_contrat, limit_plan, num, option_describ) {
   const insertQuery = `
       INSERT INTO options (id_contrat, limit_plan, num, option_describ)

@@ -6,7 +6,7 @@ import {
   ViewChild,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
-
+import { Contrat, SouscripData } from '../contrat/contrat.component';
 import { CommonModule, DatePipe } from '@angular/common';
 import * as XLSX from 'xlsx';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -43,6 +43,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ApiService } from '../../api.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export interface fam_adhData {
   id?: string;
@@ -106,6 +108,7 @@ export interface listing {
     MatMenuModule,
     MatBadgeModule,
     MatTooltipModule,
+    MatProgressSpinnerModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './validlist.component.html',
@@ -119,9 +122,37 @@ export interface listing {
         animate('500ms cubic-bezier(0.4, 0.0, 0.2, 1)')
       ),
     ]),
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({
+          'max-width': '0',
+          'margin-left': 'auto',
+          'margin-right': 'auto',
+        }),
+        animate(
+          '1200ms ease-in-out',
+          style({
+            'max-width': '100%',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
+          })
+        ),
+      ]),
+      transition(':leave', [
+        animate(
+          '1s ease-in-out',
+          style({
+            'max-width': '0',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
+          })
+        ),
+      ]),
+    ]),
   ],
 })
 export class ValidlistComponent implements OnInit {
+  contrat_data: Contrat[] = [];
   originalDataMap: { [key: string]: listing } = {};
   originalFamDataMap: { [key: string]: fam_adhData } = {};
   inputValue = '';
@@ -143,10 +174,12 @@ export class ValidlistComponent implements OnInit {
   displayedIssues: number = 0;
   expandedElements: listing[] = [];
   dataSource = new MatTableDataSource<listing>();
-
+  isLoading: boolean = false;
   rearrangedData: listing[] = [];
   ExcelData: any[] = [];
   datePickers: MatDatepicker<Date>[] = [];
+  souscripData: SouscripData[] = [];
+  selectedContrat?: Contrat | null = null;
   displayedColumns: string[] = [
     'serial',
     'lienBnf',
@@ -178,7 +211,8 @@ export class ValidlistComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     public datePipe: DatePipe,
     private snackBService: SnackBarService,
-    private ribVerif: RibVerifierService
+    private ribVerif: RibVerifierService,
+    private apiService: ApiService
   ) {
     this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
   }
@@ -1059,5 +1093,28 @@ export class ValidlistComponent implements OnInit {
     }
 
     return matrix[b.length][a.length];
+  }
+
+  onContratSelectionChange(event: any) {
+    const selectedId = event.value;
+    this.selectedContrat = this.contrat_data.find(
+      (element: Contrat) => element.id_contrat === selectedId
+    );
+    //console.log(this.selectedContrat);
+  }
+
+  getcontrats() {
+    this.isLoading = true;
+    this.apiService.getAllContrats().subscribe({
+      next: (data: any) => {
+        this.contrat_data = data;
+        //console.log(this.contrat_data);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching contrats List:', error);
+        this.isLoading = false;
+      },
+    });
   }
 }

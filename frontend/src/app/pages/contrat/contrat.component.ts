@@ -387,11 +387,17 @@ export class ContratComponent implements OnInit {
       date_exp: this.parseDate(data.date_expir),
       prime_total: this.parseDecimal(data.prime),
     };
+    this.apiService.postContract(dataToSubmit).subscribe((res) => {
+      this.snackBar.openSnackBar('Contrat crée', 'OK');
+      console.log(res);
+      this.contractForm.reset();
+    });
+    console.log(dataToSubmit);
   }
 
-  private parseDate(dateString: string): Date {
+  private parseDate(dateString: string): string {
     const [day, month, year] = dateString.split('/');
-    return new Date(`${year}-${month}-${day}`);
+    return `${year}-${month}-${day}`;
   }
 
   // Helper method to parse decimal number

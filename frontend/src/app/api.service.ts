@@ -341,6 +341,11 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/contrats`);
   }
 
+  postContract(data: any) {
+    console.log(data, 'Données insérées');
+    return this.http.post(`${this.apiUrl}/contrats`, data);
+  }
+
   //_______________OPTIONS_____________________________________
 
   getAllOptions(): Observable<any> {
