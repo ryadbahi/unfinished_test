@@ -60,6 +60,7 @@ export interface ParaphDetail {
   serial: number;
   benef_virmnt: string;
   rib: string;
+  issue?: boolean;
   calculkey?: string;
   montant: number;
   highlightRib?: string;
@@ -104,6 +105,7 @@ interface RestructuredItem {
     MatBadgeModule,
     RouterLink,
     MatTooltipModule,
+    MatBadgeModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './paraph.component.html',
@@ -137,6 +139,7 @@ export class ParaphComponent implements OnInit {
     'rib',
     'montant',
   ];
+
   page: number = 0;
   pageSize: number = 25;
   expandedElements: ParaphTable[] = [];
@@ -365,6 +368,7 @@ export class ParaphComponent implements OnInit {
 
   verifyAndHighlight() {
     this.dataSource.data.forEach((item: ParaphTable) => {
+      item.issues = 0;
       item.paraphdetails.forEach((detail: ParaphDetail) => {
         const isRIBValid = this.ribVerif.verifyRIB(detail.rib, detail);
 

@@ -83,7 +83,15 @@
             >
               Souscripteur
             </th>
-            <td mat-cell *matCellDef="let element" style="font-weight: bolder">
+            <td
+              mat-cell
+              *matCellDef="let element"
+              style="font-weight: bolder"
+              matBadge="{{ element.issues }}"
+              [matBadgeHidden]="element.issues === 0"
+              matBadgeOverlap="true"
+              matBadgeColor="warn"
+            >
               <div>{{ element.souscript }}</div>
             </td>
           </ng-container>
