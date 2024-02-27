@@ -7,13 +7,13 @@
 }
 
 mat-option {
-  font-size: 10px;
+  font-size: 12px;
   padding: 1px 1px 1px 1px;
   margin: 0 0 1px 4px !important;
 }
 
 div {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .act_btn {
@@ -24,13 +24,13 @@ div {
 }
 
 input {
-  font-size: 8px;
+  font-size: 12px;
   border-top-style: hidden;
   border-left-style: hidden;
   border-right-style: hidden;
 }
 select {
-  font-size: 8px;
+  font-size: 12px;
 }
 .mdc-data-table__cell,
 .mdc-data-table__header-cell {
@@ -125,6 +125,8 @@ td {
   position: relative;
   height: 25px;
   padding: 0 5px 0 5px;
+  width: 6rem;
+  max-width: 6rem;
 }
 td {
   width: 5px !important;
@@ -155,7 +157,7 @@ td {
   font-size: 12px;
   border-radius: 10px;
   overflow: hidden;
-  font-size: medium;
+
   display: inline-table;
   height: fit-content;
 }

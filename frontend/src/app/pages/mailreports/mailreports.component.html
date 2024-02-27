@@ -310,13 +310,16 @@
               class="button-container"
             >
               <mat-icon
-                style="color: #348bfd"
+                style="color: #348bfd; cursor: pointer"
                 [routerLink]="['/mailreports', mrepelem.id_mail]"
                 (click)="strteditmrep(mrepelem)"
                 >edit</mat-icon
               >
 
-              <mat-icon color="warn" (click)="deleteIDMreport(mrepelem.id_mail)"
+              <mat-icon
+                color="warn"
+                (click)="deleteIDMreport(mrepelem.id_mail)"
+                style="cursor: pointer"
                 >delete</mat-icon
               >
             </div>
@@ -326,26 +329,26 @@
               class="button-container"
             >
               <mat-icon
-                style="color: green; font-weight: bolder"
+                style="color: green; font-weight: bolder; cursor: pointer"
                 (click)="updateRow(mrepelem)"
                 >check</mat-icon
               >
 
               <mat-icon
-                style="color: grey; font-weight: bolder"
+                style="color: grey; font-weight: bolder; cursor: pointer"
                 (click)="Cancel(mrepelem)"
                 >close</mat-icon
               >
             </div>
             <div *ngIf="isNewRow(mrepelem)" class="button-container">
               <mat-icon
-                style="color: green; font-weight: bolder"
+                style="color: green; font-weight: bolder; cursor: pointer"
                 (click)="submitNewRow(mrepelem)"
                 >check</mat-icon
               >
 
               <mat-icon
-                style="color: grey; font-weight: bolder"
+                style="color: grey; font-weight: bolder; cursor: pointer"
                 (click)="CancelNew()"
                 >close</mat-icon
               >
