@@ -237,10 +237,10 @@ export class MailreportsComponent implements OnInit {
       this.refreshTable();
     });
 
-    this.sort.sortChange.subscribe(() => {
+    /* this.sort.sortChange.subscribe(() => {
       this.sortField = this.sort.active;
       this.refreshTable();
-    });
+    });*/
   }
 
   getScoreColor(score: string): string {
@@ -354,7 +354,7 @@ export class MailreportsComponent implements OnInit {
 
       // Store the current state of mrepelem
       this.Oldmrepelem = JSON.stringify(mrepelem);
-      console.log(this.Oldmrepelem);
+      //console.log(this.Oldmrepelem);
 
       // Set dropdown values based on the current values of mrepelem
 

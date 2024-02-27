@@ -41,20 +41,26 @@ select {
 .mat-mdc-paginator {
   table-layout: auto;
   white-space: normal;
-  background-color: hwb(0 100% 0% / 0.6);
-  min-width: auto;
+  background-color: hwb(0 100% 0% / 0.6) !important;
 }
-.mat-mdc-table {
-  background-color: hwb(0 100% 0% / 0.3);
-  min-width: auto;
+
+::ng-deep.mat-mdc-header-cell {
+  background: #a8a3d3bf !important;
+  text-align: center !important;
 }
+::ng-deep.mdc-data-table__content {
+  background: lavender !important ;
+}
+
 .mdc-data-table__header-cell {
   align-content: center !important;
   font-size: smaller;
 }
+
 .mat-mdc-raised-button {
   --mdc-protected-button-container-height: 20px;
 }
+
 .mat-mdc-button .mat-mdc-button-touch-target,
 .mat-mdc-unelevated-button .mat-mdc-button-touch-target,
 .mat-mdc-raised-button .mat-mdc-button-touch-target,
@@ -65,7 +71,7 @@ select {
 .mat-table {
   border-collapse: separate !important;
   border-spacing: 0 1px !important;
-  background-color: rgb(0, 0, 0) !important;
+  // background-color: rgb(0, 0, 0) !important;
 }
 .mat-mdc-fab.mat-accent,
 html .mat-mdc-mini-fab.mat-accent {
@@ -123,14 +129,10 @@ td {
 
 .ng-star-inserted {
   position: relative;
-  height: 25px;
-  padding: 0 5px 0 5px;
-  width: 6rem;
-  max-width: 6rem;
+  height: 35px;
+  padding: 4px 5px 0 5px;
 }
-td {
-  width: 5px !important;
-}
+
 .matoolB {
   flex-direction: row;
   height: fit-content;
@@ -175,6 +177,7 @@ td {
   flex-direction: row;
   white-space: nowrap;
   font-size: 12px;
+  justify-content: space-between;
 }
 #rech_btn {
   background-color: hwb(0 100% 0% / 0.6);
