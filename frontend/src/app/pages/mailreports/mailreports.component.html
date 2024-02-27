@@ -66,7 +66,7 @@
       style="
         border-radius: 10px;
         overflow: hidden;
-        width: 110rem;
+        width: 118rem;
         margin-top: 2%;
       "
     >
@@ -207,7 +207,7 @@
         </ng-container>
         <ng-container matColumnDef="souscripteur">
           <th mat-header-cell *matHeaderCellDef>Souscripteur</th>
-          <td mat-cell *matCellDef="let mrepelem" style="width: 9rem">
+          <td mat-cell *matCellDef="let mrepelem" style="width: 6rem">
             <div
               [matTooltip]="mrepelem.souscripteur"
               style="text-align: nowrap"
@@ -251,7 +251,7 @@
                 <mat-icon style="padding: 0; color: red">warning</mat-icon>
               </ng-container>
               <ng-container *ngIf="mrepelem.objet && mrepelem.objet != ''">
-                {{ CharLimit(mrepelem.objet, 35) | titlecase }}
+                {{ CharLimit(mrepelem.objet, 30) | titlecase }}
               </ng-container>
             </div>
           </td>
@@ -296,8 +296,15 @@
         </ng-container>
         <ng-container matColumnDef="reponse">
           <th mat-header-cell *matHeaderCellDef>Réponse</th>
-          <td mat-cell *matCellDef="let mrepelem" style="text-align: center">
-            <div [matTooltip]="formatDate(mrepelem.reponse)">
+          <td
+            mat-cell
+            *matCellDef="let mrepelem"
+            style="text-align: center; width: 6rem"
+          >
+            <div
+              [matTooltip]="formatDate(mrepelem.reponse)"
+              style="width: 6rem"
+            >
               {{ mrepelem.reponse | date : "dd/MM/yyyy" }}
             </div>
           </td>
@@ -356,7 +363,7 @@
               <ng-container
                 *ngIf="mrepelem.observation && mrepelem.observation != ''"
               >
-                {{ CharLimit(mrepelem.observation, 40) }}
+                {{ CharLimit(mrepelem.observation, 35) }}
               </ng-container>
             </div>
           </td>
