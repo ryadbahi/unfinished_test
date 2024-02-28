@@ -239,6 +239,8 @@
   color: #3d3b3b;
   text-align: center;
   display: table;
+  margin: 0 1rem 0 1rem;
+  border-radius: 10px;
 }
 .detailsContratTable {
   display: grid;
@@ -253,4 +255,8 @@
   text-align: center;
   width: 50rem;
   margin: auto; // Center the element
+}
+.mat-icon {
+  cursor: pointer;
+  margin-left: 15px;
 }

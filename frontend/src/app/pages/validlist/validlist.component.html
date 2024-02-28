@@ -8,6 +8,10 @@
   </div>
   <div>
     <mat-toolbar class="matoolB">
+      <button mat-raised-button (click)="submitListing(rearrangedData)">
+        show
+      </button>
+
       <div class="magiclist" *ngIf="dataSource && dataSource.data.length > 0">
         <button
           class="magicbtn"
@@ -185,7 +189,12 @@
     <div class="selectSous">
       <mat-select
         placeholder="Selectionez un contrat"
-        style="font-size: 12px"
+        style="
+          font-size: 16px;
+          font-weight: bolder;
+
+          margin-bottom: 8px;
+        "
         (click)="getcontrats()"
         (selectionChange)="onContratSelectionChange($event)"
       >

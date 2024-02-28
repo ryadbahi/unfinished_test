@@ -1100,7 +1100,7 @@ export class ValidlistComponent implements OnInit {
     this.selectedContrat = this.contrat_data.find(
       (element: Contrat) => element.id_contrat === selectedId
     );
-    //console.log(this.selectedContrat);
+    console.log(this.selectedContrat);
   }
 
   getcontrats() {
@@ -1116,5 +1116,32 @@ export class ValidlistComponent implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  submitListing(data: listing[]): any {
+    const contratData = this.selectedContrat;
+    const adh_details: any[] = [];
+
+    const id_souscript = contratData?.id_souscript;
+    data.forEach((item) => {
+      const situaFam = item.fam_adh && item.fam_adh.length > 0 ? 'M' : 'C';
+      adh_details.push({
+        id_souscript: id_souscript,
+        id_adh: item.serial,
+        nom_adherent: item.nom,
+        prenom_adherent: item.prenom,
+        date_nai_adh: item.dateDeNaissance,
+        situa_fam: situaFam,
+        benef: item.fam_adh,
+      });
+
+      return adh_details;
+    });
+
+    const dataToSubmit = {
+      id_souscript: id_souscript,
+      adh_details: adh_details,
+    };
+    console.log(dataToSubmit);
   }
 }
