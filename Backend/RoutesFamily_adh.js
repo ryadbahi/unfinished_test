@@ -33,7 +33,8 @@ router.post("/", async (req, res) => {
 });
 
 async function insertFamily(data, res) {
-  const { id_adh, lien_benef, nom_benef, prenom_benef, date_nai_benef } = data;
+  const { id_adherent, lien_benef, nom_benef, prenom_benef, date_nai_benef } =
+    data;
 
   // Format the date from 'dd/MM/yyyy' to 'yyyy-MM-dd'
   const parts = date_nai_benef.split("/");
@@ -41,7 +42,7 @@ async function insertFamily(data, res) {
 
   const insertQuery = `
       INSERT INTO fam_adh (
-        id_adh,
+        id_adherent,
         lien_benef,
         nom_benef,
         prenom_benef,
@@ -51,7 +52,7 @@ async function insertFamily(data, res) {
 
   try {
     await db.query(insertQuery, [
-      id_adh,
+      id_adherent,
       lien_benef,
       nom_benef,
       prenom_benef,
@@ -77,7 +78,7 @@ router.get("/", async (req, res, next) => {
   // Validate sortBy and sortOrder here to prevent SQL injection
   const validColumns = [
     "id_fam",
-    "id_adh",
+    "id_adherent",
     "lien_benef",
     "nom_benef",
     "prenom_benef",
@@ -98,7 +99,7 @@ router.get("/", async (req, res, next) => {
   let selectQuery = `
     SELECT a.*, s.nom_adherent, s.prenom_adherent
     FROM fam_adh a
-    LEFT JOIN adherents s ON a.id_adh = s.id_adherent
+    LEFT JOIN adherents s ON a.id_adherent = s.id_adherent
     WHERE CONCAT(
       COALESCE(a.id_fam, ''), ' ',
       COALESCE(s.nom_adherent, ''), ' ',
@@ -118,7 +119,7 @@ router.get("/", async (req, res, next) => {
     SELECT COUNT(*) as total FROM fam_adh
     WHERE CONCAT(
       COALESCE(id_fam, ''), ' ',
-      COALESCE(id_adh, ''), ' ',
+      COALESCE(id_adherent, ''), ' ',
       COALESCE(lien_benef, ''), ' ',
       COALESCE(nom_benef, ''), ' ',
       COALESCE(prenom_benef, ''), ' ',
@@ -147,7 +148,7 @@ router.get("/", async (req, res, next) => {
 // FAMILY __________________ GET a single record by ID_______________________
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
-  const selectQuery = "SELECT * FROM fam_adh WHERE id_adh = ?";
+  const selectQuery = "SELECT * FROM fam_adh WHERE id_adherent = ?";
 
   try {
     const [result] = await db.query(selectQuery, [id]);
@@ -162,7 +163,17 @@ router.get("/:id", async (req, res) => {
       res.status(200).json(result); // Send the entire result array
       console.log(result);
     } else {
-      res.status(404).json({ message: "Benef not found" });
+      // Send a custom object when no record is found
+      res.status(200).json([
+        {
+          id_fam: 0,
+          id_adherent: 0,
+          lien_benef: "Aucun bénéficiaire enregistré",
+          nom_benef: "Aucun bénéficiaire enregistré",
+          prenom_benef: "Aucun bénéficiaire enregistré",
+          date_nai_benef: "",
+        },
+      ]);
     }
   } catch (err) {
     next(err); // Pass the error to the error handler middleware
@@ -183,17 +194,17 @@ router.delete("/:id", async (req, res) => {
 // FAMILY ________________________ UPDATE - PUT_____________________________
 router.put("/:id", async (req, res) => {
   const id = req.params.id;
-  const { id_adh, lien_benef, nom_benef, prenom_benef, date_nai_benef } =
+  const { id_adherent, lien_benef, nom_benef, prenom_benef, date_nai_benef } =
     req.body;
 
   const formattedDate_nai = format(new Date(date_nai_benef), "yyyy-MM-dd");
 
   const updateQuery =
-    "UPDATE fam_adh SET id_adh = ?, lien_benef = ?, nom_benef = ?, prenom_benef = ?, date_nai_benef = ? WHERE id_adh = ?";
+    "UPDATE fam_adh SET id_adherent = ?, lien_benef = ?, nom_benef = ?, prenom_benef = ?, date_nai_benef = ? WHERE id_adherent = ?";
 
   try {
     await db.query(updateQuery, [
-      id_adh,
+      id_adherent,
       lien_benef,
       nom_benef,
       prenom_benef,

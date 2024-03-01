@@ -257,7 +257,12 @@ export class ApiService {
 
   //get family by id________
   getFamilyId(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/fam_adh/${id}`);
+    return this.http.get(`${this.apiUrl}/fam_adh/${id}`).pipe(
+      catchError((error) => {
+        console.error('No record found for this id:', id);
+        return throwError(() => error); // Use a factory function
+      })
+    );
   }
 
   // _____MGSREADER_________________________________

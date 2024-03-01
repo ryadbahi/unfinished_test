@@ -187,33 +187,35 @@
     </div>
 
     <div class="selectSous">
-      <mat-select
-        placeholder="Selectionez un contrat"
-        style="
-          font-size: 16px;
-          font-weight: bolder;
+      <mat-form-field style="overflow: hidden">
+        <mat-select
+          placeholder="Selectionez un contrat"
+          style="
+            font-size: 16px;
+            font-weight: bolder;
 
-          margin-bottom: 8px;
-        "
-        (click)="getcontrats()"
-        (selectionChange)="onContratSelectionChange($event)"
-      >
-        <mat-option *ngIf="isLoading" disabled style="width: 25 rem">
-          <mat-progress-spinner
-            mode="indeterminate"
-            diameter="20"
-          ></mat-progress-spinner>
-          Chargement...
-        </mat-option>
-        <mat-option
-          *ngFor="let element of contrat_data"
-          [value]="element.id_contrat"
-          [disabled]="isLoading"
+            margin-bottom: 8px;
+          "
+          (click)="getcontrats()"
+          (selectionChange)="onContratSelectionChange($event)"
         >
-          {{ element.nom_souscript }} :
-          {{ element.num_contrat }}
-        </mat-option>
-      </mat-select>
+          <mat-option *ngIf="isLoading" disabled style="width: 25 rem">
+            <mat-progress-spinner
+              mode="indeterminate"
+              diameter="20"
+            ></mat-progress-spinner>
+            Chargement...
+          </mat-option>
+          <mat-option
+            *ngFor="let element of contrat_data"
+            [value]="element.id_contrat"
+            [disabled]="isLoading"
+          >
+            {{ element.nom_souscript }} :
+            {{ element.num_contrat }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
       <div class="selectedContratTable" *ngIf="selectedContrat" [@fadeInOut]>
         <div class="content">
@@ -601,6 +603,12 @@
         showFirstLastButtons
       >
       </mat-paginator>
+
+      <div class="submitListing">
+        <button mat-raised-button (click)="submitListing(rearrangedData)">
+          Valider
+        </button>
+      </div>
     </div>
   </div>
 </body>

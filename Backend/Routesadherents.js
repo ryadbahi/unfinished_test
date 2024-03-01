@@ -12,75 +12,55 @@ router.use((err, req, res, next) => {
 
 // ADHERENTS CREATE - POST
 router.post("/", async (req, res) => {
-  const dataInput = req.body;
+  const dataArray = req.body;
 
   try {
-    // Check if dataInput is an array
-    if (Array.isArray(dataInput)) {
-      // If it's an array, loop through each record
-      for (const data of dataInput) {
-        await insertAdherent(data, res);
+    for (const dataInput of dataArray) {
+      // Insert into adherents table
+      const adherent = {
+        id_souscript: dataInput.id_souscript,
+        nom_adherent: dataInput.nom_adherent,
+        prenom_adherent: dataInput.prenom_adherent,
+        date_nai_adh: dataInput.date_nai_adh,
+        situa_fam: dataInput.situa_fam,
+        rib_adh: dataInput.rib_adh,
+        email_adh: dataInput.email_adh,
+        tel_adh: dataInput.tel_adh,
+        statut: dataInput.statut || "1", // Set default value "1" if statut is empty
+      };
+
+      let query = "INSERT INTO adherents SET ?";
+      let queryResult = await db.query(query, adherent);
+
+      // Get the id of the inserted adherent
+      const id_adherent = queryResult[0].insertId;
+      console.log("id_adherent:", id_adherent);
+
+      // Insert into fam_adh table
+      for (const benef of dataInput.benef) {
+        console.log("benef:", benef);
+
+        const fam_adh = {
+          id_adherent: id_adherent,
+          lien_benef: benef.lien_benef,
+          nom_benef: benef.nom_benef,
+          prenom_benef: benef.prenom_benef,
+          date_nai_benef: benef.date_nai_benef,
+        };
+
+        console.log("fam_adh:", fam_adh);
+
+        query = "INSERT INTO fam_adh SET ?";
+        await db.query(query, fam_adh);
       }
-    } else {
-      // If it's not an array, insert it as a single record
-      await insertAdherent(dataInput, res);
     }
 
-    res.status(201).json({ message: "Data inserted successfully" });
-  } catch (err) {
-    next(err); // Pass the error to the error handler middleware
+    res.status(200).json({ message: "Data inserted successfully" });
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-async function insertAdherent(data, res) {
-  const {
-    id_souscript,
-    nom_adherent,
-    prenom_adherent,
-    date_nai_adh,
-    situa_fam,
-    rib_adh,
-    email_adh,
-    tel_adh,
-    statut,
-  } = data;
-
-  // Format the date from 'dd/MM/yyyy' to 'yyyy-MM-dd'
-  const parts = date_nai_adh.split("/");
-  const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-
-  const insertQuery = `
-    INSERT INTO adherents (
-      id_souscript,
-      nom_adherent,
-      prenom_adherent,
-      date_nai_adh,
-      situa_fam,
-      rib_adh,
-      email_adh,
-      tel_adh,
-      statut,
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  try {
-    await db.query(insertQuery, [
-      id_souscript,
-      nom_adherent,
-      prenom_adherent,
-      formattedDate, // Use the formatted date here
-      situa_fam,
-      rib_adh,
-      email_adh,
-      tel_adh,
-      statut,
-    ]);
-    console.log("Insert successful");
-  } catch (err) {
-    console.error("Error executing INSERT query:", err.message);
-    throw err;
-  }
-}
 
 // ADHERENTS READ - GET
 router.get("/", async (req, res, next) => {

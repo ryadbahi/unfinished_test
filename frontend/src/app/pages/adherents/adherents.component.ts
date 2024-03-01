@@ -261,18 +261,25 @@ export class AdherentsComponent implements OnInit {
   }
 
   showfamily(id_adh: number) {
-    this.service.getFamilyId(id_adh).subscribe((items) => {
-      console.log('Received from server:', items); // Log what you received from the server
-      if (items && Array.isArray(items)) {
-        this.adhdataSource.data = this.adhdataSource.data.map((o) => {
-          if (o.id_adherent === id_adh) {
-            o.fam_adh = items;
-            o.hasfam_adh = true;
-          }
-          return o;
-        });
-        this.cdr.detectChanges();
+    this.service.getFamilyId(id_adh).subscribe(
+      (items) => {
+        // Success callback
+        console.log('Received from server:', items);
+        if (items && Array.isArray(items)) {
+          this.adhdataSource.data = this.adhdataSource.data.map((o) => {
+            if (o.id_adherent === id_adh) {
+              o.fam_adh = items;
+              o.hasfam_adh = true;
+            }
+            return o;
+          });
+          this.cdr.detectChanges();
+        }
+      },
+      (error) => {
+        // Error callback
+        console.log('No record found for this id:', id_adh);
       }
-    });
+    );
   }
 }

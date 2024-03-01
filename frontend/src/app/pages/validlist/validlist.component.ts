@@ -70,6 +70,7 @@ export interface listing {
   prenom: string;
   dateDeNaissance: Date;
   rib: string;
+  statut?: string;
   calculkey?: string;
   categorie: string;
   email: string;
@@ -212,7 +213,8 @@ export class ValidlistComponent implements OnInit {
     public datePipe: DatePipe,
     private snackBService: SnackBarService,
     private ribVerif: RibVerifierService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private snackBar: SnackBarService
   ) {
     this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
   }
@@ -1108,14 +1110,21 @@ export class ValidlistComponent implements OnInit {
     this.apiService.getAllContrats().subscribe({
       next: (data: any) => {
         this.contrat_data = data;
-        //console.log(this.contrat_data);
+        console.log(this.contrat_data);
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error fetching contrats List:', error);
         this.isLoading = false;
       },
     });
+  }
+  private dateToServer(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   submitListing(data: listing[]): any {
@@ -1124,24 +1133,38 @@ export class ValidlistComponent implements OnInit {
 
     const id_souscript = contratData?.id_souscript;
     data.forEach((item) => {
+      const statut = item.statut || '1';
       const situaFam = item.fam_adh && item.fam_adh.length > 0 ? 'M' : 'C';
-      adh_details.push({
+
+      const restructuredData = {
         id_souscript: id_souscript,
-        id_adh: item.serial,
+        serial: item.serial,
         nom_adherent: item.nom,
         prenom_adherent: item.prenom,
-        date_nai_adh: item.dateDeNaissance,
+        date_nai_adh: this.dateToServer(item.dateDeNaissance),
         situa_fam: situaFam,
-        benef: item.fam_adh,
-      });
+        rib_adh: item.rib,
+        statut: statut,
+        benef: item.fam_adh.map((child) => ({
+          lien_benef: child.lienBnf,
+          nom_benef: child.nom,
+          prenom_benef: child.prenom,
+          date_nai_benef: this.dateToServer(child.dateDeNaissance),
+        })),
+      };
+
+      adh_details.push(restructuredData);
 
       return adh_details;
     });
 
-    const dataToSubmit = {
-      id_souscript: id_souscript,
-      adh_details: adh_details,
-    };
+    const dataToSubmit = adh_details;
     console.log(dataToSubmit);
+
+    this.apiService.addAdherentData(dataToSubmit).subscribe((res) => {
+      this.snackBar.openSnackBar('Adhérents ajoutées', 'OK');
+      console.log(res);
+      //this.contractForm.reset();
+    });
   }
 }

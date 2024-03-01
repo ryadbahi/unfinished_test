@@ -1,4 +1,6 @@
 <body class="adhpage">
+  <mat-toolbar class="matoolB">Adherents</mat-toolbar>
+
   <mat-form-field>
     <mat-label>Filter</mat-label>
     <input
@@ -8,19 +10,6 @@
       #input
     />
   </mat-form-field>
-
-  <button
-    style="margin-left: 80%"
-    class="ajouter"
-    color="success"
-    mat-fab
-    (click)="openAdhdialog()"
-  >
-    <mat-icon>add</mat-icon>
-  </button>
-  <mat-toolbar style="border-radius: 10px; overflow: hidden"
-    >Adherents</mat-toolbar
-  >
   <div class="mat-elevation-z8" id="maintable">
     <table mat-table [dataSource]="adhdataSource" matSort multiTemplateDataRows>
       <ng-container matColumnDef="id_adherent">
