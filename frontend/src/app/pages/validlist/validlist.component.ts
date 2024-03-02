@@ -154,6 +154,7 @@ export interface listing {
 })
 export class ValidlistComponent implements OnInit {
   contrat_data: Contrat[] = [];
+  souscripData: SouscripData[] = [];
   originalDataMap: { [key: string]: listing } = {};
   originalFamDataMap: { [key: string]: fam_adhData } = {};
   inputValue = '';
@@ -179,7 +180,7 @@ export class ValidlistComponent implements OnInit {
   rearrangedData: listing[] = [];
   ExcelData: any[] = [];
   datePickers: MatDatepicker<Date>[] = [];
-  souscripData: SouscripData[] = [];
+
   selectedContrat?: Contrat | null = null;
   displayedColumns: string[] = [
     'serial',

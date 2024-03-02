@@ -356,4 +356,21 @@ export class ApiService {
   getAllOptions(): Observable<any> {
     return this.http.get(`${this.apiUrl}/options`);
   }
+
+  postOptions(data: any) {
+    console.log(data, 'Données insérées');
+    return this.http.post(`${this.apiUrl}/options`, data);
+  }
+
+  //_______________________DPT SIN TEMP___________________________
+  getTempSin(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/decla_sin_temp`);
+  }
+
+  //_____________________________GET SIN BY CONTRAT_______________________
+
+  getTempSinByContrat(id_contrat: number): Observable<any> {
+    console.log('from api', id_contrat);
+    return this.http.get(`${this.apiUrl}/decla_sin_temp/${id_contrat}`);
+  }
 }

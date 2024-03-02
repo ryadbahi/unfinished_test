@@ -1,6 +1,9 @@
-.mat-success {
-  background-color: green;
-  color: #fff;
+.mat-mdc-table {
+  background-color: hwb(0 100% 0% / 0.3);
+}
+
+.mat-mdc-header-cell {
+  background-color: hwb(0 100% 0% / 0) !important;
 }
 
 .mat-mdc-row {
@@ -11,12 +14,11 @@ input {
   size: fit-content;
   font-size: 8px;
 }
-.mat-elevation-z8 {
-  margin: 0 0 2% 0;
-}
+
 .familydisplay {
   overflow: hidden !important;
   display: flex !important;
+  width: 60rem;
 }
 tr.detail-row {
   height: 0;
@@ -24,6 +26,9 @@ tr.detail-row {
 .mat-elevation-z8 {
   border-radius: 10px;
   overflow: hidden;
+  margin: 0 0 2% 0;
+  width: 110rem;
+  max-width: 110rem;
 }
 #childtable {
   margin-top: 10px;
@@ -32,7 +37,24 @@ tr.detail-row {
 .ng-star-inserted {
   position: relative;
   height: auto;
+  font-size: 12px;
 }
+
+.matoolB,
+.mat-mdc-paginator {
+  table-layout: auto;
+  white-space: normal;
+  background-color: hwb(0 100% 0% / 0.6);
+}
+
+.mat-toolbar-row,
+.mat-toolbar-single-row {
+  height: fit-content;
+  color: #3d3b3b;
+  font-size: 28px;
+  font-weight: bold;
+}
+
 .highlight {
   background-color: red;
 }

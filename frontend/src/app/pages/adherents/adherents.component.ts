@@ -116,13 +116,9 @@ export class AdherentsComponent implements OnInit {
     'email_adh',
     'tel_adh',
     'statut',
-    'added_date',
-    'updated_date',
     'actions',
   ];
   famdisplayedColumns: string[] = [
-    'id_fam',
-    'id_adh',
     'lien_benef',
     'nom_benef',
     'prenom_benef',

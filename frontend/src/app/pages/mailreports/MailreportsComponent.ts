@@ -102,8 +102,8 @@ export class MailreportsComponent implements OnInit {
   Oldmrepelem: any;
   isEditing = false;
   getDataValue: any;
-  dataSource!: MatTableDataSource<any>;
   MreportsForm: any = {};
+  dataSource!: MatTableDataSource<any>;
   displayedColumns: string[] = [
     'id_mail',
     'reception',
@@ -125,11 +125,11 @@ export class MailreportsComponent implements OnInit {
     'ATLAS COPCO ALGERIE': 'ATLAS COPCO',
     'BERGERAT MONNOYEUR ALGERIE': 'BMA',
     'GLAXOSMITHKLINE ALGÉRIE': 'GSK',
-    'GAZPROM INTERNATIONAL LIMITED ILLC' : 'GAZPROM',
+    'GAZPROM INTERNATIONAL LIMITED ILLC': 'GAZPROM',
     'PT PERTAMINA ALGERIA EKSPLORASI PRODUKSI': 'PERTAMINA',
     'DHL GLOBAL FORWARDING ALGERIE': 'DHL',
 
-    'SOCIÉTÉ GENERAL ALGERIE' : 'SGA',
+    'SOCIÉTÉ GENERAL ALGERIE': 'SGA',
     'MSD IDEA ALGERIE': 'MSD',
     'CAN HYGIENE SPA': 'CAN HYGIENE',
     'SARL MERIPLAST': 'MERIPLAST',

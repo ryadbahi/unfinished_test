@@ -12,6 +12,7 @@ const paraphRoutes = require("./RoutesParaph.js");
 const paraph_ovRoutes = require("./RoutesParah_ov.js");
 const nomencleRoutes = require("./RoutesNomencl.js");
 const optionsRoutes = require("./RoutesOptions.js");
+const Decla_Sin_TempRoutes = require("./RoutesDecla_Sin_Temp.js");
 
 const app = express();
 
@@ -42,6 +43,10 @@ app.use("/parapheur_titles", paraphRoutes);
 // -------------------------PDF PARSING--------------------------------------
 
 app.use("/PdfParse", PdfPrarseRoutes);
+
+// -------------------------DPT SIN TEMP--------------------------------------
+
+app.use("/decla_sin_temp", Decla_Sin_TempRoutes);
 
 // -------------------------DPT SINISTRE--------------------------------------
 app.use("/dpt_sin", dpt_sinRoutes);

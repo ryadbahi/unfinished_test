@@ -1,4 +1,5 @@
 <body class="souspage">
+  <mat-toolbar class="matoolB">Souscripteurs</mat-toolbar>
   <mat-form-field>
     <mat-label>Filter</mat-label>
     <input
@@ -8,17 +9,6 @@
       #input
     />
   </mat-form-field>
-
-  <button
-    style="margin-left: 80%"
-    class="ajouter"
-    color="success"
-    mat-fab
-    (click)="openSouscripDialog()"
-  >
-    <mat-icon>add</mat-icon>
-  </button>
-  <mat-toolbar>Souscripteurs</mat-toolbar>
   <div class="mat-elevation-z8">
     <table mat-table [dataSource]="dataSource" matSort>
       <!-- ID Column -->

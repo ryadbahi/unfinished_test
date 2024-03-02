@@ -428,11 +428,17 @@ export class ContratComponent implements OnInit {
     const option = {
       id_contrat: parseInt(contratData), // Assuming id_contrat is a number
       limit_plan: parseInt(limitPlan), // Assuming limit_plan is a number
-      num: parseInt(optionValue), // Assuming num is a number
+      num_opt: parseInt(optionValue), // Assuming num is a number
       dynamicForm: dynamicFormData,
     };
 
     console.log(option);
+
+    this.apiService.postOptions(option).subscribe((res) => {
+      this.snackBar.openSnackBar('Souscripteur crée', 'Okey :)');
+      console.log(res);
+      this.dynamicForm.reset();
+    });
   }
 
   sumbmitSous() {

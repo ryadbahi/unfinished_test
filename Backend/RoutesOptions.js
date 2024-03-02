@@ -9,15 +9,15 @@ router.use((err, req, res, next) => {
 
 //_____________________________POST_______________________________
 
-async function insertOption(id_contrat, limit_plan, num, option_describ) {
+async function insertOption(id_contrat, limit_plan, num_opt, option_describ) {
   const insertQuery = `
-      INSERT INTO options (id_contrat, limit_plan, num, option_describ)
+      INSERT INTO options (id_contrat, limit_plan, num_opt, option_describ)
       VALUES (?, ?, ?, ?)`;
 
   const [result] = await db.query(insertQuery, [
     id_contrat,
     limit_plan,
-    num,
+    num_opt,
     option_describ,
   ]);
   console.log("Inserted into options table. ID:", result.insertId);
@@ -25,14 +25,14 @@ async function insertOption(id_contrat, limit_plan, num, option_describ) {
 }
 
 router.post("/", async (req, res, next) => {
-  const { id_contrat, limit_plan, num, dynamicForm } = req.body;
+  const { id_contrat, limit_plan, num_opt, dynamicForm } = req.body;
 
   try {
     // Insert data into the options table
     const id_opt = await insertOption(
       id_contrat,
       limit_plan,
-      num /* option_describ */
+      num_opt /* option_describ */
     );
     console.log("Inserted into options table. id_opt:", id_opt);
 
