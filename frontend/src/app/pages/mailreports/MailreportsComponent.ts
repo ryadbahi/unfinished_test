@@ -3,8 +3,10 @@ import {
   Component,
   ElementRef,
   HostListener,
+  Inject,
   OnInit,
   ViewChild,
+  inject,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 
@@ -16,7 +18,11 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { ApiService, MailreportsResponse } from '../../api.service';
+import {
+  ApiService,
+  MailreportsResponse,
+  abbrevResponse,
+} from '../../api.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import MsgReader from '@kenjiuno/msgreader';
@@ -27,6 +33,23 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import * as XLSX from 'xlsx';
 import { SnackBarService } from '../../snack-bar.service';
+import { MatDialogService } from '../../mat-dialog.service';
+import { template } from 'lodash';
+import {
+  MatDialogTitle,
+  MatDialogContent,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialog,
+} from '@angular/material/dialog';
+
+export interface AbbrevList {
+  id_abbrev: number;
+  Full_souscr: string;
+  abbrev_souscr: string;
+}
 
 export interface MreportsData {
   id_mail: string;
@@ -91,6 +114,7 @@ export class MailreportsComponent implements OnInit {
   page: number = 1;
   pageSize: number = 15;
   sortField: string = 'id_mail';
+  abbrevSortField: string = 'id_abbrev';
   search: string = '';
   statut: string[] = ['Réglée', 'Infondée'];
   selectedStatut: string = this.statut[0];
@@ -104,6 +128,7 @@ export class MailreportsComponent implements OnInit {
   getDataValue: any;
   MreportsForm: any = {};
   dataSource!: MatTableDataSource<any>;
+  abbrevDataSource!: MatTableDataSource<AbbrevList>;
   displayedColumns: string[] = [
     'id_mail',
     'reception',
@@ -128,7 +153,6 @@ export class MailreportsComponent implements OnInit {
     'GAZPROM INTERNATIONAL LIMITED ILLC': 'GAZPROM',
     'PT PERTAMINA ALGERIA EKSPLORASI PRODUKSI': 'PERTAMINA',
     'DHL GLOBAL FORWARDING ALGERIE': 'DHL',
-
     'SOCIÉTÉ GENERAL ALGERIE': 'SGA',
     'MSD IDEA ALGERIE': 'MSD',
     'CAN HYGIENE SPA': 'CAN HYGIENE',
@@ -138,7 +162,7 @@ export class MailreportsComponent implements OnInit {
     'CLARIANT OIL SERVICES UK LTD': 'CLARIANT UK',
     'ACCENTIS PHARMA ALGERIE': 'ACCENTIS',
     'SUEZ WATER TECHNOLOGIES AND SOLUTIONS ALGERIA SPA': 'SUEZ WATER',
-    'ABDI IBRAHIM REMEDE PHARMA': ' AIRP DZ',
+    'ABDI IBRAHIM REMEDE PHARMA': 'AIRP DZ',
     'EURL TABUK ALGERIE': 'TABUK',
     'HENKEL ALGÉRIE': 'HENKEL',
     'BRITISH AMERICAN  TOBACCO ALGERIE SPA': 'BAT',
@@ -220,7 +244,7 @@ export class MailreportsComponent implements OnInit {
     private businessHoursService: BusinessHoursService,
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
-
+    private dialog: MatDialog,
     private snackBService: SnackBarService
   ) {}
   isNewRow(row: MreportsData) {
@@ -639,6 +663,21 @@ export class MailreportsComponent implements OnInit {
       this.snackBService.openSnackBar('Aucune donnée éditée ', 'hum ?!');
     }
   }
+
+  getabbrev(): void {
+    this.service.getabbrevlist(1, 10, this.abbrevSortField, '').subscribe({
+      next: (response: abbrevResponse) => {
+        this.abbrevDataSource = new MatTableDataSource(response.data);
+        this.total = response.total;
+        this.paginator.length = this.total;
+        console.log(this.abbrevDataSource);
+      },
+      error: (error) => {
+        console.error('Failed to fetch data:', error);
+      },
+    });
+  }
+
   downloadExcel() {
     const fileName = 'mail_reports.xlsx';
 
@@ -723,5 +762,43 @@ export class MailreportsComponent implements OnInit {
 
     // If the format is not as expected, return an error message
     return 'Invalid format';
+  }
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(MatDialogAbbrev, {
+      data: this.abbrevDataSource,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('The dialog was closed');
+    });
+  }
+}
+
+//////////////////////// __________________ DIALOG ______________________/////////////////////////
+
+@Component({
+  selector: 'mat_dialog_abbrev',
+  templateUrl: 'mat_dialog_abbrev.html',
+  standalone: true,
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+  ],
+})
+export class MatDialogAbbrev {
+  constructor(
+    public dialogRef: MatDialogRef<MatDialogAbbrev>,
+    @Inject(MAT_DIALOG_DATA) public data: abbrevResponse
+  ) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 }

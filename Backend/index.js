@@ -13,6 +13,7 @@ const paraph_ovRoutes = require("./RoutesParah_ov.js");
 const nomencleRoutes = require("./RoutesNomencl.js");
 const optionsRoutes = require("./RoutesOptions.js");
 const Decla_Sin_TempRoutes = require("./RoutesDecla_Sin_Temp.js");
+const abbrevRoutes = require("./RoutesAbbrev.js");
 
 const app = express();
 
@@ -23,6 +24,10 @@ app.use((req, res, next) => {
   next();
   console.log(req.body); // Log the raw request body
 });
+
+//______________________________ABBREV_______________________________________
+
+app.use("/abbrev_sous", abbrevRoutes);
 
 //______________________________OPTIONS______________________________________
 

@@ -3,7 +3,10 @@ import { Injectable } from '@angular/core';
 import { Subject, from, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { MreportsData } from './pages/mailreports/MailreportsComponent';
+import {
+  AbbrevList,
+  MreportsData,
+} from './pages/mailreports/MailreportsComponent';
 import { AdherentData } from './pages/adherents/adherents.component';
 import {
   ParaphOv,
@@ -39,6 +42,10 @@ export interface ParaphDetail {
   montant: number;
 }
 
+export interface abbrevResponse {
+  data: AbbrevList[];
+  total: number;
+}
 export interface MailreportsResponse {
   data: MreportsData[];
   total: number;
@@ -251,6 +258,29 @@ export class ApiService {
   }
   getAverMailScore(): Observable<any> {
     return this.http.get(`${this.apiUrl}/average-score`);
+  }
+
+  //________________ABBREV____________________________________
+
+  getabbrevlist(
+    page: number,
+    pageSize: number,
+    sort: string,
+    search: string
+  ): Observable<any> {
+    const encodedSort = encodeURIComponent(sort);
+    const encodedSearch = encodeURIComponent(search);
+    const url = `${this.apiUrl}/abbrev_sous?page=${page}&pageSize=${pageSize}&sortBy=${encodedSort}&search=${encodedSearch}`;
+
+    return this.http.get<any>(url).pipe(
+      catchError((error: any) => {
+        console.error(
+          'An error occurred while fetching Abbrev list data:',
+          error
+        );
+        throw new Error('Failed to fetch filtered Abbrev list data.');
+      })
+    );
   }
 
   //_____________________ FAMILY______________________________

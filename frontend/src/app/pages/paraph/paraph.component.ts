@@ -29,7 +29,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { NgxSpinnerModule } from 'ngx-spinner';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import {
   trigger,
   state,
@@ -42,6 +42,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { RibVerifierService } from '../../rib-verifier.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export interface ParaphTable {
   id: number;
@@ -106,6 +107,7 @@ interface RestructuredItem {
     RouterLink,
     MatTooltipModule,
     MatBadgeModule,
+    MatProgressSpinnerModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './paraph.component.html',
@@ -155,7 +157,8 @@ export class ParaphComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private snackBService: SnackBarService,
     private router: Router,
-    private ribVerif: RibVerifierService
+    private ribVerif: RibVerifierService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {}
@@ -242,6 +245,7 @@ export class ParaphComponent implements OnInit {
     }
   }
   parsePDF(file: File) {
+    this.spinner.show();
     this.apiService.getParsedPDFContent([file]).subscribe({
       next: (response) => {
         console.log('PDF Parsed Successfully:', response);
@@ -260,7 +264,9 @@ export class ParaphComponent implements OnInit {
           // Move the code that depends on the parsed data inside this block
           this.verifyAndHighlight();
           this.cdr.detectChanges();
+          this.spinner.hide();
         } else {
+          this.spinner.hide();
           console.error('Invalid server response:', response);
         }
       },
@@ -285,6 +291,7 @@ export class ParaphComponent implements OnInit {
     let souscr = '';
     let isTable = false;
     let currentTable: ParaphTable | null = null;
+    let isFirstSerialBeneRibMontantProcessed = false;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -297,12 +304,16 @@ export class ParaphComponent implements OnInit {
         souscr = lines[i + 1] || '';
       }
       if (line.includes('SerialBénéficiaireRibMontant')) {
+        if (isFirstSerialBeneRibMontantProcessed) {
+          // If the first occurrence is already processed, skip subsequent ones
+          continue;
+        }
+
         const angtline = lines[i - 3] || '';
         const match = angtline.match(/^(.*?)Le/);
         angt = match ? match[1].trim() : '';
-      }
-      console.log(angt);
-      if (line.includes('SerialBénéficiaireRibMontant')) {
+
+        isFirstSerialBeneRibMontantProcessed = true;
         isTable = true;
         currentTable = {
           id: this.currentId++,
@@ -326,15 +337,20 @@ export class ParaphComponent implements OnInit {
         }
 
         const serial = line.match(/\d+/)?.[0];
-        const beneficiaire = line.match(/[A-Z]+\s+[A-Z]+/) || [''];
+        const beneficiaire = line.match(/[A-Za-z]+\s+[A-Za-z]+/) || [''];
+        const benef_virmnt = beneficiaire[0].toUpperCase();
         const ribMatch = line.match(/\d{20}/);
         const rib = ribMatch ? ribMatch[0] : '';
         const montantMatch = line.match(/\d[\d\s]+[\d,.]+/);
         const montant = montantMatch ? montantMatch[0].substring(21) : '';
 
+        if (isNaN(parseFloat(montant)) || parseFloat(montant) === 0) {
+          continue;
+        }
+
         const detail: ParaphDetail = {
           serial: Number(serial),
-          benef_virmnt: beneficiaire[0],
+          benef_virmnt: benef_virmnt,
           rib: rib,
           montant: Number(montant.replace(/\s/g, '').replace(',', '.')),
         };

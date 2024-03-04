@@ -143,7 +143,11 @@
             >
               Totaux
             </th>
-            <td mat-cell *matCellDef="let element" style="font-weight: bolder">
+            <td
+              mat-cell
+              *matCellDef="let element"
+              style="font-weight: bolder; text-align: right"
+            >
               <div>{{ element.total | number : "1.2-2" }}</div>
             </td>
           </ng-container>
@@ -273,3 +277,11 @@
     </div>
   </div>
 </body>
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="large"
+  color="#fff"
+  type="ball-scale-multiple"
+  [fullScreen]="true"
+  ><p style="color: white">Chargement...</p></ngx-spinner
+>

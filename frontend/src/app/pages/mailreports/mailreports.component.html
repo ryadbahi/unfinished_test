@@ -22,6 +22,8 @@
         </button>
         <h4 style="margin-left: 25px; font-size: 25px">Suivi des requétes</h4>
       </div>
+
+      <button mat-raised-button (click)="openDialog()">test</button>
       <div
         class="average-tdr"
         [ngStyle]="{ color: getScoreColor(calculateAverageScore()) }"
