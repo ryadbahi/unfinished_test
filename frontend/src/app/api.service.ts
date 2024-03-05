@@ -260,7 +260,7 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/average-score`);
   }
 
-  //________________ABBREV____________________________________
+  //_____________________________________ABBREV____________________________________
 
   getabbrevlist(
     page: number,
@@ -281,6 +281,14 @@ export class ApiService {
         throw new Error('Failed to fetch filtered Abbrev list data.');
       })
     );
+  }
+
+  postAbbrev(data: any) {
+    return this.http.post(`${this.apiUrl}/abbrev_sous`, data);
+  }
+
+  putAbbrev(id: any, data: any) {
+    return this.http.put(`${this.apiUrl}/abbrev_sous/${id}`, data);
   }
 
   //_____________________ FAMILY______________________________

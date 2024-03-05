@@ -8,14 +8,21 @@ import {
   ViewChild,
   inject,
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, NgIf } from '@angular/common';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControlName,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import {
@@ -47,8 +54,9 @@ import {
 
 export interface AbbrevList {
   id_abbrev: number;
-  Full_souscr: string;
+  full_souscr: string;
   abbrev_souscr: string;
+  isEditAbbrev?: boolean;
 }
 
 export interface MreportsData {
@@ -92,6 +100,7 @@ export interface MreportsData {
     MatOptionModule,
     MatTooltipModule,
     DatePipe,
+    NgIf,
   ],
   templateUrl: './mailreports.component.html',
   styleUrl: './mailreports.component.scss',
@@ -648,7 +657,6 @@ export class MailreportsComponent implements OnInit {
           console.log('Row updated successfully:', response);
           this.snackBService.openSnackBar('Mise à jour effectuée', 'okey :)');
 
-          this.service.triggerDataChange();
           // Toggle off the editing mode after a successful update
           mrepelem.isEdit = false;
         },
@@ -664,7 +672,7 @@ export class MailreportsComponent implements OnInit {
     }
   }
 
-  getabbrev(): void {
+  getAbbrev(): void {
     this.service.getabbrevlist(1, 10, this.abbrevSortField, '').subscribe({
       next: (response: abbrevResponse) => {
         this.abbrevDataSource = new MatTableDataSource(response.data);
@@ -782,6 +790,7 @@ export class MailreportsComponent implements OnInit {
   templateUrl: 'mat_dialog_abbrev.html',
   standalone: true,
   imports: [
+    CommonModule,
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
@@ -790,15 +799,119 @@ export class MailreportsComponent implements OnInit {
     MatDialogContent,
     MatDialogActions,
     MatDialogClose,
+    MatTableModule,
+    MatPaginatorModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    RouterLink,
+    NgIf,
   ],
 })
-export class MatDialogAbbrev {
+export class MatDialogAbbrev implements OnInit {
+  displayedColumns: string[] = [
+    'indx',
+    'full_souscr',
+    'abbrev_souscr',
+    'actions',
+  ];
+  abbrevDataSource!: MatTableDataSource<AbbrevList>;
+  abbrevSortField: string = 'id_abbrev';
+  total: number = 0;
+  oldAbbrev: any;
+  abbrevForm!: FormGroup;
+  isEdit = false;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('fileInput') fileInput!: ElementRef;
   constructor(
     public dialogRef: MatDialogRef<MatDialogAbbrev>,
-    @Inject(MAT_DIALOG_DATA) public data: abbrevResponse
+    @Inject(MAT_DIALOG_DATA) public data: abbrevResponse,
+    private service: ApiService,
+    private formBuilder: FormBuilder,
+    private snackBar: SnackBarService
   ) {}
+  ngOnInit(): void {
+    this.getAbbrev();
+
+    //FORMBUILDER
+    this.abbrevForm = this.formBuilder.group({
+      full_souscr: ['', Validators.required],
+      abbrev_souscr: ['', Validators.required],
+    });
+  }
+
+  getAbbrev(): void {
+    this.service.getabbrevlist(1, 10, this.abbrevSortField, '').subscribe({
+      next: (response: abbrevResponse) => {
+        this.abbrevDataSource = new MatTableDataSource(response.data);
+        this.total = response.total;
+        this.paginator.length = this.total;
+        console.log(this.abbrevDataSource);
+      },
+      error: (error) => {
+        console.error('Failed to fetch data:', error);
+      },
+    });
+  }
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  submitAbrev() {
+    const data = this.abbrevForm.value;
+    console.log(data);
+    this.service.postAbbrev(data).subscribe((res) => {
+      this.snackBar.openSnackBar('Tag crée', 'Ok !');
+      console.log(res);
+      this.abbrevForm.reset();
+    });
+  }
+
+  updateAbbrev(element: AbbrevList) {
+    const id = element.id_abbrev;
+    console.log(id);
+    let updatedelement = JSON.stringify(element);
+
+    if (updatedelement !== this.oldAbbrev) {
+      this.service.putAbbrev(id, element).subscribe(
+        (res) => {
+          this.snackBar.openSnackBar('Tag mis à jour', 'Ok !');
+
+          element.isEditAbbrev = false;
+        },
+        (error) => {
+          console.error('Error updating tag:', error);
+          // Handle error as needed
+          console.log('tag:', error);
+        }
+      );
+    } else {
+      console.log('No changes detected. Skipping update.');
+      this.snackBar.openSnackBar('Aucune donnée éditée ', 'hum ?!');
+    }
+  }
+
+  strtEditAbbrev(element: AbbrevList) {
+    if (this.abbrevDataSource) {
+      // Cancel editing for all other rows
+      this.abbrevDataSource.data.forEach((row: AbbrevList) => {
+        if (row.isEditAbbrev) {
+          row.isEditAbbrev = false;
+        }
+      });
+      // Now start editing for the selected row
+
+      // Store the current state of mrepelem
+      this.oldAbbrev = { ...element };
+      element.isEditAbbrev = true;
+    }
+  }
+
+  // Add a method to handle canceling the new row
+  CancelEditAbbrev(element: AbbrevList) {
+    Object.assign(element, this.oldAbbrev);
+    element.isEditAbbrev = false;
   }
 }
