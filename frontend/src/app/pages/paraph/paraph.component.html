@@ -55,6 +55,19 @@
       <img class="icon" src="assets/xlsicn.png" />
     </button>
   </mat-toolbar>
+
+  <div class="search">
+    <mat-form-field>
+      <mat-label>Filter</mat-label>
+      <input
+        matInput
+        (keyup)="applyFilter($event)"
+        placeholder="Ex. Ahmed"
+        #input
+      />
+    </mat-form-field>
+  </div>
+
   <div class="form_container" style="display: grid">
     <div
       class="mat-elevation-z8"
@@ -106,6 +119,19 @@
             </th>
             <td mat-cell *matCellDef="let element" style="font-weight: bolder">
               <div>{{ element.trt_par }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="garantie">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              style="font-size: 16px; font-weight: bolder"
+            >
+              Garantie
+            </th>
+            <td mat-cell *matCellDef="let element" style="font-weight: bolder">
+              <div>{{ element.garantie }}</div>
             </td>
           </ng-container>
 

@@ -162,6 +162,34 @@ export class HistoParaphComponent implements OnInit {
     this.refreshTable();
   }
 
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value
+      .trim()
+      .toLowerCase();
+
+    this.dataSource.filterPredicate = (data: any, filter: string) => {
+      const accumulator = (currentTerm: string, key: string) => {
+        return this.nestedFilterCheck(currentTerm, data, key);
+      };
+      const dataStr = Object.keys(data).reduce(accumulator, '').toLowerCase();
+      return dataStr.indexOf(filter) !== -1;
+    };
+    this.dataSource.filter = filterValue;
+  }
+
+  nestedFilterCheck(search: string, data: any, key: string): string {
+    if (typeof data[key] === 'object') {
+      for (let k in data[key]) {
+        if (data[key][k] !== null) {
+          search = this.nestedFilterCheck(search, data[key], k);
+        }
+      }
+    } else {
+      search += ' ' + data[key];
+    }
+    return search;
+  }
+
   calculateAllOv(paraphTitles: ParaphTitles[]): number {
     return paraphTitles.reduce((total, title) => total + title.total_op, 0);
   }

@@ -47,6 +47,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export interface ParaphTable {
   id: number;
   num_sin: string;
+  garantie: string;
   souscript: string;
   total: number;
   nbrvrmnt?: number;
@@ -71,6 +72,7 @@ interface RestructuredItem {
   num_sin: string;
   souscript: string;
   trt_par: string;
+  garantie: string;
   pdf_ov?: File;
   paraphdetails: {
     benef_virmnt: string;
@@ -129,6 +131,7 @@ export class ParaphComponent implements OnInit {
   displayedColumns: string[] = [
     'id',
     'num_sin',
+    'garantie',
     'trt_par',
     'souscript',
     'nbrvrmnt',
@@ -162,6 +165,33 @@ export class ParaphComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {}
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value
+      .trim()
+      .toLowerCase();
+
+    if (filterValue) {
+      this.dataSource.filterPredicate = (data: any, filter: string) => {
+        // Search in top-level properties
+        const foundInProperties = Object.values(data).some((value: any) =>
+          value.toString().toLowerCase().includes(filter)
+        );
+
+        // Search in 'paraphdetails' array
+        const foundInParaphdetails = data.paraphdetails.some(
+          (detail: any) =>
+            detail.benef_virmnt.toLowerCase().includes(filter) ||
+            detail.rib.toLowerCase().includes(filter)
+        );
+
+        return foundInProperties || foundInParaphdetails;
+      };
+      this.dataSource.filter = filterValue;
+    } else {
+      this.dataSource.filter = '';
+    }
+  }
 
   downloadFile(file: File): void {
     if (file) {
@@ -251,7 +281,15 @@ export class ParaphComponent implements OnInit {
         console.log('PDF Parsed Successfully:', response);
 
         if (response && response.parsedText) {
-          this.reorganizeData(response.parsedText);
+          if (
+            response.parsedText.includes('Décès – IAD – Maladies redoutées')
+          ) {
+            this.reorganizeDecesIadData(response.parsedText);
+          } else if (
+            response.parsedText.includes('SerialBénéficiaireRibMontant')
+          ) {
+            this.reorganizeFmpData(response.parsedText);
+          }
 
           this.parsedContent.forEach((item) => {
             item.pdf_ov = file;
@@ -276,19 +314,74 @@ export class ParaphComponent implements OnInit {
     });
   }
 
-  reorganizeData(data: string): void {
+  reorganizeDecesIadData(data: string): void {
+    this.parsedContent = [];
+
+    const lines = data.split('\n');
+
+    const lastLine = lines[lines.length - 1];
+    const trtParMatch = lastLine.match(/(.+)(?=Le :.*Imprimer par :)/);
+    const trt_par_raw = trtParMatch ? trtParMatch[1].trim() : '';
+
+    const decIndex = lines.findIndex((line) =>
+      line.includes('Décès – IAD – Maladies redoutées')
+    );
+    const num_sin = decIndex > 0 ? lines[decIndex - 1] : '';
+
+    const souscriptMatch = data.match(/Nom \/ Raison sociale :(.*)/);
+    const souscript = souscriptMatch ? souscriptMatch[1].trim() : '';
+
+    const currentTable: ParaphTable = {
+      id: this.currentId++,
+      trt_par: trt_par_raw,
+      num_sin: num_sin,
+      garantie: 'Décès – IAD – Maladies redoutées',
+      souscript: souscript,
+      total: 0,
+      issues: 0,
+      paraphdetails: [],
+    };
+
+    const benefIndex = lines.findIndex((line) =>
+      line.includes('Bénificiare/Créancier :')
+    );
+    const benefLine = benefIndex > 0 ? lines[benefIndex - 1] : '';
+    const benefVirmntMatch = benefLine.match(/(.*?)(?= 0)/);
+    const benef_virmnt = benefVirmntMatch ? benefVirmntMatch[1].trim() : '';
+
+    const ribMatch = data.match(/(.{23})(?=Nom \/ Raison sociale :)/);
+    let rib = ribMatch ? ribMatch[1].trim() : '';
+    rib = rib.replace(/\s/g, '');
+
+    const montantMatch = data.match(/- En chiffres :([\s\S]*?)\s*DA/);
+    const montant = montantMatch ? montantMatch[1].trim() : '';
+
+    const detail: ParaphDetail = {
+      serial: 1,
+      benef_virmnt: benef_virmnt,
+      rib: rib,
+      montant: parseFloat(montant.replace(/\s/g, '').replace(',', '.')) || 0,
+    };
+
+    currentTable.paraphdetails.push(detail);
+    currentTable.total += detail.montant;
+
+    this.parsedContent.push(currentTable);
+  }
+
+  reorganizeFmpData(data: string): void {
     this.parsedContent = [];
     if (!data) {
       console.error('Server Response Data is undefined or null.');
       return;
     }
-    console.log(this.parsedContent);
 
     const lines = data.split('\n');
 
     let sin = '';
     let angt = '';
     let souscr = '';
+
     let isTable = false;
     let currentTable: ParaphTable | null = null;
     let isFirstSerialBeneRibMontantProcessed = false;
@@ -319,6 +412,7 @@ export class ParaphComponent implements OnInit {
           id: this.currentId++,
           num_sin: sin,
           trt_par: angt,
+          garantie: 'FMP - Soins annexes',
           souscript: souscr,
           total: 0,
           issues: 0,
@@ -474,7 +568,6 @@ export class ParaphComponent implements OnInit {
   paraphSubmit() {
     // Get the data directly from the data source
     const data: ParaphTable[] = this.dataSource.data;
-    console.log(data);
 
     const year = new Date().getFullYear();
     const userInput = window.prompt("Entrez le N° de l'OV :", '');
@@ -506,13 +599,11 @@ export class ParaphComponent implements OnInit {
         ref_ov: refOvInput,
         paraphTables: paraphTables,
       };
-      console.log(paraph_ov);
 
       // Subscribe to the addParaphData method of the apiService
       this.apiService.addParaphData(paraph_ov).subscribe({
         next: (response) => {
           // Handle the success response
-          console.log('Data submitted successfully:', response);
 
           this.snackBService.openSnackBar(
             'Parapheur a bien été créé',
