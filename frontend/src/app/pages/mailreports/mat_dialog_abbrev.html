@@ -1,95 +1,157 @@
-<div class="form">
-  <form [formGroup]="abbrevForm">
-    <mat-form-field>
-      <input
-        formControlName="full_souscr"
-        matInput
-        placeholder="Raison sociale"
-      />
-    </mat-form-field>
+<body class="DialogBody">
+  <div class="form">
+    <form [formGroup]="abbrevForm">
+      <mat-form-field style="width: 30rem">
+        <input
+          formControlName="full_souscr"
+          matInput
+          placeholder="Raison sociale"
+          style="text-transform: uppercase"
+        />
+      </mat-form-field>
 
-    <mat-form-field>
-      <input formControlName="abbrev_souscr" matInput placeholder="Tag" />
-    </mat-form-field>
-  </form>
+      <mat-icon style="height: 20%">compare_arrows</mat-icon>
 
-  <button mat-raised-button (click)="submitAbrev()">ok</button>
-</div>
+      <mat-form-field style="width: 10rem">
+        <input
+          formControlName="abbrev_souscr"
+          matInput
+          placeholder="Tag"
+          style="text-transform: uppercase"
+        />
+      </mat-form-field>
+    </form>
 
-<div class="table">
-  <table mat-table [dataSource]="abbrevDataSource">
-    <ng-container matColumnDef="indx">
-      <th mat-header-cell *matHeaderCellDef>N°</th>
-      <td mat-cell *matCellDef="let element" style="width: 2rem">
-        <div *ngIf="element.isEditAbbrev">
-          <input [(ngModel)]="element.indx" />
-        </div>
-        <div *ngIf="!element.isEditAbbrev" style="font-size: 12px">
-          {{ element.indx }}
-        </div>
-      </td>
-    </ng-container>
+    <button class="savebtn" color="primary" mat-fab (click)="submitAbrev()">
+      +
+    </button>
+  </div>
 
-    <ng-container matColumnDef="full_souscr">
-      <th mat-header-cell *matHeaderCellDef>Souscripteur</th>
-      <td mat-cell *matCellDef="let element" style="width: 2rem">
-        <div *ngIf="element.isEditAbbrev">
-          <input [(ngModel)]="element.full_souscr" />
-        </div>
-        <div *ngIf="!element.isEditAbbrev" style="font-size: 12px">
-          {{ element.full_souscr }}
-        </div>
-      </td>
-    </ng-container>
+  <div class="searchField">
+    <input
+      class="searchiput"
+      matInput
+      (keyup)="applyAbbrevFilter(input.value)"
+      placeholder="Recherche..."
+      #input
+      style="text-transform: uppercase"
+    />
+  </div>
 
-    <ng-container matColumnDef="abbrev_souscr">
-      <th mat-header-cell *matHeaderCellDef>Tags</th>
-      <td mat-cell *matCellDef="let element" style="width: 2rem">
-        <div *ngIf="element.isEditAbbrev">
-          <input [(ngModel)]="element.abbrev_souscr" />
-        </div>
-        <div *ngIf="!element.isEditAbbrev" style="font-size: 12px">
-          {{ element.abbrev_souscr }}
-        </div>
-      </td>
-    </ng-container>
+  <div class="table">
+    <table mat-table [dataSource]="abbrevDataSource">
+      <ng-container matColumnDef="indx">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let element" style="width: 2rem">
+          <div style="font-size: 12px">{{ element.id_abbrev }}</div>
+        </td>
+      </ng-container>
 
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Édit./Suppr.</th>
-      <td mat-cell *matCellDef="let element" style="width: 2rem">
-        <div style="font-size: 12px">
-          <mat-icon
-            [routerLink]="['/mailreports', element.id_abbrev]"
-            (click)="strtEditAbbrev(element)"
-            style="color: #348bfd; cursor: pointer"
-            >edit</mat-icon
+      <ng-container matColumnDef="full_souscr">
+        <th mat-header-cell *matHeaderCellDef>Souscripteur</th>
+        <td
+          mat-cell
+          *matCellDef="let element"
+          style="width: 25rem; min-width: 25rem; max-width: 25rem"
+        >
+          <div *ngIf="element.isEditAbbrev">
+            <input
+              [(ngModel)]="element.full_souscr"
+              style="
+                width: 24rem;
+                min-width: 24rem;
+                max-width: 24rem;
+                text-transform: uppercase;
+              "
+            />
+          </div>
+          <div *ngIf="!element.isEditAbbrev" style="font-size: 12px">
+            {{ element.full_souscr }}
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="abbrev_souscr">
+        <th mat-header-cell *matHeaderCellDef>Tags</th>
+        <td mat-cell *matCellDef="let element">
+          <div *ngIf="element.isEditAbbrev">
+            <input
+              [(ngModel)]="element.abbrev_souscr"
+              style="
+                width: 10rem;
+                min-width: 10rem;
+                max-width: 10rem;
+                text-transform: uppercase;
+              "
+            />
+          </div>
+          <div
+            *ngIf="!element.isEditAbbrev"
+            style="
+              font-size: 12px;
+              width: 10rem;
+              min-width: 10rem;
+              max-width: 10rem;
+            "
           >
-          <mat-icon
-            (click)="CancelEditAbbrev(element)"
-            style="color: #348bfd; cursor: pointer"
-            >cancel</mat-icon
-          >
-        </div>
-      </td>
-    </ng-container>
+            {{ element.abbrev_souscr }}
+          </div>
+        </td>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    <!-- Row for adding new data -->
-    <tr mat-row *matNoDataRow>
-      <td mat-cell [colSpan]="displayedColumns.length"></td>
-    </tr>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Édit./Suppr.</th>
+        <td mat-cell *matCellDef="let element" style="width: 2rem">
+          <div>
+            <div *ngIf="!element.isEditAbbrev" class="button-container">
+              <mat-icon
+                [routerLink]="['/mailreports', element.id_abbrev]"
+                (click)="strtEditAbbrev(element)"
+                style="color: #348bfd; cursor: pointer"
+                >edit</mat-icon
+              >
+              <mat-icon
+                color="warn"
+                style="cursor: pointer"
+                (click)="deleteAbbrev(element)"
+                >delete</mat-icon
+              >
+            </div>
 
-    <!-- Row shown when there is no matching data. -->
-    <tr class="mat-row" *matNoDataRow>
-      <td class="mat-cell" colspan="4">No data matching the filter ""</td>
-    </tr>
-  </table>
+            <div *ngIf="element.isEditAbbrev" class="button-container">
+              <mat-icon
+                (click)="updateAbbrev(element)"
+                style="color: green; font-weight: bolder; cursor: pointer"
+                >check</mat-icon
+              >
+              <mat-icon
+                (click)="CancelEditAbbrev(element)"
+                style="color: grey; cursor: pointer"
+                >cancel</mat-icon
+              >
+            </div>
+          </div>
+        </td>
+      </ng-container>
 
-  <mat-paginator
-    [pageSizeOptions]="[15, 30, 100]"
-    aria-label="Select page of users"
-    fxLayoutGap="10px"
-    showFirstLastButtons
-  ></mat-paginator>
-</div>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <!-- Row for adding new data -->
+      <tr mat-row *matNoDataRow>
+        <td mat-cell [colSpan]="displayedColumns.length"></td>
+      </tr>
+
+      <!-- Row shown when there is no matching data. -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="4">No data matching the filter ""</td>
+      </tr>
+    </table>
+
+    <mat-paginator
+      [pageSizeOptions]="[10, 20, 50, 100]"
+      aria-label="Select page of users"
+      fxLayoutGap="10px"
+      showFirstLastButtons
+    ></mat-paginator>
+  </div>
+</body>

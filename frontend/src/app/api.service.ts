@@ -291,6 +291,31 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/abbrev_sous/${id}`, data);
   }
 
+  deleteAbbrev(id: any) {
+    return this.http.delete(`${this.apiUrl}/abbrev_sous/${id}`);
+  }
+
+  getFilteredAbbrev(
+    page: number,
+    pageSize: number,
+    sort: string,
+    search: string
+  ): Observable<abbrevResponse> {
+    const encodedSort = encodeURIComponent(sort);
+    const encodedSearch = encodeURIComponent(search);
+    const url = `${this.apiUrl}/abbrev_sous?page=${page}&pageSize=${pageSize}&sortBy=${encodedSort}&search=${encodedSearch}`;
+
+    return this.http.get<abbrevResponse>(url).pipe(
+      catchError((error: any) => {
+        console.error(
+          'An error occurred while fetching filtered mailreports data:',
+          error
+        );
+        throw new Error('Failed to fetch filtered mailreports data.');
+      })
+    );
+  }
+
   //_____________________ FAMILY______________________________
 
   //get family by id________

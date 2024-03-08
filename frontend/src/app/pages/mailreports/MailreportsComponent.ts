@@ -67,6 +67,7 @@ export interface MreportsData {
   agence: string;
   contrat: string;
   souscripteur: string;
+  abbrev_sousc?: string;
   adherent: string;
   objet: string;
   statut: string;
@@ -312,9 +313,6 @@ export class MailreportsComponent implements OnInit {
     return this.datePipe.transform(date, 'dd/MM/yyyy, HH:mm:ss') || '';
   }
 
-  getShort(word: string): string {
-    return this.abbrevList[word] || word;
-  }
   CharLimit(value: string, limit = 25): string {
     return value.length > limit ? value.substring(0, limit) + '...' : value;
   }
@@ -672,20 +670,6 @@ export class MailreportsComponent implements OnInit {
     }
   }
 
-  getAbbrev(): void {
-    this.service.getabbrevlist(1, 10, this.abbrevSortField, '').subscribe({
-      next: (response: abbrevResponse) => {
-        this.abbrevDataSource = new MatTableDataSource(response.data);
-        this.total = response.total;
-        this.paginator.length = this.total;
-        console.log(this.abbrevDataSource);
-      },
-      error: (error) => {
-        console.error('Failed to fetch data:', error);
-      },
-    });
-  }
-
   downloadExcel() {
     const fileName = 'mail_reports.xlsx';
 
@@ -788,6 +772,7 @@ export class MailreportsComponent implements OnInit {
 @Component({
   selector: 'mat_dialog_abbrev',
   templateUrl: 'mat_dialog_abbrev.html',
+  styleUrl: './mat_dialog_abbrev.scss',
   standalone: true,
   imports: [
     CommonModule,
@@ -814,6 +799,10 @@ export class MatDialogAbbrev implements OnInit {
     'abbrev_souscr',
     'actions',
   ];
+
+  page: number = 1;
+  pageSize: number = 10;
+
   abbrevDataSource!: MatTableDataSource<AbbrevList>;
   abbrevSortField: string = 'id_abbrev';
   total: number = 0;
@@ -841,18 +830,28 @@ export class MatDialogAbbrev implements OnInit {
     });
   }
 
-  getAbbrev(): void {
-    this.service.getabbrevlist(1, 10, this.abbrevSortField, '').subscribe({
-      next: (response: abbrevResponse) => {
-        this.abbrevDataSource = new MatTableDataSource(response.data);
-        this.total = response.total;
-        this.paginator.length = this.total;
-        console.log(this.abbrevDataSource);
-      },
-      error: (error) => {
-        console.error('Failed to fetch data:', error);
-      },
+  ngAfterViewInit(): void {
+    this.paginator.page.subscribe(() => {
+      this.page = this.paginator.pageIndex + 1;
+      this.pageSize = this.paginator.pageSize;
+      this.getAbbrev();
     });
+  }
+
+  getAbbrev(): void {
+    this.service
+      .getabbrevlist(this.page, this.pageSize, this.abbrevSortField, '')
+      .subscribe({
+        next: (response: abbrevResponse) => {
+          this.abbrevDataSource = new MatTableDataSource(response.data);
+          this.total = response.total;
+          this.paginator.length = this.total;
+          console.log(this.abbrevDataSource.data);
+        },
+        error: (error) => {
+          console.error('Failed to fetch data:', error);
+        },
+      });
   }
 
   onNoClick(): void {
@@ -866,6 +865,7 @@ export class MatDialogAbbrev implements OnInit {
       this.snackBar.openSnackBar('Tag crée', 'Ok !');
       console.log(res);
       this.abbrevForm.reset();
+      this.getAbbrev();
     });
   }
 
@@ -913,5 +913,48 @@ export class MatDialogAbbrev implements OnInit {
   CancelEditAbbrev(element: AbbrevList) {
     Object.assign(element, this.oldAbbrev);
     element.isEditAbbrev = false;
+  }
+
+  deleteAbbrev(element: AbbrevList) {
+    const confirmDelete = confirm(
+      'Etes vous sûr de vouloir supprimer ce tag ?'
+    );
+
+    if (confirmDelete) {
+      console.log("Suppression de l'ID : ", element.id_abbrev);
+
+      this.service.deleteAbbrev(element.id_abbrev).subscribe({
+        next: (res) => {
+          this.snackBar.openSnackBar('Le tag a bien été supprimé', 'Ok !');
+          console.log(res);
+          this.getAbbrev();
+        },
+        error: (error) => {
+          console.error('Erreur lors de la suppression du tag :', error);
+        },
+      });
+    }
+  }
+
+  applyAbbrevFilter(search: string) {
+    this.service
+      .getFilteredAbbrev(this.page, this.pageSize, this.abbrevSortField, search)
+      .subscribe({
+        next: (response: abbrevResponse) => {
+          console.log(response);
+
+          this.abbrevDataSource = new MatTableDataSource(response.data);
+
+          this.total = response.total;
+
+          this.paginator.length = this.total;
+
+          console.table(response.data);
+        },
+        error: (error) => {
+          // Log any errors
+          console.error('Failed to fetch filtered mailreports data:', error);
+        },
+      });
   }
 }

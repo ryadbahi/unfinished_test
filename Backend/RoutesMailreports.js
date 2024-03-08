@@ -183,9 +183,24 @@ router.get("/", async (req, res, next) => {
       offset,
       limit,
     ]);
+
+    const [abbrevResults] = await db.query("SELECT * FROM abbrev_sous");
+
+    // Create a map for quick lookup
+    const abbrevMap = new Map();
+    abbrevResults.forEach((row) => {
+      abbrevMap.set(row.full_souscr, row.abbrev_souscr);
+    });
+
+    // Add abbrev_sousc to each row in results
+    results.forEach((row) => {
+      row.abbrev_sousc = abbrevMap.has(row.souscripteur)
+        ? abbrevMap.get(row.souscripteur)
+        : row.souscripteur;
+    });
     const [totalResult] = await db.query(countQuery, [`%${search}%`]);
     const total = totalResult[0].total;
-    console.log("Average Duration:", averageDurationResult[0].average_duration);
+
     res.status(200).json({
       data: results,
       total: total,

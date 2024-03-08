@@ -23,7 +23,6 @@
         <h4 style="margin-left: 25px; font-size: 25px">Suivi des requétes</h4>
       </div>
 
-      <button mat-raised-button (click)="openDialog()">test</button>
       <div
         class="average-tdr"
         [ngStyle]="{ color: getScoreColor(calculateAverageScore()) }"
@@ -41,7 +40,7 @@
   >
     >>>>>>>> lachez ici ! <<<<<<<<<
   </div>
-  <div>
+  <div style="display: flex; justify-content: space-between">
     <mat-toolbar class="matoolB" id="search">
       <div class="searchField">
         <input
@@ -60,6 +59,9 @@
         </button>
       </div>
     </mat-toolbar>
+    <div style="margin-top: 0.5rem">
+      <button mat-fab (click)="openDialog()">Tags</button>
+    </div>
   </div>
 
   <div class="surptable">
@@ -103,9 +105,9 @@
               <select
                 [(ngModel)]="selectedCanal"
                 style="
-                  width: 3rem;
-                  min-width: 3rem;
-                  max-width: 3rem;
+                  width: 3.5rem;
+                  min-width: 3.5rem;
+                  max-width: 3.5rem;
                   height: 1.5rem;
                 "
               >
@@ -217,7 +219,7 @@
               [matTooltip]="mrepelem.souscripteur"
               style="text-align: nowrap"
             >
-              {{ getShort(mrepelem.souscripteur) | uppercase }}
+              {{ mrepelem.abbrev_sousc | uppercase }}
             </div>
           </td>
         </ng-container>

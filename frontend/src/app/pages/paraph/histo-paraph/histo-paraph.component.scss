@@ -99,3 +99,56 @@
 .xls_icon {
   width: 35px;
 }
+.searchField {
+  background-color: hwb(0 100% 0% / 0.6);
+  border-bottom-style: hidden;
+  width: fit-content;
+  box-shadow: 0 4px 2px -2px gray;
+  padding: 0.3rem 0.3rem 0.3rem 0.3rem;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-left: 60px;
+}
+.mdc-text-field--no-label:not(.mdc-text-field--outlined):not(
+    .mdc-text-field--textarea
+  )
+  .mat-mdc-form-field-infix
+  .mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.mat-mdc-form-field {
+  height: 25px;
+  font-size: 12px;
+
+  display: inline-flex;
+  flex-direction: row;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.mat-mdc-form-field-infix {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+::ng-deep.mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined)
+  .mat-mdc-form-field-infix {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep.mat-mdc-form-field-infix {
+  flex: auto;
+  min-width: 0;
+  width: 180px;
+  position: relative;
+  box-sizing: border-box;
+}
+::ng-deep.mat-mdc-form-field-infix {
+  min-height: 0 !important;
+}
+::ng-deep.mat-mdc-form-field-subscript-wrapper {
+  width: 0 !important;
+}
+::ng-deep.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  border-radius: 20px;
+}

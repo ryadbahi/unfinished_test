@@ -1,0 +1,78 @@
+.table {
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1.5rem;
+  box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2),
+    0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+}
+::ng-deep.mat-mdc-paginator {
+  table-layout: auto;
+  white-space: normal;
+  background: #a8a3d3bf !important;
+}
+
+::ng-deep.mat-mdc-header-cell {
+  background: #a8a3d3bf !important;
+  text-align: center !important;
+}
+::ng-deep.mdc-data-table__content {
+  background: lavender !important ;
+}
+.mat-mdc-header-row {
+  height: 2rem;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.mdc-data-table__header-cell {
+  align-content: center !important;
+  font-size: 16px;
+  height: 1.5rem;
+}
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  text-wrap: nowrap;
+}
+.form {
+  display: flex;
+  justify-content: center;
+}
+mat-form-field {
+  margin: 5px;
+}
+.savebtn {
+  margin: 5px 0 0 10px;
+  color: white;
+  font-weight: bolder;
+  font-size: 20px;
+  justify-self: center;
+}
+input {
+  font-size: 12px;
+}
+.DialogBody {
+  height: 55rem;
+  min-height: 55rem;
+}
+.searchField {
+  margin: 0 0 1rem 2.5rem;
+  border-radius: 20px;
+  height: 2rem;
+  width: 25rem;
+  background-color: #cdc2c226;
+  box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2),
+    0px 2px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+}
+.searchiput {
+  border-radius: 20px;
+  height: 2rem;
+  width: 25rem;
+  background-color: #cdc2c226;
+}
+.button-container {
+  display: flex;
+  flex-direction: row;
+  white-space: nowrap;
+  font-size: 12px;
+  justify-content: space-between;
+}
