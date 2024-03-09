@@ -146,9 +146,14 @@ router.get("/", async (req, res, next) => {
   }
 });
 // FAMILY __________________ GET a single record by ID_______________________
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   const id = req.params.id;
-  const selectQuery = "SELECT * FROM fam_adh WHERE id_adherent = ?";
+
+  const selectQuery = `
+    SELECT fa.*, a.nom_adherent, a.prenom_adherent
+    FROM fam_adh fa
+    INNER JOIN adherents a ON fa.id_adherent = a.id_adherent
+    WHERE fa.id_adherent = ?`;
 
   try {
     const [result] = await db.query(selectQuery, [id]);
@@ -160,8 +165,23 @@ router.get("/:id", async (req, res) => {
           "dd/MM/yyyy"
         );
       });
-      res.status(200).json(result); // Send the entire result array
-      console.log(result);
+
+      // Extract adherent details
+      const adherentDetails = {
+        id_fam: 0,
+        id_adherent: result[0].id_adherent,
+        nom_benef: result[0].nom_adherent,
+        prenom_benef: result[0].prenom_adherent,
+        lien_benef: "Assuré(e)",
+      };
+
+      // Remove adherent details from the result array
+      result.shift();
+
+      // Insert adherent details at the beginning of the array
+      result.unshift(adherentDetails);
+
+      res.status(200).json(result);
     } else {
       // Send a custom object when no record is found
       res.status(200).json([
@@ -179,6 +199,7 @@ router.get("/:id", async (req, res) => {
     next(err); // Pass the error to the error handler middleware
   }
 });
+
 // FAMILY DELETE
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;

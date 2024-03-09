@@ -48,7 +48,7 @@ export interface SouscripData {
 
 export interface Contrat {
   id_contrat: number;
-  id_souscript: string;
+  id_souscript: number;
   nom_souscript: string;
   num_contrat: string;
   date_effet: Date;

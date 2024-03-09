@@ -1,5 +1,9 @@
 <mat-toolbar class="matoolB">
   <h1 style="font-size: 28px">Sinistres</h1>
+
+  <button (click)="selectedIdSous && getadhbisousid(selectedIdSous)">
+    Fetch Data
+  </button>
 </mat-toolbar>
 <div style="margin: 0.5rem 0 4rem 0">
   <mat-toolbar class="hiddenTB">
@@ -33,7 +37,6 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-
       <div class="selectedContratTable" *ngIf="selectedContrat" [@fadeInOut]>
         <div class="content">
           <table class="detailsContratTable">
@@ -64,36 +67,129 @@
   <mat-toolbar class="declaTB">
     <div class="form_container">
       <form [formGroup]="dptsinForm">
-        <mat-form-field>
-          <input
-            formControlName="nom_souscript"
-            matInput
-            placeholder="Raison sociale"
-            readonly
-          />
+        <mat-form-field style="width: 15rem">
+          <mat-select
+            placeholder="Selectionez un(e) Assuré(e)"
+            style="
+              font-size: 12px;
+              font-weight: bolder;
+
+              margin-bottom: 8px;
+            "
+            (click)="selectedIdSous && getadhbisousid(selectedIdSous)"
+            (selectionChange)="onAdhSelectChange($event)"
+          >
+            <mat-option *ngIf="isLoading" disabled>
+              <mat-progress-spinner
+                mode="indeterminate"
+                diameter="20"
+              ></mat-progress-spinner>
+              Chargement...
+            </mat-option>
+            <mat-option
+              *ngFor="let element of adh_Data"
+              [value]="element.id_adherent"
+              [disabled]="isLoading"
+              style="min-height: 2rem"
+            >
+              {{ element.nom_adherent }} {{ element.prenom_adherent }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
-        <mat-form-field>
+
+        <mat-form-field style="width: 15rem">
+          <mat-select
+            placeholder="Selectionez un bénéficiaire"
+            style="
+              font-size: 12px;
+              font-weight: bolder;
+
+              margin-bottom: 8px;
+            "
+            (click)="selectedIdAdh && getFamily(selectedIdAdh)"
+          >
+            <mat-option *ngIf="isLoading" disabled>
+              <mat-progress-spinner
+                mode="indeterminate"
+                diameter="20"
+              ></mat-progress-spinner>
+              Chargement...
+            </mat-option>
+            <mat-option
+              *ngFor="let element of fam_Data"
+              [value]="element.id_fam"
+              [disabled]="isLoading"
+              style="min-height: 2rem"
+            >
+              {{ element.lien_benef }} : {{ element.prenom_benef }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field style="width: 8rem">
           <input
-            formControlName="nom_souscript"
+            formControlName="date_sin"
             matInput
-            placeholder="Raison sociale"
+            type="Date"
+            placeholder="Date sin."
+            appDateFormat
           />
         </mat-form-field>
 
-        <mat-form-field>
+        <mat-form-field style="width: 25rem">
+          <mat-select
+            placeholder="Selectionez un acte"
+            style="
+              font-size: 12px;
+              font-weight: bolder;
+
+              margin-bottom: 8px;
+            "
+            (click)="selectedIdContrat && getContractNomencl(selectedIdContrat)"
+          >
+            <ngx-mat-select-search
+              [formControl]="fmpFilterCtrl"
+            ></ngx-mat-select-search>
+            <mat-option *ngIf="isLoading" disabled>
+              <mat-progress-spinner
+                mode="indeterminate"
+                diameter="20"
+              ></mat-progress-spinner>
+              Chargement...
+            </mat-option>
+            <mat-option
+              *ngFor="let element of fmpData"
+              [value]="element.id_nomencl"
+              [disabled]="isLoading"
+              style="min-height: 2rem; text-align: nowrap; font-size: 12px"
+            >
+              {{ element.code_garantie }} :
+              {{ CharLimit(element.garantie_describ, 40) | uppercase }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field style="width: 6rem">
           <input
-            formControlName="nom_souscript"
+            formControlName="frais_sin"
             matInput
-            placeholder="Raison sociale"
+            placeholder="Frais éxpo."
           />
         </mat-form-field>
 
-        <mat-form-field>
-          <input
-            formControlName="nom_souscript"
-            matInput
-            placeholder="Raison sociale"
-          />
+        <mat-form-field style="width: 6rem">
+          <input formControlName="rbt_sin" matInput placeholder="Remb." />
+        </mat-form-field>
+
+        <mat-form-field style="width: 6rem">
+          <input formControlName="obs_sin" matInput placeholder="Observ." />
+        </mat-form-field>
+
+        <mat-form-field style="width: 6rem">
+          <input formControlName="rib" matInput placeholder="RIB" />
+        </mat-form-field>
+
+        <mat-form-field style="width: 6rem">
+          <input formControlName="statut" matInput placeholder="Statut" />
         </mat-form-field>
       </form>
     </div>

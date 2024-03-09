@@ -223,4 +223,29 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+router.get("/souscript/:id_souscript", async (req, res) => {
+  const id_souscript = req.params.id_souscript;
+  const selectQuery = "SELECT * FROM adherents WHERE id_souscript = ?";
+
+  try {
+    const [results] = await db.query(selectQuery, [id_souscript]);
+
+    if (results.length > 0) {
+      results.forEach((result) => {
+        result.date_nai_adh = format(
+          new Date(result.date_nai_adh),
+          "dd/MM/yyyy"
+        );
+      });
+      res.status(200).json(results);
+    } else {
+      res
+        .status(404)
+        .json({ message: "No adherents found with this id_souscript" });
+    }
+  } catch (err) {
+    next(err); // Pass the error to the error handler middleware
+  }
+});
+
 module.exports = router;

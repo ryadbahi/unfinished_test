@@ -13,6 +13,15 @@ import {
   ParaphTitles,
   paraphDetail,
 } from './pages/paraph/histo-paraph/histo-paraph.component';
+import { SouscripData } from './pages/contrat/contrat.component';
+
+export interface SinAdhData {
+  id_adherent: number;
+  id_souscript: number;
+  nom_adherent: string;
+  prenom_adherent: string;
+  rib_adh: string;
+}
 
 export interface RestructuredItem {
   num_sin: string;
@@ -161,10 +170,29 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/adherents/${id}`).pipe(
       catchError((error) => {
         console.error('Error fetching adherent data:', error);
-        return throwError('Something went wrong while fetching adherent data');
+        return throwError(
+          () => new Error('Something went wrong while fetching adherent data')
+        );
       })
     );
   }
+
+  getAdhBySousId(id: number): Observable<SinAdhData[]> {
+    return this.http
+      .get<SinAdhData[]>(`${this.apiUrl}/adherents/souscript/${id}`)
+      .pipe(
+        catchError((error) => {
+          console.error('Error fetching adherent data:', error);
+          return throwError(
+            () =>
+              new Error(
+                'Something went wrong while fetching adherent by souscript Id data'
+              )
+          );
+        })
+      );
+  }
+
   // Mailreports endpoints
 
   getAllMailreports(
@@ -435,5 +463,12 @@ export class ApiService {
   getTempSinByContrat(id_contrat: number): Observable<any> {
     console.log('from api', id_contrat);
     return this.http.get(`${this.apiUrl}/decla_sin_temp/${id_contrat}`);
+  }
+
+  //__________________GET FMP USING ID COONTRAT__________________________
+
+  getFmpByContrat(id_contrat: number): Observable<any> {
+    console.log('from api', id_contrat);
+    return this.http.get(`${this.apiUrl}/contrats/${id_contrat}/fmp`);
   }
 }

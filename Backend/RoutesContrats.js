@@ -145,4 +145,58 @@ router.put("/:id", async (req, res, next) => {
   }
 });
 
+// Additional route to retrieve id_opt based on id_contrat
+router.get("/:id_contrat/id_opt", async (req, res, next) => {
+  const id_contrat = req.params.id_contrat;
+  const selectIdOptQuery = "SELECT id_opt FROM options WHERE id_contrat = ?";
+
+  try {
+    const [results] = await db.query(selectIdOptQuery, [id_contrat]);
+
+    if (results.length === 0) {
+      res.status(404).json({ error: "No matching id_opt found" });
+      return;
+    }
+
+    const id_opt = results[0].id_opt;
+    res.status(200).json({ id_opt });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Route to retrieve corresponding records from fmp table based on id_opt
+router.get("/:id_contrat/fmp", async (req, res, next) => {
+  const id_contrat = req.params.id_contrat;
+
+  try {
+    // Retrieve id_opt based on id_contrat
+    const [idOptResults] = await db.query(
+      "SELECT id_opt FROM options WHERE id_contrat = ?",
+      [id_contrat]
+    );
+
+    if (idOptResults.length === 0) {
+      res.status(404).json({ error: "No matching id_opt found" });
+      return;
+    }
+
+    const id_opt = idOptResults[0].id_opt;
+
+    // Retrieve corresponding records from fmp table with details from nomencl table
+    const selectFmpWithDetailsQuery = `
+      SELECT fmp.*, nomencl.code_garantie, nomencl.garantie_describ
+      FROM fmp
+      JOIN nomencl ON fmp.id_nomencl = nomencl.id_nomencl
+      WHERE fmp.id_opt = ?
+    `;
+
+    const [fmpResults] = await db.query(selectFmpWithDetailsQuery, [id_opt]);
+
+    res.status(200).json(fmpResults);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

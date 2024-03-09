@@ -3,6 +3,9 @@ import {
   ChangeDetectorRef,
   Component,
   OnInit,
+  Directive,
+  HostListener,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
@@ -27,7 +30,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Contrat, SouscripData } from '../contrat/contrat.component';
+import { Contrat, DataItem, SouscripData } from '../contrat/contrat.component';
 import {
   animate,
   state,
@@ -35,6 +38,25 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
+import { fam_adhData } from '../adherents/adherents.component';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { ReplaySubject, Subject, takeUntil } from 'rxjs';
+
+export interface CrtNomencl {
+  id_couv_fmp: number;
+  id_opt: number;
+  id_nomencl: number;
+  code_garantie: string;
+  garantie_describ: string;
+}
+
+export interface SinAdhData {
+  id_adherent: number;
+  id_souscript: number;
+  nom_adherent: string;
+  prenom_adherent: string;
+  rib_adh: string;
+}
 
 export interface DptSin {
   id_sin: number;
@@ -89,6 +111,7 @@ export interface DptSin {
     MatTooltipModule,
     DatePipe,
     MatProgressSpinnerModule,
+    NgxMatSelectSearchModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './sinistres.component.html',
@@ -132,13 +155,31 @@ export interface DptSin {
   ],
 })
 export class SinistresComponent implements OnInit {
+  public fmpFilterCtrl: FormControl = new FormControl();
+  public filteredFmp: ReplaySubject<CrtNomencl[]> = new ReplaySubject<
+    CrtNomencl[]
+  >(1);
+
+  private _onDestroy = new Subject<void>();
   isLoading = false;
   selectedContrat?: Contrat | null = null;
+  selectedIdContrat?: number;
+  selectedIdSous?: number;
+  selectedAdh?: SinAdhData | null = null;
+  selectedIdAdh?: number;
+  selectedFmp?: CrtNomencl | null = null;
+  selectedIdFmp?: number;
   contrat_data: Contrat[] = [];
   souscripData: SouscripData[] = [];
+  fmpData: CrtNomencl[] = [];
   dptsinForm!: FormGroup;
   nomenclatureList: any[] = [];
   dataSource!: MatTableDataSource<DptSin>;
+  adhDataSource!: MatTableDataSource<SinAdhData>;
+  fam_AdhDatasource!: MatTableDataSource<fam_adhData>;
+  fmpDatasource!: MatTableDataSource<CrtNomencl>;
+  adh_Data: SinAdhData[] = [];
+  fam_Data: fam_adhData[] = [];
   displayedColumns: string[] = [
     'idx',
     'num_opt',
@@ -161,6 +202,7 @@ export class SinistresComponent implements OnInit {
     private apiService: ApiService,
     private cdr: ChangeDetectorRef
   ) {}
+
   ngOnInit(): void {
     this.dptsinForm = this.formBuilder.group({
       id_souscript: ['', Validators.required],
@@ -191,6 +233,49 @@ export class SinistresComponent implements OnInit {
       rib: [''],
       statut: [''],
     });
+
+    if (this.dptsinForm && this.dptsinForm.get('date_sin')) {
+      this.dptsinForm.get('date_sin')?.valueChanges.subscribe((value) => {
+        console.log('Date:', value);
+      });
+    }
+
+    this.fmpFilterCtrl.setValue(this.fmpData[10]);
+    this.filteredFmp.next(this.fmpData.slice());
+
+    this.fmpFilterCtrl.valueChanges
+      .pipe(takeUntil(this._onDestroy))
+      .subscribe(() => {
+        this.filterNomencl();
+      });
+  }
+
+  ngOnDestroy() {
+    this._onDestroy.next();
+    this._onDestroy.complete();
+  }
+
+  filterNomencl() {
+    if (!this.fmpData) {
+      return;
+    }
+
+    let search = this.fmpFilterCtrl.value;
+    if (!search) {
+      this.filteredFmp.next(this.fmpData.slice());
+      return;
+    } else {
+      search = search.toLowerCase();
+    }
+    this.filteredFmp.next(
+      this.fmpData.filter(
+        (item) => item.garantie_describ.toLowerCase().indexOf(search) > -1
+      )
+    );
+  }
+
+  CharLimit(value: string, limit = 25): string {
+    return value.length > limit ? value.substring(0, limit) + '...' : value;
   }
 
   getNomencl() {
@@ -219,6 +304,21 @@ export class SinistresComponent implements OnInit {
       },
     });
   }
+
+  onAdhSelectChange(event: any) {
+    const selectedId = event.value;
+
+    this.selectedAdh = this.adh_Data.find(
+      (element: SinAdhData) => element.id_adherent === selectedId
+    );
+
+    if (this.selectedAdh) {
+      const id_adherent = this.selectedAdh.id_adherent;
+      this.getFamily(id_adherent);
+      console.log(id_adherent);
+    }
+  }
+
   onContratSelectionChange(event: any) {
     const selectedId = event.value;
 
@@ -227,11 +327,29 @@ export class SinistresComponent implements OnInit {
     );
 
     if (this.selectedContrat) {
-      const id_contrat = this.selectedContrat.id_contrat;
-      this.getTempSinbyIdContrat(id_contrat);
-      console.log(id_contrat);
+      this.selectedIdContrat = this.selectedContrat.id_contrat;
+      this.getTempSinbyIdContrat(this.selectedIdContrat);
+      console.log(this.selectedIdContrat);
+
+      // If id_souscript is a property of the selected contract
+      this.selectedIdSous = this.selectedContrat.id_souscript;
+      this.getadhbisousid(this.selectedIdSous);
     } else {
       console.error('No contract found with id:', selectedId);
+    }
+  }
+
+  formatDate(event: KeyboardEvent) {
+    if (this.dptsinForm && this.dptsinForm.get('date_sin')) {
+      let input = (event.target as HTMLInputElement).value;
+      input = input.replace(/\D/g, ''); // Remove any non-digit characters
+      if (input.length >= 2) {
+        input = input.slice(0, 2) + '/' + input.slice(2);
+      }
+      if (input.length >= 5) {
+        input = input.slice(0, 5) + '/' + input.slice(5);
+      }
+      this.dptsinForm.get('date_sin')?.setValue(input, { emitEvent: false }); // Update the input field without emitting a new valueChange event
     }
   }
 
@@ -256,6 +374,55 @@ export class SinistresComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching temp sin:', error);
+      },
+    });
+  }
+
+  getadhbisousid(id_souscript: number) {
+    this.isLoading = true;
+    this.apiService.getAdhBySousId(id_souscript).subscribe({
+      next: (data: SinAdhData[]) => {
+        this.adhDataSource = new MatTableDataSource(data);
+        this.adh_Data = [...data];
+        console.log(this.adhDataSource.data);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching temp sin:', error);
+        this.isLoading = false;
+      },
+    });
+  }
+
+  getContractNomencl(id_contrat: number) {
+    this.isLoading = true;
+
+    this.apiService.getFmpByContrat(id_contrat).subscribe({
+      next: (data: CrtNomencl[]) => {
+        this.fmpDatasource = new MatTableDataSource(data);
+        this.fmpData = [...data];
+        console.log(this.fmpDatasource.data);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching Nomencl:', error);
+        this.isLoading = false;
+      },
+    });
+  }
+
+  getFamily(id_adherent: number) {
+    this.isLoading = true;
+    this.apiService.getFamilyId(id_adherent).subscribe({
+      next: (data: fam_adhData[]) => {
+        this.fam_AdhDatasource = new MatTableDataSource(data);
+        this.fam_Data = [...data];
+        console.log(this.fam_Data);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching family:', error);
+        this.isLoading = false;
       },
     });
   }

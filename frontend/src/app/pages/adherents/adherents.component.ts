@@ -231,14 +231,12 @@ export class AdherentsComponent implements OnInit {
 
   strteditadh(elemadh: any) {
     if (this.adhdataSource) {
-      // Check if dataSource is defined
       this.getDataValue = this.router.snapshot.paramMap.get('id');
       this.service.getByIDAdherentData(this.getDataValue).subscribe((res) => {
         console.log(res, 'res=>');
       });
       this.OldadhData = JSON.stringify(elemadh);
       this.adhdataSource.data.forEach((elemadh: any) => {
-        // Change this.getDataValue.array to this.dataSource.data
         elemadh.isEdit = false;
       });
       elemadh.isEdit = true;
