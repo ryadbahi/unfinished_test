@@ -1165,7 +1165,7 @@ export class ValidlistComponent implements OnInit {
     this.apiService.addAdherentData(dataToSubmit).subscribe((res) => {
       this.snackBar.openSnackBar('Adhérents ajoutées', 'OK');
       console.log(res);
-      //this.contractForm.reset();
+      window.location.reload();
     });
   }
 }

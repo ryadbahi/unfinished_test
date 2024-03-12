@@ -461,14 +461,12 @@ export class ApiService {
   //_____________________________GET SIN BY CONTRAT_______________________
 
   getTempSinByContrat(id_contrat: number): Observable<any> {
-    console.log('from api', id_contrat);
     return this.http.get(`${this.apiUrl}/decla_sin_temp/${id_contrat}`);
   }
 
   //__________________GET FMP USING ID COONTRAT__________________________
 
   getFmpByContrat(id_contrat: number): Observable<any> {
-    console.log('from api', id_contrat);
     return this.http.get(`${this.apiUrl}/contrats/${id_contrat}/fmp`);
   }
 }

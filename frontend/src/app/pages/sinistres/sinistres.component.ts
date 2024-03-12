@@ -6,6 +6,7 @@ import {
   Directive,
   HostListener,
   ElementRef,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
@@ -22,7 +23,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSelectModule } from '@angular/material/select';
+import {
+  MatSelect,
+  MatSelectChange,
+  MatSelectModule,
+} from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -30,7 +35,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Contrat, DataItem, SouscripData } from '../contrat/contrat.component';
+import {
+  Contrat,
+  DataItem,
+  Fmp,
+  SouscripData,
+} from '../contrat/contrat.component';
 import {
   animate,
   state,
@@ -41,6 +51,7 @@ import {
 import { fam_adhData } from '../adherents/adherents.component';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ReplaySubject, Subject, takeUntil } from 'rxjs';
+import { SnackBarService } from '../../snack-bar.service';
 
 export interface CrtNomencl {
   id_couv_fmp: number;
@@ -155,11 +166,12 @@ export interface DptSin {
   ],
 })
 export class SinistresComponent implements OnInit {
-  public fmpFilterCtrl: FormControl = new FormControl();
-  public filteredFmp: ReplaySubject<CrtNomencl[]> = new ReplaySubject<
-    CrtNomencl[]
-  >(1);
-
+  fmpFilterCtrl = new FormControl();
+  contratFilterCtrl = new FormControl();
+  adherentFilterCtrl = new FormControl();
+  filteredFmp = new ReplaySubject<CrtNomencl[]>(1);
+  filteredContrats: Contrat[] = [];
+  filteredAdherents: SinAdhData[] = [];
   private _onDestroy = new Subject<void>();
   isLoading = false;
   selectedContrat?: Contrat | null = null;
@@ -168,6 +180,7 @@ export class SinistresComponent implements OnInit {
   selectedAdh?: SinAdhData | null = null;
   selectedIdAdh?: number;
   selectedFmp?: CrtNomencl | null = null;
+  selectedFamily?: fam_adhData | null = null;
   selectedIdFmp?: number;
   contrat_data: Contrat[] = [];
   souscripData: SouscripData[] = [];
@@ -180,6 +193,7 @@ export class SinistresComponent implements OnInit {
   fmpDatasource!: MatTableDataSource<CrtNomencl>;
   adh_Data: SinAdhData[] = [];
   fam_Data: fam_adhData[] = [];
+  selectedValue: any;
   displayedColumns: string[] = [
     'idx',
     'num_opt',
@@ -200,8 +214,18 @@ export class SinistresComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private apiService: ApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private snackBar: SnackBarService
   ) {}
+
+  @ViewChild('matRef1') matRef1!: MatSelect;
+  @ViewChild('matRef2') matRef2!: MatSelect;
+  @ViewChild('matRef3') matRef3!: MatSelect;
+  clearSelection() {
+    this.matRef1.options.forEach((option) => option.deselect());
+    this.matRef2.options.forEach((option) => option.deselect());
+    this.matRef3.options.forEach((option) => option.deselect());
+  }
 
   ngOnInit(): void {
     this.dptsinForm = this.formBuilder.group({
@@ -239,15 +263,75 @@ export class SinistresComponent implements OnInit {
         console.log('Date:', value);
       });
     }
-
     this.fmpFilterCtrl.setValue(this.fmpData[10]);
     this.filteredFmp.next(this.fmpData.slice());
-
     this.fmpFilterCtrl.valueChanges
       .pipe(takeUntil(this._onDestroy))
       .subscribe(() => {
         this.filterNomencl();
       });
+
+    this.contratFilterCtrl.valueChanges.subscribe(() => {
+      this.filterContrats();
+    });
+
+    this.adherentFilterCtrl.valueChanges.subscribe(() => {
+      this.filterAdherents();
+    });
+  }
+
+  updateContratForm() {
+    if (this.selectedIdSous) {
+      const data = this.selectedContrat;
+      this.dptsinForm.patchValue({
+        id_souscript: data?.id_souscript,
+        id_contrat: data?.id_contrat,
+        num_contrat: data?.num_contrat,
+        date_effet: data?.date_effet,
+        date_exp: data?.date_exp,
+        nom_souscript: data?.nom_souscript,
+        //limit_plan : data?.limit_plan,
+      });
+    }
+  }
+
+  updateAdherentForm() {
+    if (this.selectedAdh) {
+      const data = this.selectedAdh;
+      this.dptsinForm.patchValue({
+        id_adherent: data?.id_adherent,
+        nom_adherent: data?.nom_adherent,
+        prenom_adherent: data?.prenom_adherent,
+        rib: data?.rib_adh,
+      });
+    }
+  }
+
+  updateNomenclForm() {
+    if (this.selectedFmp) {
+      const data = this.selectedFmp;
+      this.dptsinForm.patchValue({
+        garantie_describ: data?.garantie_describ,
+        id_nomencl: data?.id_nomencl,
+        code_garantie: data?.code_garantie,
+        id_opt: data?.id_opt,
+        id_couv_fmp: data?.id_couv_fmp,
+      });
+      console.log(data);
+    }
+  }
+  updateFamilyForm() {
+    if (this.selectedFamily) {
+      const data = this.selectedFamily;
+      this.dptsinForm.patchValue({
+        id_fam: data?.id_fam,
+        nom_benef: data?.nom_benef,
+        prenom_benef: data?.prenom_benef,
+        date_nai_benef: data?.date_nai_benef,
+        lien_benef: data?.lien_benef,
+      });
+      console.log(data);
+    }
   }
 
   ngOnDestroy() {
@@ -255,21 +339,62 @@ export class SinistresComponent implements OnInit {
     this._onDestroy.complete();
   }
 
+  resetForm() {
+    this.dptsinForm.reset();
+    this.clearSelection();
+  }
+
+  filterContrats() {
+    if (!this.contrat_data) {
+      return;
+    }
+    const search = this.contratFilterCtrl.value;
+    if (!search) {
+      this.filteredContrats = this.contrat_data.slice();
+      return;
+    }
+    const lowercasedSearch = search.toLowerCase();
+    this.filteredContrats = this.contrat_data.filter(
+      (contrat: Contrat) =>
+        contrat.nom_souscript.toLowerCase().includes(lowercasedSearch) ||
+        contrat.num_contrat.toLowerCase().includes(lowercasedSearch)
+    );
+  }
+
+  filterAdherents() {
+    if (!this.adh_Data) {
+      return;
+    }
+    const search = this.adherentFilterCtrl.value;
+    if (!search) {
+      this.filteredAdherents = this.adh_Data.slice();
+      return;
+    }
+    const lowercasedSearch = search.toLowerCase();
+    this.filteredAdherents = this.adh_Data.filter(
+      (adherent: SinAdhData) =>
+        adherent.nom_adherent.toLowerCase().includes(lowercasedSearch) ||
+        adherent.prenom_adherent.toLowerCase().includes(lowercasedSearch)
+    );
+  }
+
   filterNomencl() {
     if (!this.fmpData) {
       return;
     }
 
-    let search = this.fmpFilterCtrl.value;
+    const search = this.fmpFilterCtrl.value;
     if (!search) {
       this.filteredFmp.next(this.fmpData.slice());
       return;
-    } else {
-      search = search.toLowerCase();
     }
+
+    const lowercasedSearch = search.toLowerCase();
     this.filteredFmp.next(
       this.fmpData.filter(
-        (item) => item.garantie_describ.toLowerCase().indexOf(search) > -1
+        (item) =>
+          item.garantie_describ.toLowerCase().includes(lowercasedSearch) ||
+          item.code_garantie.toLowerCase().includes(lowercasedSearch)
       )
     );
   }
@@ -293,10 +418,13 @@ export class SinistresComponent implements OnInit {
     this.isLoading = true;
     this.apiService.getAllContrats().subscribe({
       next: (data: any) => {
-        this.contrat_data = data;
-        console.log(this.contrat_data);
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.contrat_data = data;
+          this.filteredContrats = data;
+          console.log(this.contrat_data);
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (error) => {
         console.error('Error fetching contrats List:', error);
@@ -315,11 +443,14 @@ export class SinistresComponent implements OnInit {
     if (this.selectedAdh) {
       const id_adherent = this.selectedAdh.id_adherent;
       this.getFamily(id_adherent);
+      this.updateAdherentForm();
       console.log(id_adherent);
+    } else {
+      console.error('No Family found with id:', selectedId);
     }
   }
 
-  onContratSelectionChange(event: any) {
+  onContratSelectionChange(event: MatSelectChange) {
     const selectedId = event.value;
 
     this.selectedContrat = this.contrat_data.find(
@@ -329,13 +460,50 @@ export class SinistresComponent implements OnInit {
     if (this.selectedContrat) {
       this.selectedIdContrat = this.selectedContrat.id_contrat;
       this.getTempSinbyIdContrat(this.selectedIdContrat);
-      console.log(this.selectedIdContrat);
-
-      // If id_souscript is a property of the selected contract
       this.selectedIdSous = this.selectedContrat.id_souscript;
-      this.getadhbisousid(this.selectedIdSous);
+      this.resetForm();
+
+      this.clearAdhData();
+
+      this.getadhbysousid(this.selectedIdSous);
+
+      this.updateContratForm();
     } else {
       console.error('No contract found with id:', selectedId);
+    }
+  }
+
+  clearAdhData() {
+    this.adh_Data = [];
+  }
+
+  onNomenclSelectionChange(event: MatSelectChange) {
+    const selectedNomencl = event.value;
+
+    this.selectedFmp = this.fmpData.find(
+      (element: CrtNomencl) => element.id_nomencl === selectedNomencl
+    );
+
+    if (this.selectedFmp) {
+      const id_nomencl = this.selectedFmp.id_nomencl;
+      this.updateNomenclForm();
+    } else {
+      console.error('No Family found with id:', selectedNomencl);
+    }
+  }
+
+  onFamSelectionChange(event: MatSelectChange) {
+    const selectedFam = event.value;
+
+    this.selectedFamily = this.fam_Data.find(
+      (element: fam_adhData) => element.id_fam === selectedFam
+    );
+
+    if (this.selectedFamily) {
+      const id_fam = this.selectedFamily.id_fam;
+      this.updateFamilyForm();
+    } else {
+      console.error('No Family found with id:', selectedFam);
     }
   }
 
@@ -378,17 +546,19 @@ export class SinistresComponent implements OnInit {
     });
   }
 
-  getadhbisousid(id_souscript: number) {
+  getadhbysousid(id_souscript: number) {
     this.isLoading = true;
     this.apiService.getAdhBySousId(id_souscript).subscribe({
       next: (data: SinAdhData[]) => {
         this.adhDataSource = new MatTableDataSource(data);
         this.adh_Data = [...data];
+        this.filteredAdherents = data;
         console.log(this.adhDataSource.data);
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error fetching temp sin:', error);
+        this.snackBar.openSnackBar('Aucun adhérent trouvé', 'Ok !');
         this.isLoading = false;
       },
     });
@@ -396,13 +566,14 @@ export class SinistresComponent implements OnInit {
 
   getContractNomencl(id_contrat: number) {
     this.isLoading = true;
-
     this.apiService.getFmpByContrat(id_contrat).subscribe({
       next: (data: CrtNomencl[]) => {
-        this.fmpDatasource = new MatTableDataSource(data);
-        this.fmpData = [...data];
-        console.log(this.fmpDatasource.data);
-        this.isLoading = false;
+        setTimeout(() => {
+          this.fmpDatasource = new MatTableDataSource(data);
+          this.fmpData = [...data];
+          this.filteredFmp.next(this.fmpData.slice());
+          this.isLoading = false;
+        }, 0);
       },
       error: (error) => {
         console.error('Error fetching Nomencl:', error);
@@ -425,5 +596,10 @@ export class SinistresComponent implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  sumbitSinForm() {
+    const data = this.dptsinForm.value;
+    console.log(data);
   }
 }

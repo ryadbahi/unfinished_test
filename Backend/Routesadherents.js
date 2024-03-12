@@ -239,9 +239,7 @@ router.get("/souscript/:id_souscript", async (req, res) => {
       });
       res.status(200).json(results);
     } else {
-      res
-        .status(404)
-        .json({ message: "No adherents found with this id_souscript" });
+      res.status(200).json([{ nom_adherent: "Aucun adhérent trouvé" }]);
     }
   } catch (err) {
     next(err); // Pass the error to the error handler middleware
