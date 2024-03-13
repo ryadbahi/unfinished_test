@@ -18,6 +18,7 @@ import { SouscripData } from './pages/contrat/contrat.component';
 export interface SinAdhData {
   id_adherent: number;
   id_souscript: number;
+  id_opt: number;
   nom_adherent: string;
   prenom_adherent: string;
   rib_adh: string;
@@ -468,5 +469,10 @@ export class ApiService {
 
   getFmpByContrat(id_contrat: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/contrats/${id_contrat}/fmp`);
+  }
+
+  //__________________GET FMP USING ID_OPT__________________________
+  getFmpNomenclByIdOpt(id_opt: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/options/${id_opt}`);
   }
 }

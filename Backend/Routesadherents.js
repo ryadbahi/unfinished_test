@@ -187,6 +187,7 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const id = req.params.id;
   const {
+    id_opt,
     nom_adherent,
     prenom_adherent,
     date_nai_adh,
@@ -203,10 +204,11 @@ router.put("/:id", async (req, res) => {
   const formattedDate_nai = format(new Date(date_nai_adh), "yyyy-MM-dd");
 
   const updateQuery =
-    "UPDATE adherents SET nom_adherent = ?, prenom_adherent = ?, date_nai_adh = ?, situa_fam = ?, rib_adh = ?, email_adh = ?, tel_adh = ?, statut = ? WHERE id_adherent = ?";
+    "UPDATE adherents SET id_opt= ?, nom_adherent = ?, prenom_adherent = ?, date_nai_adh = ?, situa_fam = ?, rib_adh = ?, email_adh = ?, tel_adh = ?, statut = ? WHERE id_adherent = ?";
 
   try {
     await db.query(updateQuery, [
+      id_opt,
       nom_adherent,
       prenom_adherent,
       formattedDate_nai,

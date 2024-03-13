@@ -189,8 +189,8 @@ router.get("/:id", async (req, res, next) => {
           id_fam: 0,
           id_adherent: 0,
           lien_benef: "Aucun bénéficiaire enregistré",
-          nom_benef: "Aucun bénéficiaire enregistré",
-          prenom_benef: "Aucun bénéficiaire enregistré",
+          nom_benef: "",
+          prenom_benef: "",
           date_nai_benef: "",
         },
       ]);

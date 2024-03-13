@@ -78,6 +78,22 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="id_opt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Opt N°</th>
+        <td mat-cell *matCellDef="let elemadh">
+          <div *ngIf="elemadh.isEdit">
+            <input
+              [(ngModel)]="elemadh.id_opt"
+              type="text"
+              (click)="$event.stopPropagation()"
+            />
+          </div>
+          <div *ngIf="!elemadh.isEdit">
+            {{ elemadh.id_opt }}
+          </div>
+        </td>
+      </ng-container>
+
       <ng-container matColumnDef="rib_adh">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>RIB</th>
         <td mat-cell *matCellDef="let elemadh">
@@ -85,7 +101,9 @@
             <input [(ngModel)]="elemadh.rib_adh" type="text" />
           </div>
           <div *ngIf="!elemadh.isEdit">
-            {{ elemadh.rib_adh }}
+            <span (click)="$event.stopPropagation()">{{
+              elemadh.rib_adh
+            }}</span>
           </div>
         </td>
       </ng-container>
@@ -137,14 +155,16 @@
             <mat-icon
               style="margin: 0; color: #348bfd; cursor: pointer"
               [routerLink]="['/adherents', elemadh.id_adherent]"
-              (click)="strteditadh(elemadh)"
+              (click)="strteditadh(elemadh); $event.stopPropagation()"
               >edit</mat-icon
             >
 
             <mat-icon
               color="warn"
               style="margin: 0"
-              (click)="deleteIDAdh(elemadh.id_adherent)"
+              (click)="
+                deleteIDAdh(elemadh.id_adherent); $event.stopPropagation()
+              "
               >delete</mat-icon
             >
           </div>
@@ -157,7 +177,7 @@
                 font-weight: bolder;
                 cursor: pointer;
               "
-              (click)="updateAdhData(elemadh)"
+              (click)="updateAdhData(elemadh); $event.stopPropagation()"
               >check</mat-icon
             >
 
@@ -168,7 +188,7 @@
                 font-weight: bolder;
                 cursor: pointer;
               "
-              (click)="Cancel(elemadh)"
+              (click)="Cancel(elemadh); $event.stopPropagation()"
               >close</mat-icon
             >
           </div>

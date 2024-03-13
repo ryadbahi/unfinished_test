@@ -64,6 +64,7 @@ export interface CrtNomencl {
 export interface SinAdhData {
   id_adherent: number;
   id_souscript: number;
+  id_opt: number;
   nom_adherent: string;
   prenom_adherent: string;
   rib_adh: string;
@@ -175,6 +176,7 @@ export class SinistresComponent implements OnInit {
   private _onDestroy = new Subject<void>();
   isLoading = false;
   selectedContrat?: Contrat | null = null;
+  selectedIdOpt?: number;
   selectedIdContrat?: number;
   selectedIdSous?: number;
   selectedAdh?: SinAdhData | null = null;
@@ -442,7 +444,9 @@ export class SinistresComponent implements OnInit {
 
     if (this.selectedAdh) {
       const id_adherent = this.selectedAdh.id_adherent;
+      const selectedIdOpt = this.selectedAdh.id_opt;
       this.getFamily(id_adherent);
+      this.getAdhNomencl(selectedIdOpt);
       this.updateAdherentForm();
       console.log(id_adherent);
     } else {
@@ -573,10 +577,27 @@ export class SinistresComponent implements OnInit {
           this.fmpData = [...data];
           this.filteredFmp.next(this.fmpData.slice());
           this.isLoading = false;
+          console.log(this.fmpDatasource.data);
         }, 0);
       },
       error: (error) => {
         console.error('Error fetching Nomencl:', error);
+        this.isLoading = false;
+      },
+    });
+  }
+
+  getAdhNomencl(id_opt: number) {
+    this.isLoading = true;
+    this.apiService.getFmpNomenclByIdOpt(id_opt).subscribe({
+      next: (data: CrtNomencl[]) => {
+        this.fmpDatasource = new MatTableDataSource(data);
+        this.fmpData = [...data];
+        this.filteredFmp.next(this.fmpData.slice());
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching Nomencls of adh', error);
         this.isLoading = false;
       },
     });

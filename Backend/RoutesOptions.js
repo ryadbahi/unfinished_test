@@ -93,4 +93,37 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.get("/:id_opt", async (req, res, next) => {
+  const id_opt = req.params.id_opt;
+
+  try {
+    // Retrieve id_opt based on id_contrat
+    const [idOptResults] = await db.query(
+      "SELECT id_opt FROM options WHERE id_opt = ?",
+      [id_opt]
+    );
+
+    if (idOptResults.length === 0) {
+      res.status(404).json({ error: "No matching id_opt found" });
+      return;
+    }
+
+    // Use the id_opt from the request parameters
+
+    // Retrieve corresponding records from fmp table with details from nomencl table
+    const selectFmpWithDetailsQuery = `
+      SELECT fmp.*, nomencl.code_garantie, nomencl.garantie_describ
+      FROM fmp
+      JOIN nomencl ON fmp.id_nomencl = nomencl.id_nomencl
+      WHERE fmp.id_opt = ?
+    `;
+
+    const [fmpResults] = await db.query(selectFmpWithDetailsQuery, [id_opt]);
+
+    res.status(200).json(fmpResults);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

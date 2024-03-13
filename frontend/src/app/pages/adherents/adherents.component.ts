@@ -36,6 +36,7 @@ export interface AdherentData {
   id_adherent: number;
   nom_souscript: string;
   nom_adherent: string;
+  id_opt: number;
   prenom_adherent: string;
   date_nai_adh: Date;
   situa_fam: string;
@@ -112,6 +113,7 @@ export class AdherentsComponent implements OnInit {
     'prenom_adherent',
     'date_nai_adh',
     'situa_fam',
+    'id_opt',
     'rib_adh',
     'email_adh',
     'tel_adh',
@@ -140,11 +142,6 @@ export class AdherentsComponent implements OnInit {
 
   ngOnInit(): void {
     this.refreshTable(); // Initial data load
-
-    // Subscribe to changes in data after adding, updating, or deleting
-    this.service.dataChange.subscribe(() => {
-      this.refreshTable();
-    });
   }
   ngAfterViewInit(): void {
     this.paginator.page.subscribe(() => {
@@ -206,7 +203,7 @@ export class AdherentsComponent implements OnInit {
       .subscribe((res) => {
         console.log(res, 'Data updated');
 
-        // Notify about data change
+        elemadh.isEdit = false;
         this.service.triggerDataChange();
       });
   }
