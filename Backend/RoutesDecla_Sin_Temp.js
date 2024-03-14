@@ -164,4 +164,36 @@ router.get("/:id_contrat", async (req, res, next) => {
   }
 });
 
+//___________________________POST_____________________________
+
+router.post("/", async (req, res) => {
+  const dataArray = req.body;
+
+  try {
+    for (const dataInput of dataArray) {
+      const tempSin = {
+        id_souscript: dataInput.id_souscript,
+        id_contrat: dataInput.id_contrat,
+        id_opt: dataInput.id_opt,
+        id_adherent: dataInput.id_adherent,
+        id_fam: dataInput.id_fam,
+        date_sin: dataInput.date_sin,
+        id_nomencl: dataInput.id_nomencl,
+        frais_sin: dataInput.frais_sin,
+        rbt_sin: dataInput.rbt_sin,
+        obs_sin: dataInput.obs_sin,
+        rib: dataInput.rib,
+        statut: dataInput.statut || "1",
+      };
+
+      let query = "INSERT INTO decla_sin_temp SET ?";
+      await db.query(query, tempSin);
+    }
+
+    res.status(200).json({ message: "Data inserted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "An error occurred while inserting data" });
+  }
+});
 module.exports = router;

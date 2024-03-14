@@ -112,9 +112,10 @@ router.get("/:id_opt", async (req, res, next) => {
 
     // Retrieve corresponding records from fmp table with details from nomencl table
     const selectFmpWithDetailsQuery = `
-      SELECT fmp.*, nomencl.code_garantie, nomencl.garantie_describ
+      SELECT fmp.*, nomencl.code_garantie, nomencl.garantie_describ, options.limit_plan, options.num_opt
       FROM fmp
       JOIN nomencl ON fmp.id_nomencl = nomencl.id_nomencl
+      JOIN options ON fmp.id_opt = options.id_opt
       WHERE fmp.id_opt = ?
     `;
 

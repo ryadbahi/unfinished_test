@@ -459,6 +459,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/decla_sin_temp`);
   }
 
+  postTempSin(data: any) {
+    return this.http.post(`${this.apiUrl}/decla_sin_temp`, data);
+  }
+
   //_____________________________GET SIN BY CONTRAT_______________________
 
   getTempSinByContrat(id_contrat: number): Observable<any> {

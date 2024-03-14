@@ -59,6 +59,14 @@ export interface CrtNomencl {
   id_nomencl: number;
   code_garantie: string;
   garantie_describ: string;
+  applied_on: string;
+  limit_gar: number;
+  limit_gar_describ: string;
+  limit_plan: number;
+  nbr_of_unit: number;
+  num_opt: number;
+  taux_rbt: number;
+  unit_value: number;
 }
 
 export interface SinAdhData {
@@ -318,6 +326,8 @@ export class SinistresComponent implements OnInit {
         code_garantie: data?.code_garantie,
         id_opt: data?.id_opt,
         id_couv_fmp: data?.id_couv_fmp,
+        limit_plan: data?.limit_plan,
+        num_opt: data?.num_opt,
       });
       console.log(data);
     }
@@ -620,7 +630,39 @@ export class SinistresComponent implements OnInit {
   }
 
   sumbitSinForm() {
-    const data = this.dptsinForm.value;
-    console.log(data);
+    const formData = this.dptsinForm.value;
+    const contrat = formData.id_contrat;
+    console.log(formData);
+
+    const dataTosumbmit = [
+      {
+        id_souscript: formData.id_souscript,
+        id_contrat: formData.id_contrat,
+        id_opt: formData.id_opt,
+        id_adherent: formData.id_adherent,
+        id_fam: formData.id_fam,
+        date_sin: formData.date_sin,
+        id_nomencl: formData.id_nomencl,
+        frais_sin: formData.frais_sin,
+        rbt_sin: formData.rbt_sin,
+        obs_sin: formData.obs_sin,
+        rib: formData.rib,
+        statut: formData.statut,
+      },
+    ];
+    console.log('HERE', dataTosumbmit);
+
+    this.apiService.postTempSin(dataTosumbmit).subscribe({
+      next: (res) => {
+        this.snackBar.openSnackBar('Déclaration insérée', 'Ok !');
+        this.resetForm();
+        this.getTempSinbyIdContrat(contrat);
+      },
+      error: (err) => {
+        // Handle error scenario
+        console.error('Error submitting form:', err);
+        this.snackBar.openSnackBar('Error submitting form', 'Ok !');
+      },
+    });
   }
 }
