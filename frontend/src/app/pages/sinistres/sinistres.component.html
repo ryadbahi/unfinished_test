@@ -1,5 +1,7 @@
 <mat-toolbar class="matoolB">
   <h1 style="font-size: 28px">Sinistres</h1>
+
+  <button (click)="test()"></button>
 </mat-toolbar>
 <div style="margin: 0.5rem 0 4rem 0">
   <mat-toolbar class="hiddenTB">
@@ -326,6 +328,15 @@
       </td>
     </ng-container>
 
+    <ng-container matColumnDef="calculate">
+      <th mat-header-cell *matHeaderCellDef>Calculer</th>
+      <td mat-cell *matCellDef="let element">
+        <mat-icon style="cursor: pointer" (click)="getTempSinbyIdSin(element)"
+          >play_for_work</mat-icon
+        >
+      </td>
+    </ng-container>
+
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Édit/Suppr.</th>
       <td mat-cell *matCellDef="let element">
@@ -336,21 +347,21 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
-  <div style="height: 5rem">
-    <button
-      mat-raised-button
-      (click)="submitStrSin()"
-      style="
-        background-color: green;
-        color: aliceblue;
-        border-radius: 20px;
-        width: 100px;
-        height: 35px;
-        margin-top: 2rem;
-        float: right;
-      "
-    >
-      Valider
-    </button>
-  </div>
+</div>
+<div style="height: 5rem">
+  <button
+    mat-raised-button
+    (click)="submitStrSin()"
+    style="
+      background-color: green;
+      color: aliceblue;
+      border-radius: 20px;
+      width: 100px;
+      height: 35px;
+      margin-top: 2rem;
+      float: right;
+    "
+  >
+    Valider
+  </button>
 </div>

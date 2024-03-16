@@ -114,7 +114,7 @@ export class ContratComponent implements OnInit {
   optionList = [1, 2, 3, 4];
   selectedCategory!: string;
   dynamicForm!: FormArray;
-  garPar: string[] = ['Assuré', 'Bénéficiaire'];
+  garPar: string[] = ['Assuré', 'Bénéficiaire', 'Par acte'];
 
   constructor(
     private snackBar: SnackBarService,
@@ -417,11 +417,12 @@ export class ContratComponent implements OnInit {
     const dynamicFormData = dynamicFormArray.value.map((item: any) => ({
       id_nomencl: item.id_nomencl,
       applied_on: item.applied_on,
-      taux_rbt: parseFloat(item.taux_rbt), // Assuming taux_rbt is a number
-      limit_gar: parseFloat(item.limit_gar), // Assuming limit_gar is a number
+      taux_rbt: parseFloat(item.taux_rbt),
+      limit_act: parseFloat(item.limit_act),
+      limit_gar: parseFloat(item.limit_gar),
       limit_gar_describ: item.limit_gar_describ,
-      nbr_of_unit: parseInt(item.nbr_of_unit), // Assuming nbr_of_unit is a number
-      unit_value: parseFloat(item.unit_value), // Assuming unit_value is a number
+      nbr_of_unit: parseInt(item.nbr_of_unit),
+      unit_value: parseFloat(item.unit_value),
     }));
 
     // Create the 'option' object

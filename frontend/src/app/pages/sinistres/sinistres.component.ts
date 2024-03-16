@@ -191,7 +191,7 @@ export class SinistresComponent implements OnInit {
   dptsinForm!: FormGroup;
   nomenclatureList: any[] = [];
   dataSource = new MatTableDataSource<DptSin>();
-  tempDptData: DptSin[] = [];
+  rowDataSource = new MatTableDataSource<DptSin>();
   adhDataSource!: MatTableDataSource<SinAdhData>;
   fam_AdhDatasource!: MatTableDataSource<fam_adhData>;
   fmpDatasource!: MatTableDataSource<CrtNomencl>;
@@ -213,6 +213,7 @@ export class SinistresComponent implements OnInit {
     'obs_sin',
     'rib',
     'statut',
+    'calculate',
     'actions',
   ];
 
@@ -235,6 +236,7 @@ export class SinistresComponent implements OnInit {
   ngOnInit(): void {
     this.dptsinForm = this.formBuilder.group({
       id_souscript: ['', Validators.required],
+      idx: [''],
       nom_souscript: ['', Validators.required],
       id_contrat: ['', Validators.required],
       num_contrat: ['', Validators.required],
@@ -471,6 +473,7 @@ export class SinistresComponent implements OnInit {
       this.selectedIdContrat = this.selectedContrat.id_contrat;
       this.getTempSinbyIdContrat(this.selectedIdContrat);
       this.selectedIdSous = this.selectedContrat.id_souscript;
+
       this.resetForm();
 
       this.clearAdhData();
@@ -534,9 +537,27 @@ export class SinistresComponent implements OnInit {
   getTempSinbyIdContrat(id_contrat: number) {
     this.apiService.getTempSinByContrat(id_contrat).subscribe({
       next: (data) => {
-        this.dataSource.data = data;
+        // Map the data to include the index
+        this.dataSource.data = data.map((item: DptSin, index: number) => {
+          return {
+            ...item, // Spread the properties of the item
+            idx: index + 1, // Fill the idx field with the index (plus one for 1-indexing)
+          };
+        });
         console.log(id_contrat);
         console.log('temp Sin retreived', this.dataSource.data);
+      },
+      error: (error) => {
+        console.error('Error fetching temp sin:', error);
+      },
+    });
+  }
+  getTempSinbyIdSin(element: DptSin) {
+    this.apiService.getTempSinbyIdSin(element.id_sin).subscribe({
+      next: (data) => {
+        this.rowDataSource.data = data;
+        console.log('Here', this.rowDataSource.data);
+        this.sendtocalculate();
       },
       error: (error) => {
         console.error('Error fetching temp sin:', error);
@@ -616,12 +637,14 @@ export class SinistresComponent implements OnInit {
   sumbitSinForm() {
     const formData = this.dptsinForm.value;
     const contrat = formData.id_contrat;
+
     console.log(formData);
 
     const dataTosumbmit = [
       {
         id_souscript: formData.id_souscript,
         id_contrat: formData.id_contrat,
+        idx: formData.idx,
         id_opt: formData.id_opt,
         id_adherent: formData.id_adherent,
         id_fam: formData.id_fam,
@@ -651,6 +674,25 @@ export class SinistresComponent implements OnInit {
     });
   }
 
+  saveDecla() {
+    const contrat = this.dptsinForm.value.id_contrat;
+    const id = this.dataSource.data.map((item: DptSin) => item.id_sin);
+
+    console.log(id);
+
+    this.apiService.putSaveDeclaTemp(id, 1).subscribe({
+      next: (res) => {
+        console.log('Data switched');
+        this.getTempSinbyIdContrat(contrat);
+      },
+      error: (err) => {
+        // Handle error scenario
+        console.error('Error switching decla:', err);
+        this.snackBar.openSnackBar('Error switching decla:', 'Ok !');
+      },
+    });
+  }
+
   submitStrSin(): any {
     const data = this.dataSource.data;
     const refDpt = prompt('Please enter the reference:');
@@ -663,6 +705,7 @@ export class SinistresComponent implements OnInit {
       this.apiService.postStrdSin(dataTosubmit).subscribe({
         next: (res) => {
           this.snackBar.openSnackBar('Déclaration insérée', 'Ok !');
+          this.saveDecla();
         },
         error: (err) => {
           // Handle error scenario
@@ -671,5 +714,11 @@ export class SinistresComponent implements OnInit {
         },
       });
     }
+  }
+
+  sendtocalculate() {}
+
+  test() {
+    console.log(this.dptsinForm.value);
   }
 }

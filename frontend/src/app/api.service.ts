@@ -14,6 +14,7 @@ import {
   paraphDetail,
 } from './pages/paraph/histo-paraph/histo-paraph.component';
 import { SouscripData } from './pages/contrat/contrat.component';
+import { OnSameUrlNavigation } from '@angular/router';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -465,6 +466,17 @@ export class ApiService {
 
   getTempSinByContrat(id_contrat: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/decla_sin_temp/${id_contrat}`);
+  }
+
+  getTempSinbyIdSin(id_sin: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/decla_sin_temp/${id_sin}/sin`);
+  }
+
+  putSaveDeclaTemp(ids: number[], strd: number) {
+    return this.http.put(`${this.apiUrl}/decla_sin_temp`, {
+      id_sins: ids,
+      strd,
+    });
   }
 
   //______________________STORED SINISTRE_________________________________

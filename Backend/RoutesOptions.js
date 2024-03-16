@@ -42,6 +42,7 @@ router.post("/", async (req, res, next) => {
         id_nomencl,
         applied_on,
         taux_rbt,
+        limit_act,
         limit_gar,
         limit_gar_describ,
         nbr_of_unit,
@@ -49,14 +50,15 @@ router.post("/", async (req, res, next) => {
       } = item;
 
       const insertFmpQuery = `
-          INSERT INTO fmp (id_opt, id_nomencl, applied_on, taux_rbt, limit_gar, limit_gar_describ, nbr_of_unit, unit_value)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+          INSERT INTO fmp (id_opt, id_nomencl, applied_on, taux_rbt, limit_act, limit_gar, limit_gar_describ, nbr_of_unit, unit_value)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
       await db.query(insertFmpQuery, [
         id_opt,
         id_nomencl,
         applied_on,
         taux_rbt,
+        limit_act,
         limit_gar,
         limit_gar_describ,
         nbr_of_unit,

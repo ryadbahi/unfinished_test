@@ -166,21 +166,6 @@ router.get("/:id", async (req, res, next) => {
         );
       });
 
-      // Extract adherent details
-      const adherentDetails = {
-        id_fam: 0,
-        id_adherent: result[0].id_adherent,
-        nom_benef: result[0].nom_adherent,
-        prenom_benef: result[0].prenom_adherent,
-        lien_benef: "Assuré(e)",
-      };
-
-      // Remove adherent details from the result array
-      result.shift();
-
-      // Insert adherent details at the beginning of the array
-      result.unshift(adherentDetails);
-
       res.status(200).json(result);
     } else {
       // Send a custom object when no record is found

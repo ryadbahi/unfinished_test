@@ -1149,12 +1149,20 @@ export class ValidlistComponent implements OnInit {
         statut: statut,
         effet_couv: this.dateToServer(new Date(contratData!.date_effet)),
         exp_couv: this.dateToServer(new Date(contratData!.date_exp)),
-        benef: item.fam_adh.map((child) => ({
-          lien_benef: child.lienBnf,
-          nom_benef: child.nom,
-          prenom_benef: child.prenom,
-          date_nai_benef: this.dateToServer(child.dateDeNaissance),
-        })),
+        benef: [
+          {
+            lien_benef: 'Assuré(e)',
+            nom_benef: item.nom,
+            prenom_benef: item.prenom,
+            date_nai_benef: this.dateToServer(item.dateDeNaissance),
+          },
+          ...item.fam_adh.map((child) => ({
+            lien_benef: child.lienBnf,
+            nom_benef: child.nom,
+            prenom_benef: child.prenom,
+            date_nai_benef: this.dateToServer(child.dateDeNaissance),
+          })),
+        ],
       };
 
       adh_details.push(restructuredData);
