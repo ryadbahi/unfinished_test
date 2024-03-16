@@ -3,9 +3,6 @@ import {
   ChangeDetectorRef,
   Component,
   OnInit,
-  Directive,
-  HostListener,
-  ElementRef,
   ViewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -22,7 +19,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
+
 import {
   MatSelect,
   MatSelectChange,
@@ -35,12 +32,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {
-  Contrat,
-  DataItem,
-  Fmp,
-  SouscripData,
-} from '../contrat/contrat.component';
+import { Contrat, SouscripData } from '../contrat/contrat.component';
 import {
   animate,
   state,
@@ -105,9 +97,11 @@ export interface DptSin {
   garantie_describ: string;
   frais_sin: number;
   rbt_sin: number;
+  nbr_unit?: number;
   obs_sin?: string;
   rib?: string;
   statut?: boolean;
+  ref_dpt?: string;
 }
 
 @Component({
@@ -122,7 +116,6 @@ export interface DptSin {
     FormsModule,
     MatInputModule,
     MatTableModule,
-    MatPaginatorModule,
     MatSortModule,
     MatToolbarModule,
     RouterLink,
@@ -197,13 +190,15 @@ export class SinistresComponent implements OnInit {
   fmpData: CrtNomencl[] = [];
   dptsinForm!: FormGroup;
   nomenclatureList: any[] = [];
-  dataSource!: MatTableDataSource<DptSin>;
+  dataSource = new MatTableDataSource<DptSin>();
+  tempDptData: DptSin[] = [];
   adhDataSource!: MatTableDataSource<SinAdhData>;
   fam_AdhDatasource!: MatTableDataSource<fam_adhData>;
   fmpDatasource!: MatTableDataSource<CrtNomencl>;
   adh_Data: SinAdhData[] = [];
   fam_Data: fam_adhData[] = [];
   selectedValue: any;
+
   displayedColumns: string[] = [
     'idx',
     'num_opt',
@@ -263,6 +258,7 @@ export class SinistresComponent implements OnInit {
       garantie_describ: ['', Validators.required],
       frais_sin: ['', Validators.required],
       rbt_sin: ['', Validators.required],
+      nbr_unit: [''],
       obs_sin: [''],
       rib: [''],
       statut: [''],
@@ -535,24 +531,12 @@ export class SinistresComponent implements OnInit {
     }
   }
 
-  getTempSin() {
-    this.apiService.getTempSin().subscribe({
-      next: (data) => {
-        this.dataSource = data;
-        console.log('temp Sin retreived', this.dataSource);
-      },
-      error: (error) => {
-        console.error('Error fetching temp sin:', error);
-      },
-    });
-  }
-
   getTempSinbyIdContrat(id_contrat: number) {
     this.apiService.getTempSinByContrat(id_contrat).subscribe({
       next: (data) => {
-        this.dataSource = data;
+        this.dataSource.data = data;
         console.log(id_contrat);
-        console.log('temp Sin retreived', this.dataSource);
+        console.log('temp Sin retreived', this.dataSource.data);
       },
       error: (error) => {
         console.error('Error fetching temp sin:', error);
@@ -645,6 +629,7 @@ export class SinistresComponent implements OnInit {
         id_nomencl: formData.id_nomencl,
         frais_sin: formData.frais_sin,
         rbt_sin: formData.rbt_sin,
+        nbr_unit: formData.nbr_unit,
         obs_sin: formData.obs_sin,
         rib: formData.rib,
         statut: formData.statut,
@@ -664,5 +649,27 @@ export class SinistresComponent implements OnInit {
         this.snackBar.openSnackBar('Error submitting form', 'Ok !');
       },
     });
+  }
+
+  submitStrSin(): any {
+    const data = this.dataSource.data;
+    const refDpt = prompt('Please enter the reference:');
+    if (refDpt !== null) {
+      const dataTosubmit = data.map((item) => {
+        return { ...item, ref_dpt: refDpt };
+      });
+      console.log(dataTosubmit);
+
+      this.apiService.postStrdSin(dataTosubmit).subscribe({
+        next: (res) => {
+          this.snackBar.openSnackBar('Déclaration insérée', 'Ok !');
+        },
+        error: (err) => {
+          // Handle error scenario
+          console.error('Error submitting form:', err);
+          this.snackBar.openSnackBar('Error submitting DPT', 'Ok !');
+        },
+      });
+    }
   }
 }

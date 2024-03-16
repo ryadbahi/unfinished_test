@@ -463,10 +463,14 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/decla_sin_temp`, data);
   }
 
-  //_____________________________GET SIN BY CONTRAT_______________________
-
   getTempSinByContrat(id_contrat: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/decla_sin_temp/${id_contrat}`);
+  }
+
+  //______________________STORED SINISTRE_________________________________
+
+  postStrdSin(data: any) {
+    return this.http.post(`${this.apiUrl}/stored_sin`, data);
   }
 
   //__________________GET FMP USING ID COONTRAT__________________________

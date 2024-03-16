@@ -41,7 +41,9 @@ router.get("/", async (req, res, next) => {
           decla_sin_temp.rbt_sin,
           decla_sin_temp.obs_sin,
           decla_sin_temp.rib,
-          decla_sin_temp.statut
+          decla_sin_temp.nbr_unit,
+          decla_sin_temp.statut,
+          decla_sin_temp.forced
         FROM decla_sin_temp
         LEFT JOIN souscripteurs ON decla_sin_temp.id_souscript = souscripteurs.id_souscript
         LEFT JOIN contrats ON decla_sin_temp.id_contrat = contrats.id_contrat
@@ -145,7 +147,9 @@ router.get("/:id_contrat", async (req, res, next) => {
           decla_sin_temp.rbt_sin,
           decla_sin_temp.obs_sin,
           decla_sin_temp.rib,
-          decla_sin_temp.statut
+          decla_sin_temp.nbr_unit,
+          decla_sin_temp.statut,
+          decla_sin_temp.forced
         FROM decla_sin_temp
         LEFT JOIN souscripteurs ON decla_sin_temp.id_souscript = souscripteurs.id_souscript
         LEFT JOIN contrats ON decla_sin_temp.id_contrat = contrats.id_contrat
@@ -153,7 +157,7 @@ router.get("/:id_contrat", async (req, res, next) => {
         LEFT JOIN adherents ON decla_sin_temp.id_adherent = adherents.id_adherent
         LEFT JOIN fam_adh ON decla_sin_temp.id_fam = fam_adh.id_fam
         LEFT JOIN nomencl ON decla_sin_temp.id_nomencl = nomencl.id_nomencl
-        WHERE decla_sin_temp.id_contrat = ?
+        WHERE decla_sin_temp.id_contrat = ? AND decla_sin_temp.strd = 0
       `;
 
     const results = await db.query(selectQuery, [id_contrat]);

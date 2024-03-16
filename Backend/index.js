@@ -14,6 +14,7 @@ const nomencleRoutes = require("./RoutesNomencl.js");
 const optionsRoutes = require("./RoutesOptions.js");
 const Decla_Sin_TempRoutes = require("./RoutesDecla_Sin_Temp.js");
 const abbrevRoutes = require("./RoutesAbbrev.js");
+const storedSin = require("./RoutesStoredSin.js");
 
 const app = express();
 
@@ -25,6 +26,8 @@ app.use((req, res, next) => {
   console.log(req.body); // Log the raw request body
 });
 
+//_________________________STORED SINISTRES_______________________________
+app.use("/stored_sin", storedSin);
 //______________________________ABBREV_______________________________________
 
 app.use("/abbrev_sous", abbrevRoutes);

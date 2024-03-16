@@ -19,6 +19,7 @@ router.post("/", async (req, res) => {
       // Insert into adherents table
       const adherent = {
         id_souscript: dataInput.id_souscript,
+        id_opt: dataInput.id_opt,
         nom_adherent: dataInput.nom_adherent,
         prenom_adherent: dataInput.prenom_adherent,
         date_nai_adh: dataInput.date_nai_adh,
@@ -27,6 +28,8 @@ router.post("/", async (req, res) => {
         email_adh: dataInput.email_adh,
         tel_adh: dataInput.tel_adh,
         statut: dataInput.statut || "1", // Set default value "1" if statut is empty
+        effet_couv: dataInput.effet_couv,
+        exp_couv: dataInput.exp_couv,
       };
 
       let query = "INSERT INTO adherents SET ?";

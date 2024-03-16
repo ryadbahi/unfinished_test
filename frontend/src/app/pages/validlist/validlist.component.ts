@@ -72,7 +72,7 @@ export interface listing {
   rib: string;
   statut?: string;
   calculkey?: string;
-  categorie: string;
+  categorie: number;
   email: string;
   highlight?: boolean;
 
@@ -1139,6 +1139,7 @@ export class ValidlistComponent implements OnInit {
 
       const restructuredData = {
         id_souscript: id_souscript,
+        id_opt: Number(item.categorie),
         serial: item.serial,
         nom_adherent: item.nom,
         prenom_adherent: item.prenom,
@@ -1146,6 +1147,8 @@ export class ValidlistComponent implements OnInit {
         situa_fam: situaFam,
         rib_adh: item.rib,
         statut: statut,
+        effet_couv: this.dateToServer(new Date(contratData!.date_effet)),
+        exp_couv: this.dateToServer(new Date(contratData!.date_exp)),
         benef: item.fam_adh.map((child) => ({
           lien_benef: child.lienBnf,
           nom_benef: child.nom,
@@ -1160,7 +1163,7 @@ export class ValidlistComponent implements OnInit {
     });
 
     const dataToSubmit = adh_details;
-    console.log(dataToSubmit);
+    console.log('HERE', dataToSubmit);
 
     this.apiService.addAdherentData(dataToSubmit).subscribe((res) => {
       this.snackBar.openSnackBar('Adhérents ajoutées', 'OK');
