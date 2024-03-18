@@ -265,6 +265,7 @@ export class SinistresComponent implements OnInit {
       rib: [''],
       statut: [''],
     });
+    this.updateindex();
 
     if (this.dptsinForm && this.dptsinForm.get('date_sin')) {
       this.dptsinForm.get('date_sin')?.valueChanges.subscribe((value) => {
@@ -300,6 +301,7 @@ export class SinistresComponent implements OnInit {
         nom_souscript: data?.nom_souscript,
         //limit_plan : data?.limit_plan,
       });
+      this.updateindex();
     }
   }
 
@@ -312,6 +314,7 @@ export class SinistresComponent implements OnInit {
         prenom_adherent: data?.prenom_adherent,
         rib: data?.rib_adh,
       });
+      this.updateindex();
     }
   }
 
@@ -327,6 +330,7 @@ export class SinistresComponent implements OnInit {
         limit_plan: data?.limit_plan,
         num_opt: data?.num_opt,
       });
+      this.updateindex();
       console.log(data);
     }
   }
@@ -341,6 +345,7 @@ export class SinistresComponent implements OnInit {
         lien_benef: data?.lien_benef,
       });
       console.log(data);
+      this.updateindex();
     }
   }
 
@@ -352,6 +357,7 @@ export class SinistresComponent implements OnInit {
   resetForm() {
     this.dptsinForm.reset();
     this.clearSelection();
+    this.updateContratForm();
   }
 
   filterContrats() {
@@ -427,7 +433,7 @@ export class SinistresComponent implements OnInit {
   getcontrats() {
     this.isLoading = true;
     this.apiService.getAllContrats().subscribe({
-      next: (data: any) => {
+      next: (data: Contrat[]) => {
         setTimeout(() => {
           this.contrat_data = data;
           this.filteredContrats = data;
@@ -634,11 +640,20 @@ export class SinistresComponent implements OnInit {
     });
   }
 
+  updateindex() {
+    let currentIndex = this.dataSource.data.length;
+    let nextIndex = currentIndex + 1;
+
+    this.dptsinForm.patchValue({
+      idx: nextIndex,
+    });
+  }
+
   sumbitSinForm() {
     const formData = this.dptsinForm.value;
     const contrat = formData.id_contrat;
 
-    console.log(formData);
+    console.log();
 
     const dataTosumbmit = [
       {
@@ -665,6 +680,7 @@ export class SinistresComponent implements OnInit {
         this.snackBar.openSnackBar('Déclaration insérée', 'Ok !');
         this.resetForm();
         this.getTempSinbyIdContrat(contrat);
+        this.updateContratForm();
       },
       error: (err) => {
         // Handle error scenario

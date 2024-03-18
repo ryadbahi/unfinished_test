@@ -138,7 +138,7 @@ router.get("/:id_contrat", async (req, res, next) => {
         LEFT JOIN fam_adh ON decla_sin_temp.id_fam = fam_adh.id_fam
         LEFT JOIN nomencl ON decla_sin_temp.id_nomencl = nomencl.id_nomencl
         WHERE decla_sin_temp.id_contrat = ? AND decla_sin_temp.strd = 0
-      `;
+        ORDER BY decla_sin_temp.date_sin DESC`;
 
     const results = await db.query(selectQuery, [id_contrat]);
 
@@ -150,256 +150,161 @@ router.get("/:id_contrat", async (req, res, next) => {
 
 //_____________________________GET WITH ID SIN___________________________
 
-router.get("/:id_sin/sin"),
-  async (req, res, next) => {
-    try {
-      const { id_sin } = req.params;
-      const selectQuery = `
-      SELECT
-      decla_sin_temp.id_sin,
-        decla_sin_temp.idx,
-        decla_sin_temp.id_souscript,
-        souscripteurs.nom_souscript,
-        decla_sin_temp.id_contrat,
-        contrats.num_contrat,
-        contrats.date_effet,
-        contrats.date_exp,
-        contrats.prime_total,
-        decla_sin_temp.id_opt,
-        options.num_opt,
-        options.limit_plan,
-        options.option_describ,
-        decla_sin_temp.id_adherent,
-        adherents.nom_adherent,
-        adherents.prenom_adherent,
-        decla_sin_temp.id_fam,
-        fam_adh.lien_benef,
-        fam_adh.nom_benef,
-        fam_adh.prenom_benef,
-        fam_adh.date_nai_benef,
-        decla_sin_temp.date_sin,
-        decla_sin_temp.id_nomencl,
-        nomencl.code_garantie,
-        nomencl.garantie_describ,
-        decla_sin_temp.frais_sin,
-        decla_sin_temp.rbt_sin,
-        decla_sin_temp.obs_sin,
-        decla_sin_temp.rib,
-        decla_sin_temp.nbr_unit,
-        decla_sin_temp.statut,
-        decla_sin_temp.forced,
-        (SELECT SUM(rbt_sin) FROM stored_sin WHERE id_adherent = decla_sin_temp.id_adherent) as conso_adh,
-        fmp.id_couv_fmp,
-        fmp.applied_on,
-        fmp.taux_rbt,
-        fmp.limit_act,
-        fmp.limit_gar,
-        fmp.limit_gar_describ,
-        fmp.nbr_of_unit,
-        fmp.unit_value
-      FROM decla_sin_temp
-      LEFT JOIN souscripteurs ON decla_sin_temp.id_souscript = souscripteurs.id_souscript
-      LEFT JOIN contrats ON decla_sin_temp.id_contrat = contrats.id_contrat
-      LEFT JOIN options ON decla_sin_temp.id_opt = options.id_opt
-      LEFT JOIN adherents ON decla_sin_temp.id_adherent = adherents.id_adherent
-      LEFT JOIN fam_adh ON decla_sin_temp.id_fam = fam_adh.id_fam
-      LEFT JOIN nomencl ON decla_sin_temp.id_nomencl = nomencl.id_nomencl
-      LEFT JOIN fmp ON decla_sin_temp.id_opt = fmp.id_opt AND decla_sin_temp.id_nomencl = fmp.id_nomencl
-      WHERE decla_sin_temp.id_sin = ? AND decla_sin_temp.strd = 0
-    `;
-      const results = await db.query(selectQuery, [id_sin]);
-      const data = results[0];
+router.get("/:id_sin/sin", async (req, res, next) => {
+  try {
+    const { id_sin } = req.params;
+    const selectQuery = `
+        SELECT
+        decla_sin_temp.id_sin,
+          decla_sin_temp.idx,
+          decla_sin_temp.id_souscript,
+          souscripteurs.nom_souscript,
+          decla_sin_temp.id_contrat,
+          contrats.num_contrat,
+          contrats.date_effet,
+          contrats.date_exp,
+          contrats.prime_total,
+          decla_sin_temp.id_opt,
+          options.num_opt,
+          options.limit_plan,
+          options.option_describ,
+          decla_sin_temp.id_adherent,
+          adherents.nom_adherent,
+          adherents.prenom_adherent,
+          decla_sin_temp.id_fam,
+          fam_adh.lien_benef,
+          fam_adh.nom_benef,
+          fam_adh.prenom_benef,
+          fam_adh.date_nai_benef,
+          decla_sin_temp.date_sin,
+          decla_sin_temp.id_nomencl,
+          nomencl.code_garantie,
+          nomencl.garantie_describ,
+          decla_sin_temp.frais_sin,
+          decla_sin_temp.rbt_sin,
+          decla_sin_temp.obs_sin,
+          decla_sin_temp.rib,
+          decla_sin_temp.nbr_unit,
+          decla_sin_temp.statut,
+          decla_sin_temp.forced,
+          (SELECT SUM(rbt_sin) FROM stored_sin WHERE id_adherent = decla_sin_temp.id_adherent) as conso_adh,
+          fmp.id_couv_fmp,
+          fmp.applied_on,
+          fmp.taux_rbt,
+          fmp.limit_act,
+          fmp.limit_gar,
+          fmp.limit_gar_describ,
+          fmp.nbr_of_unit,
+          fmp.unit_value
+        FROM decla_sin_temp
+        LEFT JOIN souscripteurs ON decla_sin_temp.id_souscript = souscripteurs.id_souscript
+        LEFT JOIN contrats ON decla_sin_temp.id_contrat = contrats.id_contrat
+        LEFT JOIN options ON decla_sin_temp.id_opt = options.id_opt
+        LEFT JOIN adherents ON decla_sin_temp.id_adherent = adherents.id_adherent
+        LEFT JOIN fam_adh ON decla_sin_temp.id_fam = fam_adh.id_fam
+        LEFT JOIN nomencl ON decla_sin_temp.id_nomencl = nomencl.id_nomencl
+        LEFT JOIN fmp ON decla_sin_temp.id_opt = fmp.id_opt AND decla_sin_temp.id_nomencl = fmp.id_nomencl
+        WHERE decla_sin_temp.id_sin = ? AND decla_sin_temp.strd = 0
+      `;
 
-      console.log("Retrieved data:", data);
+    const results = await db.query(selectQuery, [id_sin]);
 
-      if (!data || data.length === 0) {
-        console.log("No data found");
-        return { result: 0, statement: "No data found" };
-      }
-
-      const {
-        frais_sin,
-        rbt_sin,
-        statut,
-        forced,
-        limit_plan,
-        applied_on,
-        taux_rbt,
-        limit_act,
-        limit_gar,
-        unit_value,
-        date_sin,
-        id_adherent,
-        id_fam,
-      } = data;
-
-      // Step 1: Check if frais_sin is not null, undefined, or equal to 0
-      console.log("Checking frais_sin:", frais_sin);
-      if (frais_sin === null || frais_sin === undefined || frais_sin === 0) {
-        console.log("frais_sin is null, undefined, or 0");
-        return { result: 0, statement: "frais_sin is null, undefined, or 0" };
-      }
-
-      // Step 2: Check if forced is 1
-      console.log("Checking forced:", forced);
-      if (forced === 1) {
-        console.log("forced = 1");
-        return { result: rbt_sin, statement: "forced = 1" };
-      }
-
-      // Step 3: Check if conso_adh is >= limit_plan
-      console.log("Checking conso_adh:", conso_adh);
-      console.log("Checking limit_plan:", limit_plan);
-      if (conso_adh >= limit_plan) {
-        console.log("Limite du plan atteinte");
-        return { result: 0, statement: "Limite du plan atteinte" };
-      }
-
-      // Step 4: Check if date_sin is inside date_effet and date_exp
-      console.log("Checking date_sin:", date_sin);
-      console.log("Checking date_effet:", date_effet);
-      console.log("Checking date_exp:", date_exp);
-      if (date_sin < date_effet || date_sin > date_exp) {
-        console.log("Date de sinistre hors couverture");
-        return { result: 0, statement: "Date de sinistre hors couverture" };
-      }
-
-      // Step 5: Check the stat of lien_benef
-      // Calculate age difference between date_nai_benef and date_sin
-      const dateOfBirth = new Date(date_nai_benef);
-      const currentDate = new Date(date_sin);
-
-      console.log("Date of birth:", dateOfBirth);
-      console.log("Current date:", currentDate);
-
-      // Calculate the difference in milliseconds
-      const ageDifferenceMs = currentDate - dateOfBirth;
-
-      // Convert milliseconds to years
-      const ageDate = new Date(ageDifferenceMs);
-      const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-
-      console.log("Calculated age:", age);
-
-      // Check if the lien_benef contains "enfant"
-      const isEnfant = lien_benef.toLowerCase().includes("enfant");
-
-      if (isEnfant && age >= 21) {
-        console.log("Enfant 21 ou plus");
-        return { result: 0, statement: "Enfant 21 ou plus" };
-      }
-
-      // Senario 1: applied_on is "Par acte"
-      if (applied_on.toLowerCase() === "par acte") {
-        const result1 = frais_sin * (taux_rbt / 100);
-        console.log("Senario 1 result:", result1);
-        return { result: Math.min(result1, limit_act), statement: "Senario 1" };
-      }
-
-      // Senario 2: applied_on is "Par adherent"
-      if (applied_on.toLowerCase() === "par adherent") {
-        // Calculate amount1
-        const amount1 = Math.min(
-          frais_sin * (taux_rbt / 100),
-          limit_act,
-          unit_value
-        );
-
-        console.log("Senario 2 amount1:", amount1);
-
-        // Calculate amount2 by looping through decla_sin_temp
-        let amount2 = 0;
-        for (const entry of decla_sin_temp) {
-          if (
-            entry.id_adherent === id_adherent &&
-            entry.id_nomencl === id_nomencl &&
-            entry.strd === 0
-          ) {
-            amount2 += entry.rbt_sin || 0;
-          }
-        }
-
-        console.log("Senario 2 amount2:", amount2);
-
-        // Calculate amount3 by looping through stored_sin
-        let amount3 = 0;
-        for (const entry of stored_sin) {
-          if (
-            entry.id_adherent === id_adherent &&
-            entry.id_nomencl === id_nomencl
-          ) {
-            amount3 += entry.rbt_sin || 0;
-          }
-        }
-
-        console.log("Senario 2 amount3:", amount3);
-
-        // Check if total exceeds limit_gar
-        if (amount1 + amount2 + amount3 > limit_gar) {
-          console.log("Limite de garantie atteinte");
-          return { result: 0, statement: "Limite de garantie atteinte" };
-        }
-
-        return { result: Math.min(amount1, limit_act), statement: "Senario 2" };
-      }
-
-      // Senario 3: applied_on is "Par bénéficiaire"
-      if (applied_on.toLowerCase() === "par bénéficiaire") {
-        // Calculate amount1
-        const amount1 = Math.min(
-          frais_sin * (taux_rbt / 100),
-          limit_act,
-          unit_value
-        );
-
-        console.log("Senario 3 amount1:", amount1);
-
-        // Calculate amount2 by looping through decla_sin_temp
-        let amount2 = 0;
-        for (const entry of decla_sin_temp) {
-          if (
-            entry.id_fam === id_fam &&
-            entry.id_nomencl === id_nomencl &&
-            entry.strd === 0
-          ) {
-            amount2 += entry.rbt_sin || 0;
-          }
-        }
-
-        console.log("Senario 3 amount2:", amount2);
-
-        // Calculate amount3 by looping through stored_sin
-        let amount3 = 0;
-        for (const entry of stored_sin) {
-          if (entry.id_fam === id_fam && entry.id_nomencl === id_nomencl) {
-            amount3 += entry.rbt_sin || 0;
-          }
-        }
-
-        console.log("Senario 3 amount3:", amount3);
-
-        // Check if total exceeds limit_gar
-        if (amount1 + amount2 + amount3 > limit_gar) {
-          console.log("Limite de garantie atteinte");
-          return { result: 0, statement: "Limite de garantie atteinte" };
-        }
-
-        return { result: Math.min(amount1, limit_act), statement: "Senario 3" };
-      }
-      console.log("Result:", result);
-      console.log("Statement:", statement);
-
-      // Send a response back to the client
-      res
-        .status(200)
-        .json({ message: "Result logged to the server's console" });
-      console.log("Unknown scenario");
-      return { result: 0, statement: "Unknown scenario" };
-    } catch (error) {
-      console.log("Error occurred:", error.message);
-      return { result: 0, statement: "Error occurred: " + error.message };
+    if (results.length === 0) {
+      // If no results found, throw an error
+      throw new Error("No data found for the given id_sin.");
     }
-  };
+
+    const responseData = results[0];
+    const data = responseData[0];
+    const fraisSin = data.frais_sin || 0;
+    const consoAdh = data.conso_adh || 0;
+
+    // Step 1: Check if frais_sin is not null, undefined, or 0
+    if (fraisSin === 0) {
+      throw new Error("Frais exposé sont à 0");
+    }
+
+    let resultStatusArray = [];
+    console.log(data.limit_plan);
+    console.log(consoAdh);
+    const dateSin = new Date(data.date_sin);
+    const dateEffet = new Date(data.date_effet);
+    const dateExp = new Date(data.date_exp);
+
+    if (dateSin < dateEffet || dateSin > dateExp) {
+      resultStatusArray.push({
+        result: 0,
+        status: "Date de sinistre hors couverture",
+      });
+    } else {
+      // Check if lien_benef contains "enfant" (case-insensitive)
+      const lienBenef = data.lien_benef.toLowerCase();
+      if (lienBenef.includes("enfant")) {
+        // Calculate age between date_nai_benef and date_sin
+        const dateNaissanceBenef = new Date(data.date_nai_benef);
+        const twentyFirstBirthday = new Date(dateNaissanceBenef.getTime());
+        twentyFirstBirthday.setFullYear(dateNaissanceBenef.getFullYear() + 21);
+        const timeDiff = twentyFirstBirthday.getTime() - dateSin.getTime();
+        const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+        if (remainingDays <= 0) {
+          resultStatusArray.push({
+            result: 0,
+            status: "Enfant 21 ans ou plus",
+          });
+        } else {
+          // If forced is 1, return the actual result and stop there
+          if (data.forced === 1) {
+            resultStatusArray.push({
+              result: fraisSin,
+              status: "OK",
+            });
+          } else {
+            // Check if conso_adh is greater than or equal to limit_plan
+            if (consoAdh >= data.limit_plan) {
+              resultStatusArray.push({
+                result: 0,
+                status: "Limite du plan atteinte",
+              });
+            } else {
+              // If conso_adh is less than limit_plan, return the actual result
+              resultStatusArray.push({
+                result: fraisSin,
+                status: "OK",
+              });
+            }
+          }
+        }
+      } else {
+        // If lien_benef does not contain "enfant", proceed with existing logic
+        if (data.forced === 1) {
+          resultStatusArray.push({
+            result: fraisSin,
+            status: "OK",
+          });
+        } else {
+          if (consoAdh >= data.limit_plan) {
+            resultStatusArray.push({
+              result: 0,
+              status: "Limite du plan atteinte",
+            });
+          } else {
+            resultStatusArray.push({
+              result: fraisSin,
+              status: "OK",
+            });
+          }
+        }
+      }
+    }
+
+    res
+      .status(200)
+      .json({ data: responseData, resultStatus: resultStatusArray });
+  } catch (error) {
+    next(error); // Pass the error to the error handler middleware
+  }
+});
 
 ///_________________________PUT ONLY ON STRD COLUMN_______________________
 
