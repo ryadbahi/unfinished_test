@@ -208,7 +208,8 @@ router.get("/:id_sin/sin", async (req, res, next) => {
       `;
 
     const results = await db.query(selectQuery, [id_sin]);
-
+    console.log(id_sin);
+    //______________________________________________________________________1er bloc de conditions_______________________________________________
     if (results.length === 0) {
       // If no results found, throw an error
       throw new Error("No data found for the given id_sin.");
@@ -297,17 +298,92 @@ router.get("/:id_sin/sin", async (req, res, next) => {
         }
       }
     }
+    //_____________________________________________________________fin du 1er bloc de conditions_____________________________________________
 
-    res
-      .status(200)
-      .json({ data: responseData, resultStatus: resultStatusArray });
+    let finalResult = [];
+    let stp2Result = resultStatusArray[0].result;
+    let stp2status = resultStatusArray[0].status;
+    console.log(stp2status);
+
+    if (stp2status === "OK") {
+      if (data.applied_on === "Par acte") {
+        const rbtResult = stp2Result * (data.taux_rbt / 100);
+        const result = Math.min(rbtResult, data.limit_act);
+
+        finalResult.push({
+          result: result,
+          status: "OK",
+        });
+      } else if (data.applied_on === "Assuré") {
+        console.log(data.applied_on);
+
+        const querySinTemp =
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ? AND strd = 0";
+        const sinTempValues = [
+          data.id_souscript,
+          data.id_adherent,
+          data.id_nomencl,
+        ];
+
+        const sinTempRows = await db.query(querySinTemp, sinTempValues);
+        const totalRbtSinInSinTemp = sinTempRows[0][0].total_rbt_sin_temp || 0;
+
+        const queryStrdSin =
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ?";
+        const strdSinValues = [
+          data.id_souscript,
+          data.id_adherent,
+          data.id_nomencl,
+        ];
+        const strdSinrows = await db.query(queryStrdSin, strdSinValues);
+        const totalRbtSinInStrdSin = strdSinrows[0][0].total_rbt_sin_strd || 0;
+        console.log(strdSinrows);
+
+        console.log("resultat 1", totalRbtSinInSinTemp);
+        console.log("resultat 2", totalRbtSinInStrdSin);
+
+        let totalRbtSin = totalRbtSinInSinTemp + totalRbtSinInStrdSin;
+
+        calculatedRbt = Math.max(
+          0,
+          Math.min(data.limit_gar, stp2Result, data.limit_gar - totalRbtSin)
+        );
+        console.log(calculatedRbt);
+
+        // Push the result to finalResult
+        finalResult.push({
+          result: totalRbtSin,
+          status: "OK",
+        });
+      } else if (data.applied_on === "Bénéficiaire") {
+        console.log(data.applied_on);
+      } else {
+        finalResult.push({
+          result: stp2Result,
+          status: stp2status,
+        });
+      }
+    } else {
+      // Si le 1er bloc de conditions retourne un mauvais resultat
+
+      finalResult.push({
+        result: stp2Result,
+        status: stp2status,
+      });
+    }
+    console.log(finalResult);
+    res.status(200).json({
+      data: responseData,
+      resultStatus: resultStatusArray,
+      newArray: finalResult,
+    });
   } catch (error) {
     next(error); // Pass the error to the error handler middleware
   }
 });
-
-///_________________________PUT ONLY ON STRD COLUMN_______________________
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///_______//////////////////////__________________PUT ONLY ON STRD COLUMN_________///////////////////////////////////______________
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.put("/", async (req, res) => {
   const id_sins = req.body.id_sins;
   const strd = req.body.strd;
