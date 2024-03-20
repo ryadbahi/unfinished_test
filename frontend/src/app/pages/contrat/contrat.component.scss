@@ -38,8 +38,12 @@
 }
 
 .Card {
-  width: 60rem;
+  width: auto;
   background-color: hwb(0 100% 0% / 0.6);
+  overflow: hidden;
+  transition: width 1s ease-in-out;
+  min-width: 65rem;
+  max-width: 85rem;
 }
 
 .formPartOne {
@@ -158,4 +162,31 @@
 }
 ::ng-deep.mat-mdc-tab-header {
   border-radius: 20px;
+}
+.display_Contrat {
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 58rem;
+  margin-top: 1.5rem;
+}
+.mat-mdc-table {
+  background-color: hwb(0 100% 0% / 0.3);
+}
+
+.mat-mdc-header-cell {
+  background-color: hwb(0 100% 0% / 0) !important;
+  text-wrap: nowrap;
+}
+
+.mat-mdc-row {
+  font-size: smaller;
+}
+.ng-star-inserted {
+  position: relative;
+  height: auto;
+  font-size: 12px;
+  text-wrap: nowrap;
+}
+.form_container {
+  display: flex;
 }

@@ -1,6 +1,6 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ApiService } from '../../api.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +17,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatListModule } from '@angular/material/list';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -64,6 +64,7 @@ export interface Option {
 }
 
 export interface Fmp {
+  id_couv_fmp: number;
   id_nomencl: number;
   applied_on: string;
   taux_rbt: number;
@@ -72,6 +73,8 @@ export interface Fmp {
   limit_describ: string;
   nbr_of_unit: number;
   unit_value: number;
+  code_garantie: string;
+  garantie_describ: string;
 }
 
 @Component({
@@ -96,14 +99,18 @@ export interface Fmp {
     MatNativeDateModule,
     MatTabsModule,
     MatProgressSpinnerModule,
+    MatTableModule,
   ],
   templateUrl: './contrat.component.html',
   styleUrl: './contrat.component.scss',
 })
 export class ContratComponent implements OnInit {
+  dataSource = new MatTableDataSource<Fmp>();
+  selectedIdContrat?: number;
   isLoading: boolean = false;
   showList = false;
   selectedContrat?: Contrat | null = null;
+  selectedFmp?: Fmp | null = null;
   nomenclature: NomenclatureItem[] = [];
   souscripData: SouscripData[] = [];
   contrat_data: Contrat[] = [];
@@ -114,7 +121,17 @@ export class ContratComponent implements OnInit {
   optionList = [1, 2, 3, 4];
   selectedCategory!: string;
   dynamicForm!: FormArray;
-  garPar: string[] = ['Assuré', 'Bénéficiaire', 'Par acte'];
+  garPar: string[] = ['Assuré', 'Bénéficiaire', 'Acte'];
+  displayedColumns: string[] = [
+    'idx',
+    'garantie',
+    'applied_on',
+    'taux_rbt',
+    'limit_gar',
+    'limit_gar_describ',
+    'nbr_of_unit',
+    'unit_value',
+  ];
 
   constructor(
     private snackBar: SnackBarService,
@@ -451,5 +468,46 @@ export class ContratComponent implements OnInit {
       console.log(res);
       this.sousForm.reset();
     });
+  }
+
+  getFmpContrat(id_contrat: number) {
+    this.isLoading = true;
+    this.apiService.getFmpByContrat(id_contrat).subscribe({
+      next: (data: Fmp[]) => {
+        setTimeout(() => {
+          /*this.dataSource = new MatTableDataSource(data);*/
+          this.dataSource.data = data.map((item: Fmp, index: number) => {
+            return {
+              ...item,
+              idx: index + 1,
+            };
+          });
+
+          this.isLoading = false;
+          console.log(this.dataSource.data);
+        }, 0);
+      },
+      error: (error) => {
+        console.error('Error fetching Nomencl:', error);
+        this.isLoading = false;
+      },
+    });
+  }
+
+  onConsultContratSelectChange(event: MatSelectChange) {
+    const selectedId = event.value;
+
+    this.selectedContrat = this.contrat_data.find(
+      (element: Contrat) => element.id_contrat === selectedId
+    );
+    console.log(this.selectedContrat);
+
+    if (this.selectedContrat) {
+      this.selectedIdContrat = this.selectedContrat.id_contrat;
+      this.dataSource.data = [];
+      this.getFmpContrat(this.selectedIdContrat);
+    } else {
+      console.error('No contract found with id:', selectedId);
+    }
   }
 }

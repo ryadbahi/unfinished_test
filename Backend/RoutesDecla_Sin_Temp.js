@@ -306,7 +306,7 @@ router.get("/:id_sin/sin", async (req, res, next) => {
     console.log(stp2status);
 
     if (stp2status === "OK") {
-      if (data.applied_on === "Par acte") {
+      if (data.applied_on === "Acte") {
         const rbtResult = stp2Result * (data.taux_rbt / 100);
         const result = Math.min(rbtResult, data.limit_act);
 
@@ -357,6 +357,47 @@ router.get("/:id_sin/sin", async (req, res, next) => {
         });
       } else if (data.applied_on === "Bénéficiaire") {
         console.log(data.applied_on);
+
+        const querySinTemp =
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_fam = ? AND id_nomencl = ? AND strd = 0";
+        const sinTempValues = [
+          data.id_souscript,
+          data.id_adherent,
+          data.id_fam,
+          data.id_nomencl,
+        ];
+
+        const sinTempRows = await db.query(querySinTemp, sinTempValues);
+        const totalRbtSinInSinTemp = sinTempRows[0][0].total_rbt_sin_temp || 0;
+
+        const queryStrdSin =
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_fam = ? AND id_nomencl = ?";
+        const strdSinValues = [
+          data.id_souscript,
+          data.id_adherent,
+          data.id_fam,
+          data.id_nomencl,
+        ];
+        const strdSinrows = await db.query(queryStrdSin, strdSinValues);
+        const totalRbtSinInStrdSin = strdSinrows[0][0].total_rbt_sin_strd || 0;
+        console.log(strdSinrows);
+
+        console.log("resultat 1", totalRbtSinInSinTemp);
+        console.log("resultat 2", totalRbtSinInStrdSin);
+
+        let totalRbtSin = totalRbtSinInSinTemp + totalRbtSinInStrdSin;
+
+        calculatedRbt = Math.max(
+          0,
+          Math.min(data.limit_gar, stp2Result, data.limit_gar - totalRbtSin)
+        );
+        console.log(calculatedRbt);
+
+        // Push the result to finalResult
+        finalResult.push({
+          result: totalRbtSin,
+          status: "OK",
+        });
       } else {
         finalResult.push({
           result: stp2Result,
