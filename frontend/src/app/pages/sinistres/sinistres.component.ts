@@ -564,6 +564,12 @@ export class SinistresComponent implements OnInit {
         this.rowDataSource.data = data;
         console.log('Here', this.rowDataSource.data);
         this.sendtocalculate();
+        if (this.selectedContrat) {
+          this.selectedIdContrat = this.selectedContrat.id_contrat;
+          this.getTempSinbyIdContrat(this.selectedIdContrat);
+        } else {
+          console.error('No contract found with id:', this.selectedIdContrat);
+        }
       },
       error: (error) => {
         console.error('Error fetching temp sin:', error);

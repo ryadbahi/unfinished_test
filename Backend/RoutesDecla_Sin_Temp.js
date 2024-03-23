@@ -24,6 +24,7 @@ router.post("/", async (req, res) => {
         id_nomencl: dataInput.id_nomencl,
         frais_sin: dataInput.frais_sin,
         rbt_sin: dataInput.rbt_sin,
+        nbr_unit: dataInput.nbr_unit,
         obs_sin: dataInput.obs_sin,
         rib: dataInput.rib,
         statut: dataInput.statut || "1",
@@ -138,7 +139,7 @@ router.get("/:id_contrat", async (req, res, next) => {
         LEFT JOIN fam_adh ON decla_sin_temp.id_fam = fam_adh.id_fam
         LEFT JOIN nomencl ON decla_sin_temp.id_nomencl = nomencl.id_nomencl
         WHERE decla_sin_temp.id_contrat = ? AND decla_sin_temp.strd = 0
-        ORDER BY decla_sin_temp.date_sin DESC`;
+        ORDER BY decla_sin_temp.id_sin DESC`;
 
     const results = await db.query(selectQuery, [id_contrat]);
 
@@ -208,7 +209,7 @@ router.get("/:id_sin/sin", async (req, res, next) => {
       `;
 
     const results = await db.query(selectQuery, [id_sin]);
-    console.log(id_sin);
+    console.log("ID :", id_sin);
     //______________________________________________________________________1er bloc de conditions_______________________________________________
     if (results.length === 0) {
       // If no results found, throw an error
@@ -226,8 +227,7 @@ router.get("/:id_sin/sin", async (req, res, next) => {
     }
 
     let resultStatusArray = [];
-    console.log(data.limit_plan);
-    console.log(consoAdh);
+
     const dateSin = new Date(data.date_sin);
     const dateEffet = new Date(data.date_effet);
     const dateExp = new Date(data.date_exp);
@@ -303,7 +303,6 @@ router.get("/:id_sin/sin", async (req, res, next) => {
     let finalResult = [];
     let stp2Result = resultStatusArray[0].result;
     let stp2status = resultStatusArray[0].status;
-    console.log(stp2status);
 
     if (stp2status === "OK") {
       if (data.applied_on === "Acte") {
@@ -315,10 +314,15 @@ router.get("/:id_sin/sin", async (req, res, next) => {
           status: "OK",
         });
       } else if (data.applied_on === "Assuré") {
+        const InitRbtSIn =
+          "UPDATE decla_sin_temp SET rbt_sin = ? WHERE id_sin = ?";
+
+        await db.query(InitRbtSIn, [0, id_sin]);
+
         console.log(data.applied_on);
 
         const querySinTemp =
-          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ? AND strd = 0";
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp, SUM(nbr_unit) AS total_nbr_unit FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ? AND strd = 0";
         const sinTempValues = [
           data.id_souscript,
           data.id_adherent,
@@ -327,34 +331,67 @@ router.get("/:id_sin/sin", async (req, res, next) => {
 
         const sinTempRows = await db.query(querySinTemp, sinTempValues);
         const totalRbtSinInSinTemp = sinTempRows[0][0].total_rbt_sin_temp || 0;
+        const totalTempunit = sinTempRows[0][0].total_nbr_unit || 0;
 
         const queryStrdSin =
-          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ?";
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd, SUM(nbr_unit) AS total_nbr_unit FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ?";
+
         const strdSinValues = [
           data.id_souscript,
           data.id_adherent,
           data.id_nomencl,
         ];
+
         const strdSinrows = await db.query(queryStrdSin, strdSinValues);
         const totalRbtSinInStrdSin = strdSinrows[0][0].total_rbt_sin_strd || 0;
-        console.log(strdSinrows);
-
-        console.log("resultat 1", totalRbtSinInSinTemp);
-        console.log("resultat 2", totalRbtSinInStrdSin);
+        const totalStrdUnit = strdSinrows[0][0].total_nbr_unit || 0;
 
         let totalRbtSin = totalRbtSinInSinTemp + totalRbtSinInStrdSin;
+        let totalUnits = Number(totalTempunit) + Number(totalStrdUnit);
 
-        calculatedRbt = Math.max(
-          0,
-          Math.min(data.limit_gar, stp2Result, data.limit_gar - totalRbtSin)
-        );
-        console.log(calculatedRbt);
+        const limit_plan =
+          data.limit_plan === null ? Infinity : data.limit_plan;
 
-        // Push the result to finalResult
-        finalResult.push({
-          result: totalRbtSin,
-          status: "OK",
-        });
+        const limit_gar = data.limit_gar === null ? Infinity : data.limit_gar;
+
+        const nbr_of_unit =
+          data.nbr_of_unit === null ? Infinity : data.nbr_of_unit;
+
+        const unit_value =
+          data.unit_value === null ? Infinity : data.unit_value;
+
+        const nbr_unit = data.nbr_unit === null ? Infinity : data.nbr_unit;
+
+        if (totalUnits - nbr_unit >= nbr_of_unit) {
+          console.log(" muhuhuh", totalUnits, nbr_unit, nbr_of_unit);
+          finalResult.push({
+            result: 0,
+            status: "Limite d'unitées atteinte",
+          });
+        } else {
+          let unitRemains = Math.abs(nbr_unit - totalUnits); //resultat qui sera de 1 minimum vue qu'il a passé le 1er if
+
+          let unitValueToUse = Math.min(unitRemains, nbr_unit);
+
+          let totalUnitValue = unitValueToUse * unit_value;
+
+          calculatedRbt = Math.max(
+            0,
+            Math.min(
+              limit_plan,
+              totalUnitValue,
+              stp2Result,
+              limit_gar - totalRbtSin
+            )
+          );
+          console.log("there", limit_gar, stp2Result);
+
+          // Push the result to finalResult
+          finalResult.push({
+            result: calculatedRbt,
+            status: "OK",
+          });
+        }
       } else if (data.applied_on === "Bénéficiaire") {
         console.log(data.applied_on);
 
@@ -412,12 +449,37 @@ router.get("/:id_sin/sin", async (req, res, next) => {
         status: stp2status,
       });
     }
-    console.log(finalResult);
-    res.status(200).json({
-      data: responseData,
-      resultStatus: resultStatusArray,
-      newArray: finalResult,
-    });
+
+    try {
+      const rbtSin = finalResult[0].result; // Potential issue: accessing 'result' property of an array
+
+      const updateRbtSin =
+        "UPDATE decla_sin_temp SET rbt_sin = ? WHERE id_sin = ?";
+
+      // Ensure id_sin is defined and not null
+      if (id_sin === undefined || id_sin === null) {
+        throw new Error("id_sin is not provided or is null");
+      }
+
+      // Update the record in the database
+      await db.query(updateRbtSin, [rbtSin, id_sin]);
+
+      // Once the update is successful, construct the response
+
+      console.log(finalResult); // Log the final result
+
+      // Send the response with the updated data
+      res.status(200).json({
+        data: responseData,
+        resultStatus: resultStatusArray,
+        /*newArray: finalResultArray,*/
+        message: `Calculation done & saved for id_sin: ${id_sin}`,
+      });
+    } catch (err) {
+      // Handle error scenario
+      console.error(`Error updating declaration for id_sin ${id_sin}:`, err);
+      next(err); // Pass the error to the Express error handling middleware
+    }
   } catch (error) {
     next(error); // Pass the error to the error handler middleware
   }
