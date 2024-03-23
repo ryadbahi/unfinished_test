@@ -1,5 +1,5 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ApiService } from '../../api.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,11 +17,15 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import {
+  MatSelect,
+  MatSelectChange,
+  MatSelectModule,
+} from '@angular/material/select';
 import { MatListModule } from '@angular/material/list';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { SnackBarService } from '../../snack-bar.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -29,6 +33,12 @@ export interface DataItem {
   id_nomencl: number;
   code_garantie: string;
   garantie_describ: string;
+}
+
+export interface Opts {
+  id_opt: number;
+  num_opt: number;
+  limit_plan: number;
 }
 
 export interface NomenclatureItem {
@@ -105,14 +115,18 @@ export interface Fmp {
   styleUrl: './contrat.component.scss',
 })
 export class ContratComponent implements OnInit {
+  optDataSource = new MatTableDataSource<Opts>();
   dataSource = new MatTableDataSource<Fmp>();
   selectedIdContrat?: number;
+  selectedIdOpt?: number;
   isLoading: boolean = false;
   showList = false;
   selectedContrat?: Contrat | null = null;
+  selectedOpt?: Opts | null = null;
   selectedFmp?: Fmp | null = null;
   nomenclature: NomenclatureItem[] = [];
   souscripData: SouscripData[] = [];
+  opts_Data: Opts[] = [];
   contrat_data: Contrat[] = [];
   option: Option[] = [];
   contractForm!: FormGroup;
@@ -197,6 +211,21 @@ export class ContratComponent implements OnInit {
     //this.getSouscript();
     this.getNomencl();
     //this.getcontrats();
+  }
+
+  @ViewChild('matRef1') matRef1!: MatSelect;
+  @ViewChild('matRef2') matRef2!: MatSelect;
+  @ViewChild('matRef3') matRef3!: MatSelect;
+  clearSelection() {
+    this.matRef1.options.forEach((option) => option.deselect());
+    this.matRef2.options.forEach((option) => option.deselect());
+    this.matRef3.options.forEach((option) => option.deselect());
+  }
+
+  onTabChange(event: MatTabChangeEvent) {
+    this.contrat_data = [];
+    this.selectedContrat = null;
+    this.clearSelection();
   }
 
   onContratSelectionChange(event: any) {
@@ -494,6 +523,27 @@ export class ContratComponent implements OnInit {
     });
   }
 
+  getContratsOpts(id_contrat: number) {
+    this.isLoading = true;
+    this.apiService.getOptIdbyContrat(id_contrat).subscribe({
+      next: (data: Opts[]) => {
+        setTimeout(() => {
+          /*this.dataSource = new MatTableDataSource(data);*/
+          this.optDataSource.data = data.map((item: Opts) => {
+            return { ...item };
+          });
+
+          this.isLoading = false;
+          console.log(this.optDataSource.data);
+        }, 0);
+      },
+      error: (error) => {
+        console.error('Error fetching Nomencl:', error);
+        this.isLoading = false;
+      },
+    });
+  }
+
   onConsultContratSelectChange(event: MatSelectChange) {
     const selectedId = event.value;
 
@@ -508,6 +558,45 @@ export class ContratComponent implements OnInit {
       this.getFmpContrat(this.selectedIdContrat);
     } else {
       console.error('No contract found with id:', selectedId);
+    }
+  }
+
+  getFmpbyIdOpt(id_opt: number) {
+    this.isLoading = true;
+    this.apiService.getFmpNomenclByIdOpt(id_opt).subscribe({
+      next: (data: Fmp[]) => {
+        setTimeout(() => {
+          this.dataSource.data = data.map((item: Fmp, index: number) => {
+            return { ...item, idx: index + 1 };
+          });
+          this.isLoading = false;
+          console.log(this.dataSource.data);
+        }, 0);
+      },
+      error: (error) => {
+        console.error('Error fetching Nomencl:', error);
+        this.isLoading = false;
+      },
+    });
+  }
+
+  onOptsSelectChange(event: MatSelectChange) {
+    const selectedId = event.value.id_opt;
+    console.log('here', selectedId);
+
+    this.selectedOpt = this.optDataSource.data.find(
+      (element: Opts) => element.id_opt === selectedId
+    );
+
+    console.log('there', this.selectedOpt);
+
+    if (this.selectedOpt) {
+      this.selectedIdOpt = this.selectedOpt.id_opt;
+      this.dataSource.data = [];
+      this.getFmpbyIdOpt(this.selectedIdOpt);
+      console.log('here', this.selectedIdOpt);
+    } else {
+      console.error('No contract found with id:', this.selectedIdOpt);
     }
   }
 }

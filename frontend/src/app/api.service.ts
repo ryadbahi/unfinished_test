@@ -485,14 +485,25 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/stored_sin`, data);
   }
 
-  //__________________GET FMP USING ID COONTRAT__________________________
+  //__________________FMP__________________________
 
   getFmpByContrat(id_contrat: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/contrats/${id_contrat}/fmp`);
   }
 
-  //__________________GET FMP USING ID_OPT__________________________
+  getOptIdbyContrat(id_contrat: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/contrats/${id_contrat}/opts`);
+  }
+
+  /* getFmpByOptID(id_opt : number) : Observable<any> {
+
+    return
+  }*/
+
+  //__________________GET FMPnomencl USING ID_OPT__________________________
   getFmpNomenclByIdOpt(id_opt: number): Observable<any> {
+    console.log('FROM API', id_opt);
+
     return this.http.get(`${this.apiUrl}/options/${id_opt}`);
   }
 }

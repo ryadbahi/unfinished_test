@@ -614,6 +614,8 @@ export class SinistresComponent implements OnInit {
       next: (data: CrtNomencl[]) => {
         this.fmpDatasource = new MatTableDataSource(data);
         this.fmpData = [...data];
+        console.log(this.fmpData);
+
         this.filteredFmp.next(this.fmpData.slice());
         this.isLoading = false;
       },

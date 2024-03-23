@@ -181,7 +181,7 @@ router.get("/:id_contrat/fmp", async (req, res, next) => {
       return;
     }
 
-    const id_opt = idOptResults[0].id_opt;
+    const id_opt = idOptResults.id_opt;
 
     // Retrieve corresponding records from fmp table with details from nomencl table
     const selectFmpWithDetailsQuery = `
@@ -194,6 +194,34 @@ router.get("/:id_contrat/fmp", async (req, res, next) => {
     const [fmpResults] = await db.query(selectFmpWithDetailsQuery, [id_opt]);
 
     res.status(200).json(fmpResults);
+  } catch (err) {
+    next(err);
+  }
+});
+
+//__________________________get optz__________________________________
+router.get("/:id_contrat/opts", async (req, res, next) => {
+  const id_contrat = req.params.id_contrat;
+
+  try {
+    // Retrieve id_opt and num_opt based on id_contrat
+    const [optResults] = await db.query(
+      "SELECT id_opt, num_opt, limit_plan FROM options WHERE id_contrat = ?",
+      [id_contrat]
+    );
+
+    if (optResults.length === 0) {
+      res.status(404).json({ error: "No matching records found" });
+      return;
+    }
+
+    const results = optResults.map((opt) => ({
+      id_opt: opt.id_opt,
+      num_opt: opt.num_opt,
+      limit_plan: opt.limit_plan,
+    }));
+
+    res.status(200).json(results);
   } catch (err) {
     next(err);
   }

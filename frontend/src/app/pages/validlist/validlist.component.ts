@@ -1133,13 +1133,15 @@ export class ValidlistComponent implements OnInit {
     const adh_details: any[] = [];
 
     const id_souscript = contratData?.id_souscript;
+    const id_contrat = contratData?.id_contrat;
     data.forEach((item) => {
       const statut = item.statut || '1';
       const situaFam = item.fam_adh && item.fam_adh.length > 0 ? 'M' : 'C';
 
       const restructuredData = {
         id_souscript: id_souscript,
-        id_opt: Number(item.categorie),
+        id_contrat: id_contrat,
+        categorie: Number(item.categorie),
         serial: item.serial,
         nom_adherent: item.nom,
         prenom_adherent: item.prenom,

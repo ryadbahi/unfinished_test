@@ -11,7 +11,7 @@ router.use((err, req, res, next) => {
 });
 
 // ADHERENTS CREATE - POST
-router.post("/", async (req, res) => {
+/*router.post("/", async (req, res) => {
   const dataArray = req.body;
 
   try {
@@ -19,7 +19,8 @@ router.post("/", async (req, res) => {
       // Insert into adherents table
       const adherent = {
         id_souscript: dataInput.id_souscript,
-        id_opt: dataInput.id_opt,
+        id_contrat: dataInput.id_contrat,
+        id_opt: dataInput.categorie,
         nom_adherent: dataInput.nom_adherent,
         prenom_adherent: dataInput.prenom_adherent,
         date_nai_adh: dataInput.date_nai_adh,
@@ -55,6 +56,75 @@ router.post("/", async (req, res) => {
 
         query = "INSERT INTO fam_adh SET ?";
         await db.query(query, fam_adh);
+      }
+    }
+
+    res.status(200).json({ message: "Data inserted successfully" });
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});*/
+
+router.post("/", async (req, res) => {
+  const dataArray = req.body;
+
+  try {
+    for (const dataInput of dataArray) {
+      let query =
+        "SELECT id_opt FROM options WHERE id_contrat = ? AND num_opt = ?";
+      let result = await db.query(query, [
+        dataInput.id_contrat,
+        dataInput.categorie || 1,
+      ]);
+
+      if (result.length > 0) {
+        const id_opt = result[0][0].id_opt;
+
+        // Insert into adherents table
+        const adherent = {
+          id_souscript: dataInput.id_souscript,
+          id_contrat: dataInput.id_contrat,
+          id_opt: id_opt,
+          nom_adherent: dataInput.nom_adherent,
+          prenom_adherent: dataInput.prenom_adherent,
+          date_nai_adh: dataInput.date_nai_adh,
+          situa_fam: dataInput.situa_fam,
+          rib_adh: dataInput.rib_adh,
+          email_adh: dataInput.email_adh,
+          tel_adh: dataInput.tel_adh,
+          statut: dataInput.statut || "1",
+          effet_couv: dataInput.effet_couv,
+          exp_couv: dataInput.exp_couv,
+        };
+
+        query = "INSERT INTO adherents SET ?";
+        let queryResult = await db.query(query, adherent);
+
+        // Get the id of the inserted adherent
+        const id_adherent = queryResult[0].insertId;
+
+        // Insert into fam_adh table
+        for (const benef of dataInput.benef) {
+          const fam_adh = {
+            id_adherent: id_adherent,
+            lien_benef: benef.lien_benef,
+            nom_benef: benef.nom_benef,
+            prenom_benef: benef.prenom_benef,
+            date_nai_benef: benef.date_nai_benef,
+          };
+
+          query = "INSERT INTO fam_adh SET ?";
+          await db.query(query, fam_adh);
+        }
+      } else {
+        console.error(
+          "No matching id_opt found for num_opt and id_contrat:",
+          dataInput.categorie,
+          dataInput.id_contrat
+        );
+        res.status(500).json({ error: "Internal Server Error" });
+        return; // Stop processing further data on error
       }
     }
 

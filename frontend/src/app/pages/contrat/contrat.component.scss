@@ -70,16 +70,22 @@
 .newcontrat,
 .newSouscrip {
   margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
   width: 25%;
+  display: flex;
+  flex-direction: row;
+  width: auto;
 }
-.newOption {
+.newOption,
+.consult_Contrat {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: auto;
   grid-gap: 10px;
   margin: 1rem 0 1rem 0;
+}
+
+.contratSelect {
+  width: max-content;
 }
 
 .bottomBlock {
@@ -103,13 +109,15 @@
 .illustr {
   margin-top: 0.5rem;
   height: 10rem;
+  float: right;
 }
 .illustrDiv {
   margin-top: 0.5rem;
   margin-left: 30%;
 }
 .optlimit {
-  display: table-caption;
+  display: flex;
+  flex-direction: row;
 }
 
 ::ng-deep.mat-mdc-select-panel {
@@ -152,16 +160,17 @@
 }
 ::ng-deep.mat-mdc-tab-group-dynamic-height .mat-mdc-tab-body-content {
   overflow: hidden;
-  display: flex;
 }
 ::ng-deep.mat-mdc-tab-group.mat-mdc-tab-group-stretch-tabs
   > .mat-mdc-tab-header
   .mat-mdc-tab {
   background-color: rgba(240, 248, 255, 0.301);
   box-shadow: #3d3b3b;
+  align-items: center;
 }
 ::ng-deep.mat-mdc-tab-header {
   border-radius: 20px;
+  align-self: center;
 }
 .display_Contrat {
   border-radius: 10px;
@@ -183,10 +192,11 @@
 }
 .ng-star-inserted {
   position: relative;
-  height: auto;
+  height: min-content;
   font-size: 12px;
   text-wrap: nowrap;
+  justify-content: space-between;
 }
-.form_container {
-  display: flex;
+.opt_Select {
+  display: grid;
 }
