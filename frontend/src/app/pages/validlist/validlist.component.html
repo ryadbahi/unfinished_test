@@ -15,6 +15,7 @@
           (click)="
             checkupListing(
               runCheckDuplicates,
+              runCheckDuplicatesRibs,
               runVerifyRib,
               runHighlightChildren,
               runLevDupl
@@ -43,6 +44,14 @@
               [(ngModel)]="runVerifyRib"
               >Verification des RIB/RIP</mat-checkbox
             >
+
+            <mat-checkbox
+              (click)="$event.stopPropagation()"
+              color="primary"
+              [(ngModel)]="runCheckDuplicatesRibs"
+              >RIB en double</mat-checkbox
+            >
+
             <mat-checkbox
               (click)="$event.stopPropagation()"
               color="primary"
@@ -351,6 +360,7 @@
             mat-cell
             *matCellDef="let element"
             [ngStyle]="{ color: element.highlightRib }"
+            [ngClass]="{ duplicateRIB: element.duplicateRIB }"
             [matTooltip]="element.calculkey"
           >
             <div *ngIf="!element.editable">

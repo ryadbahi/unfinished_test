@@ -82,6 +82,8 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
   let rearrangedData: listing[] = [];
   let tempData: listing[] = []; // Temporary array to hold the data
 
+  const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+
   if (sheet['!ref']) {
     let range = XLSX.utils.decode_range(sheet['!ref']);
     for (let i = range.s.r + 1; i <= range.e.r; i++) {
@@ -91,10 +93,41 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
       let nom = sheet[XLSX.utils.encode_cell({ r: i, c: 3 })]?.v;
       let prenom = sheet[XLSX.utils.encode_cell({ r: i, c: 4 })]?.v;
       let dateDeNaissance = sheet[XLSX.utils.encode_cell({ r: i, c: 5 })]?.v;
-      if (dateDeNaissance) {
-        let date = new Date((dateDeNaissance - 25569) * 86400 * 1000);
-        dateDeNaissance = date;
+
+      if (!serial || !lienBnf || !num || !nom || !prenom || !dateDeNaissance) {
+        throw new Error(
+          `Des données obligatoires sont manquantes sur la ligne ${i + 1}`
+        );
       }
+
+      if (typeof dateDeNaissance === 'number') {
+        const msSinceEpoch = (dateDeNaissance - 25569) * 86400 * 1000;
+        const date = new Date(msSinceEpoch);
+        if (!isNaN(date.getTime())) {
+          dateDeNaissance = date;
+        } else {
+          throw new Error(`Date invalide sur la ligne ${i + 1}`);
+        }
+      } else if (typeof dateDeNaissance === 'string') {
+        if (!dateRegex.test(dateDeNaissance)) {
+          throw new Error(
+            `Format de la date invalide (JJ/MM/AAAA) sur la ligne ${i + 1}`
+          );
+        }
+        const dateMatch = dateDeNaissance.match(dateRegex);
+        if (dateMatch) {
+          dateDeNaissance = new Date(
+            `${dateMatch[2]}/${dateMatch[1]}/${dateMatch[3]}`
+          );
+        } else {
+          throw new Error(
+            `Format de la date invalide (JJ/MM/AAAA) la ligne ${i + 1}`
+          );
+        }
+      } else {
+        throw new Error(`Date invalide la ligne ${i + 1}`);
+      }
+
       let rib = sheet[XLSX.utils.encode_cell({ r: i, c: 9 })]?.v;
       let categorie = sheet[XLSX.utils.encode_cell({ r: i, c: 10 })]?.v;
       let email = sheet[XLSX.utils.encode_cell({ r: i, c: 11 })]?.v || '';
@@ -115,10 +148,16 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
 
     // Sort the temporary array so that 'ass' comes before 'Conjoint' and 'Enfant' for each serial
     tempData.sort((a, b) => {
-      if (a.serial !== b.serial) {
-        return a.serial < b.serial ? -1 : 1;
+      if (typeof a.lienBnf === 'undefined') {
+        console.log("Undefined lienBnf in 'a':", a);
+      } else if (typeof b.lienBnf === 'undefined') {
+        console.log("Undefined lienBnf in 'b':", b);
+      }
+
+      if (a.nom !== b.num) {
+        return a.num < b.num ? -1 : 1;
       } else {
-        return a.lienBnf.toLowerCase().includes('ass') ? -1 : 1;
+        return a.lienBnf && a.lienBnf.toLowerCase().includes('ass') ? -1 : 1;
       }
     });
 
@@ -140,7 +179,7 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
           String.fromCharCode('a'.charCodeAt(0) + familyCounter);
         familyCounter++;
         const adherent = rearrangedData.find(
-          (adherentItem) => adherentItem.serial === item.serial
+          (adherentItem) => adherentItem.num === item.num
         );
         if (adherent) {
           adherent.fam_adh = adherent.fam_adh || [];

@@ -75,7 +75,7 @@ export interface listing {
   categorie: number;
   email: string;
   highlight?: boolean;
-
+  duplicateRIB?: boolean;
   duplicatehighlight?: boolean;
   issues?: number;
   highlightRib?: string;
@@ -163,6 +163,7 @@ export class ValidlistComponent implements OnInit {
   runDeleteDuplicates: boolean = false;
   runRemoveSpaces: boolean = true;
   runCheckDuplicates: boolean = false;
+  runCheckDuplicatesRibs: boolean = true;
   runVerifyRib: boolean = true;
   runHighlightChildren: boolean = true;
   runLevDupl: boolean = false;
@@ -250,6 +251,10 @@ export class ValidlistComponent implements OnInit {
         this.cdr.detectChanges();
       } else if (data.type === 'error') {
         console.error('Error in web worker:', data.error);
+        window.alert(data.error);
+        window.location.reload();
+
+        this.spinner.hide();
       }
 
       this.spinner.hide();
@@ -262,6 +267,7 @@ export class ValidlistComponent implements OnInit {
 
   async checkupListing(
     checkDuplicates: boolean,
+    checkForDuplicateRibs: boolean,
     verifyRib: boolean,
     highlightChildren: boolean,
     levDupl: boolean
@@ -271,6 +277,7 @@ export class ValidlistComponent implements OnInit {
 
     return this.checkupListingAsync(
       checkDuplicates,
+      checkForDuplicateRibs,
       verifyRib,
       highlightChildren,
       levDupl
@@ -281,6 +288,7 @@ export class ValidlistComponent implements OnInit {
 
   private async checkupListingAsync(
     checkDuplicates: boolean,
+    checkForDuplicateRibs: boolean,
     verifyRib: boolean,
     highlightChildren: boolean,
     levDupl: boolean
@@ -292,6 +300,10 @@ export class ValidlistComponent implements OnInit {
       if (checkDuplicates) {
         this.checkForDuplicateAssures();
         await delay(1000);
+      }
+
+      if (checkForDuplicateRibs) {
+        this.lookForDuplicateRibs();
       }
 
       if (verifyRib) {
@@ -328,6 +340,7 @@ export class ValidlistComponent implements OnInit {
       this.spinner.hide();
       this.checkupListing(
         this.runCheckDuplicates,
+        this.runCheckDuplicatesRibs,
         this.runVerifyRib,
         this.runHighlightChildren,
         this.runLevDupl
@@ -546,43 +559,46 @@ export class ValidlistComponent implements OnInit {
     const flattenedData: any[] = [];
 
     data.forEach((item) => {
-      // Determine the value for the new column based on nbrBenef
-      const situaFam = item.fam_adh && item.fam_adh.length > 0 ? 'M' : 'C';
-
+      const enfantCount = item.fam_adh
+        ? item.fam_adh.filter(
+            (child) => child.lienBnf.trim().toLowerCase() === 'enfant'
+          ).length
+        : 0;
       // Add the main item with the new column
       flattenedData.push({
-        Serial: item.serial,
         'Type Assuré/Bénéficiaire': item.lienBnf,
         'Num employé': item.num,
         Nom: item.nom,
         Prénom: item.prenom,
         'Date de Naissance': this.formatDate(item.dateDeNaissance),
-        'Situatio familiale': situaFam,
-        "Nbr d'enfants": item.fam_adh.length,
+        'Situatio familiale':
+          item.fam_adh && item.fam_adh.length > 0 ? 'M' : 'C',
+        "Nbr d'enfants": enfantCount,
         Téléphone: '',
         RIB: item.rib,
-        CATEGORIE: item.categorie,
+        CATEGORIE: item.categorie || 1,
         Email: item.email,
-
         // Include other main properties as needed
       });
-      console.log(item.nbrBenef);
 
       // Add the nested items directly under the main item
       if (item.fam_adh && item.fam_adh.length > 0) {
-        item.fam_adh.forEach((child, index) => {
-          // For child items, set the new column as an empty string
+        item.fam_adh.forEach((child) => {
+          // Add the child items
           flattenedData.push({
-            Serial: item.serial,
             'Type Assuré/Bénéficiaire': child.lienBnf,
             'Num employé': child.num,
             Nom: child.nom,
             Prénom: child.prenom,
             'Date de Naissance': this.formatDate(child.dateDeNaissance),
           });
-          console.log(item.fam_adh.length);
         });
       }
+    });
+
+    // Assign serial numbers to the flattened data
+    flattenedData.forEach((row, index) => {
+      row['Serial'] = index + 1; // Serial starts from 1
     });
 
     return flattenedData;
@@ -596,8 +612,34 @@ export class ValidlistComponent implements OnInit {
     // Flatten the data
     const flattenedData = this.flattenData(this.rearrangedData);
 
+    // Define the desired column order
+    const columnOrder = [
+      'Serial',
+      'Type Assuré/Bénéficiaire',
+      'Num employé',
+      'Nom',
+      'Prénom',
+      'Date de Naissance',
+      'Situatio familiale',
+      "Nbr d'enfants",
+      'Téléphone',
+      'RIB',
+      'CATEGORIE',
+      'Email',
+      // Ensure Serial column is the last column
+    ];
+
+    // Reorder the columns in each row of flattenedData
+    const reorderedData = flattenedData.map((row) => {
+      const reorderedRow: any = {};
+      columnOrder.forEach((column) => {
+        reorderedRow[column] = row[column];
+      });
+      return reorderedRow;
+    });
+
     // Create a worksheet
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(flattenedData);
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(reorderedData);
 
     // Create a workbook
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
@@ -918,7 +960,7 @@ export class ValidlistComponent implements OnInit {
 
     this.rearrangedData.forEach((item) => {
       const key = `${item.nom.toLowerCase()}_${item.prenom.toLowerCase()}_${
-        item.serial
+        item.num
       }`;
 
       if (uniqueAssures.has(key)) {
@@ -929,7 +971,7 @@ export class ValidlistComponent implements OnInit {
           (original) =>
             original.nom.toLowerCase() === item.nom.toLowerCase() &&
             original.prenom.toLowerCase() === item.prenom.toLowerCase() &&
-            original.serial === item.serial
+            original.num === item.num
         );
 
         if (originalItem) {
@@ -948,10 +990,10 @@ export class ValidlistComponent implements OnInit {
       // Sort the rearrangedData to bring duplicates near each other
       this.rearrangedData.sort((a, b) => {
         const keyA = `${a.nom.toLowerCase()}_${a.prenom.toLowerCase()}_${
-          a.serial
+          a.num
         }`;
         const keyB = `${b.nom.toLowerCase()}_${b.prenom.toLowerCase()}_${
-          b.serial
+          b.num
         }`;
 
         if (keyA < keyB) return -1;
@@ -963,19 +1005,63 @@ export class ValidlistComponent implements OnInit {
       this.cdr.detectChanges();
     }
   }
+
+  lookForDuplicateRibs(): void {
+    const uniqueRibs: Set<string> = new Set();
+    const duplicateRibs: listing[] = [];
+
+    this.rearrangedData.forEach((item) => {
+      const key = `${item.rib}`;
+
+      if (uniqueRibs.has(key)) {
+        duplicateRibs.push(item);
+
+        // Increase the issues count on both duplicates
+        const originalItem = this.rearrangedData.find(
+          (original) => original.rib === item.rib
+        );
+
+        if (originalItem) {
+          originalItem.issues = (originalItem.issues || 0) + 1;
+          originalItem.duplicateRIB = true; // Highlight the original item
+          item.issues = (item.issues || 0) + 1;
+          item.duplicateRIB = true; // Highlight the duplicate item
+          this.totalIssues++;
+        }
+      } else {
+        uniqueRibs.add(key);
+      }
+    });
+
+    if (duplicateRibs.length > 0) {
+      // Sort the rearrangedData to bring duplicates near each other
+      this.rearrangedData.sort((a, b) => {
+        const keyA = `${a.rib}`;
+        const keyB = `${b.rib}`;
+
+        if (keyA < keyB) return -1;
+        if (keyA > keyB) return 1;
+        return 0;
+      });
+
+      // Optionally, trigger change detection after making changes.
+      this.cdr.detectChanges();
+    }
+  }
+
   deleteDuplicates(): void {
-    const serialCounts: Map<number, number> = new Map();
+    const numCounts: Map<string, number> = new Map();
 
     // Count occurrences of each serial number
     this.rearrangedData.forEach((item) => {
-      const serial = item.serial;
-      serialCounts.set(serial, (serialCounts.get(serial) || 0) + 1);
+      const num = item.num;
+      numCounts.set(num, (numCounts.get(num) || 0) + 1);
     });
 
     // Filter out rows with more than one occurrence of serial number
     const filteredData = this.rearrangedData.filter((item) => {
-      const serialCount = serialCounts.get(item.serial) || 0;
-      return serialCount <= 1;
+      const numCount = numCounts.get(item.num) || 0;
+      return numCount <= 1;
     });
 
     // Update the data array with the filtered data
