@@ -28,6 +28,7 @@ router.post("/", async (req, res) => {
         obs_sin: dataInput.obs_sin,
         rib: dataInput.rib,
         statut: dataInput.statut || "1",
+        forced: dataInput.forced,
       };
 
       let query = "INSERT INTO decla_sin_temp SET ?";
@@ -130,7 +131,8 @@ router.get("/:id_contrat", async (req, res, next) => {
           decla_sin_temp.rib,
           decla_sin_temp.nbr_unit,
           decla_sin_temp.statut,
-          decla_sin_temp.forced
+          decla_sin_temp.forced,
+          decla_sin_temp.res_calcul
         FROM decla_sin_temp
         LEFT JOIN souscripteurs ON decla_sin_temp.id_souscript = souscripteurs.id_souscript
         LEFT JOIN contrats ON decla_sin_temp.id_contrat = contrats.id_contrat
@@ -188,6 +190,7 @@ router.get("/:id_sin/sin", async (req, res, next) => {
           decla_sin_temp.nbr_unit,
           decla_sin_temp.statut,
           decla_sin_temp.forced,
+          decla_sin_temp.res_calcul,
           (SELECT SUM(rbt_sin) FROM stored_sin WHERE id_adherent = decla_sin_temp.id_adherent) as conso_adh,
           fmp.id_couv_fmp,
           fmp.applied_on,
@@ -218,6 +221,7 @@ router.get("/:id_sin/sin", async (req, res, next) => {
 
     const responseData = results[0];
     const data = responseData[0];
+    const rbtSin = data.rbt_sin || 0;
     const fraisSin = data.frais_sin || 0;
     const consoAdh = data.conso_adh || 0;
 
@@ -257,8 +261,8 @@ router.get("/:id_sin/sin", async (req, res, next) => {
           // If forced is 1, return the actual result and stop there
           if (data.forced === 1) {
             resultStatusArray.push({
-              result: fraisSin,
-              status: "OK",
+              result: rbtSin,
+              status: "Forcé",
             });
           } else {
             // Check if conso_adh is greater than or equal to limit_plan
@@ -322,19 +326,21 @@ router.get("/:id_sin/sin", async (req, res, next) => {
         console.log(data.applied_on);
 
         const querySinTemp =
-          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp, SUM(nbr_unit) AS total_nbr_unit FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ? AND strd = 0";
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp, SUM(nbr_unit) AS total_nbr_unit FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ? AND strd = 0 AND rbt_sin !=0";
         const sinTempValues = [
           data.id_souscript,
           data.id_adherent,
           data.id_nomencl,
         ];
 
+        console.log(sinTempValues);
+
         const sinTempRows = await db.query(querySinTemp, sinTempValues);
         const totalRbtSinInSinTemp = sinTempRows[0][0].total_rbt_sin_temp || 0;
         const totalTempunit = sinTempRows[0][0].total_nbr_unit || 0;
 
         const queryStrdSin =
-          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd, SUM(nbr_unit) AS total_nbr_unit FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ?";
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd, SUM(nbr_unit) AS total_nbr_unit FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_nomencl = ? AND rbt_sin !=0";
 
         const strdSinValues = [
           data.id_souscript,
@@ -362,41 +368,63 @@ router.get("/:id_sin/sin", async (req, res, next) => {
 
         const nbr_unit = data.nbr_unit === null ? Infinity : data.nbr_unit;
 
-        if (totalUnits - nbr_unit >= nbr_of_unit) {
+        if (totalUnits >= nbr_of_unit) {
           console.log(" muhuhuh", totalUnits, nbr_unit, nbr_of_unit);
           finalResult.push({
             result: 0,
             status: "Limite d'unitées atteinte",
           });
         } else {
-          let unitRemains = Math.abs(nbr_unit - totalUnits); //resultat qui sera de 1 minimum vue qu'il a passé le 1er if
+          let unitRemains = Math.abs(nbr_of_unit - totalUnits); //resultat qui sera de 1 minimum vue qu'il a passé le 1er if
+
+          console.log("remains : ", unitRemains);
 
           let unitValueToUse = Math.min(unitRemains, nbr_unit);
 
+          console.log("unit to use : ", unitValueToUse);
+
           let totalUnitValue = unitValueToUse * unit_value;
 
-          calculatedRbt = Math.max(
-            0,
-            Math.min(
-              limit_plan,
+          if (Math.min(limit_gar - totalRbtSin) <= 0) {
+            finalResult.push({
+              result: 0,
+              status: "Plafond de garantie atteint",
+            });
+          } else {
+            calculatedRbt = Math.max(
+              0,
+              Math.min(
+                limit_plan,
+                totalUnitValue,
+                stp2Result,
+                limit_gar - totalRbtSin
+              )
+            );
+            console.log(
+              "there",
+              limit_gar,
               totalUnitValue,
               stp2Result,
               limit_gar - totalRbtSin
-            )
-          );
-          console.log("there", limit_gar, stp2Result);
+            );
 
-          // Push the result to finalResult
-          finalResult.push({
-            result: calculatedRbt,
-            status: "OK",
-          });
+            // Push the result to finalResult
+            finalResult.push({
+              result: calculatedRbt,
+              status: "OK",
+            });
+          }
         }
       } else if (data.applied_on === "Bénéficiaire") {
+        const InitRbtSIn =
+          "UPDATE decla_sin_temp SET rbt_sin = ? WHERE id_sin = ?";
+
+        await db.query(InitRbtSIn, [0, id_sin]);
+
         console.log(data.applied_on);
 
         const querySinTemp =
-          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_fam = ? AND id_nomencl = ? AND strd = 0";
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_temp, SUM(nbr_unit) AS total_nbr_unit FROM decla_sin_temp WHERE id_souscript = ? AND id_adherent = ? AND id_fam = ? AND id_nomencl = ? AND strd = 0 AND rbt_sin !=0";
         const sinTempValues = [
           data.id_souscript,
           data.id_adherent,
@@ -404,38 +432,91 @@ router.get("/:id_sin/sin", async (req, res, next) => {
           data.id_nomencl,
         ];
 
+        console.log(sinTempValues);
+
         const sinTempRows = await db.query(querySinTemp, sinTempValues);
         const totalRbtSinInSinTemp = sinTempRows[0][0].total_rbt_sin_temp || 0;
+        const totalTempunit = sinTempRows[0][0].total_nbr_unit || 0;
 
         const queryStrdSin =
-          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_fam = ? AND id_nomencl = ?";
+          "SELECT SUM(rbt_sin) AS total_rbt_sin_strd, SUM(nbr_unit) AS total_nbr_unit FROM stored_sin WHERE id_souscript = ? AND id_adherent = ? AND id_fam = ? AND id_nomencl = ? AND rbt_sin !=0";
+
         const strdSinValues = [
           data.id_souscript,
           data.id_adherent,
           data.id_fam,
           data.id_nomencl,
         ];
+
         const strdSinrows = await db.query(queryStrdSin, strdSinValues);
         const totalRbtSinInStrdSin = strdSinrows[0][0].total_rbt_sin_strd || 0;
-        console.log(strdSinrows);
-
-        console.log("resultat 1", totalRbtSinInSinTemp);
-        console.log("resultat 2", totalRbtSinInStrdSin);
+        const totalStrdUnit = strdSinrows[0][0].total_nbr_unit || 0;
 
         let totalRbtSin = totalRbtSinInSinTemp + totalRbtSinInStrdSin;
+        let totalUnits = Number(totalTempunit) + Number(totalStrdUnit);
 
-        calculatedRbt = Math.max(
-          0,
-          Math.min(data.limit_gar, stp2Result, data.limit_gar - totalRbtSin)
-        );
-        console.log(calculatedRbt);
+        const limit_plan =
+          data.limit_plan === null ? Infinity : data.limit_plan;
 
-        // Push the result to finalResult
-        finalResult.push({
-          result: totalRbtSin,
-          status: "OK",
-        });
+        const limit_gar = data.limit_gar === null ? Infinity : data.limit_gar;
+
+        const nbr_of_unit =
+          data.nbr_of_unit === null ? Infinity : data.nbr_of_unit;
+
+        const unit_value =
+          data.unit_value === null ? Infinity : data.unit_value;
+
+        const nbr_unit = data.nbr_unit === null ? Infinity : data.nbr_unit;
+
+        if (totalUnits >= nbr_of_unit) {
+          console.log(" muhuhuh", totalUnits, nbr_unit, nbr_of_unit);
+          finalResult.push({
+            result: 0,
+            status: "Limite d'unitées atteinte",
+          });
+        } else {
+          let unitRemains = Math.abs(nbr_of_unit - totalUnits); //resultat qui sera de 1 minimum vue qu'il a passé le 1er if
+
+          console.log("remains : ", unitRemains);
+
+          let unitValueToUse = Math.min(unitRemains, nbr_unit);
+
+          console.log("unit to use : ", unitValueToUse);
+
+          let totalUnitValue = unitValueToUse * unit_value;
+
+          if (Math.min(limit_gar - totalRbtSin) <= 0) {
+            finalResult.push({
+              result: 0,
+              status: "Plafond de garantie atteint",
+            });
+          } else {
+            calculatedRbt = Math.max(
+              0,
+              Math.min(
+                limit_plan,
+                totalUnitValue,
+                stp2Result,
+                limit_gar - totalRbtSin
+              )
+            );
+            console.log(
+              "there",
+              limit_gar,
+              totalUnitValue,
+              stp2Result,
+              limit_gar - totalRbtSin
+            );
+
+            // Push the result to finalResult
+            finalResult.push({
+              result: calculatedRbt,
+              status: "OK",
+            });
+          }
+        }
       } else {
+        //here
         finalResult.push({
           result: stp2Result,
           status: stp2status,
@@ -451,10 +532,12 @@ router.get("/:id_sin/sin", async (req, res, next) => {
     }
 
     try {
-      const rbtSin = finalResult[0].result; // Potential issue: accessing 'result' property of an array
+      const rbtSin = finalResult[0].result;
+      const status = finalResult[0].status;
+      console.log("statuuuuuus", status);
 
       const updateRbtSin =
-        "UPDATE decla_sin_temp SET rbt_sin = ? WHERE id_sin = ?";
+        "UPDATE decla_sin_temp SET rbt_sin = ?, res_calcul= ? WHERE id_sin = ?";
 
       // Ensure id_sin is defined and not null
       if (id_sin === undefined || id_sin === null) {
@@ -462,7 +545,7 @@ router.get("/:id_sin/sin", async (req, res, next) => {
       }
 
       // Update the record in the database
-      await db.query(updateRbtSin, [rbtSin, id_sin]);
+      await db.query(updateRbtSin, [rbtSin, status, id_sin]);
 
       // Once the update is successful, construct the response
 
@@ -505,57 +588,40 @@ router.put("/", async (req, res) => {
   }
 });
 
-/*
-router.get("/:id_souscript", async (req, res, next) => {
+//______________________________PUT______________________________________
+
+router.put("/:id_sin", async (req, res) => {
+  const id = req.params.id_sin;
+  const { frais_sin, rbt_sin, obs_sin, forced } = req.body;
+
+  console.log("the id :", id);
+
+  const updateQuery =
+    "UPDATE decla_sin_temp SET frais_sin = ?, rbt_sin = ?, obs_sin = ?, forced = ? WHERE id_sin = ?";
+
   try {
-    const { id_souscript } = req.params;
-    const selectQuery = `
-        SELECT
-        decla_sin_temp.id_sin,
-          decla_sin_temp.idx,
-          decla_sin_temp.id_souscript,
-          souscripteurs.nom_souscript,
-          decla_sin_temp.id_contrat,
-          contrats.num_contrat,
-          contrats.date_effet,
-          contrats.date_exp,
-          contrats.prime_total,
-          decla_sin_temp.id_opt,
-          options.num_opt,
-          options.limit_plan,
-          options.option_describ,
-          decla_sin_temp.id_adherent,
-          adherents.nom_adherent,
-          adherents.prenom_adherent,
-          decla_sin_temp.id_fam,
-          fam_adh.lien_benef,
-          fam_adh.nom_benef,
-          fam_adh.prenom_benef,
-          decla_sin_temp.date_sin,
-          decla_sin_temp.id_nomencl,
-          nomencl.code_garantie,
-          nomencl.garantie_describ,
-          decla_sin_temp.frais_sin,
-          decla_sin_temp.rbt_sin,
-          decla_sin_temp.obs_sin,
-          decla_sin_temp.rib,
-          decla_sin_temp.statut
-        FROM decla_sin_temp
-        LEFT JOIN souscripteurs ON decla_sin_temp.id_souscript = souscripteurs.id_souscript
-        LEFT JOIN contrats ON decla_sin_temp.id_contrat = contrats.id_contrat
-        LEFT JOIN options ON decla_sin_temp.id_opt = options.id_opt
-        LEFT JOIN adherents ON decla_sin_temp.id_adherent = adherents.id_adherent
-        LEFT JOIN fam_adh ON decla_sin_temp.id_fam = fam_adh.id_fam
-        LEFT JOIN nomencl ON decla_sin_temp.id_nomencl = nomencl.id_nomencl
-        WHERE decla_sin_temp.id_souscript = ?
-      `;
-
-    const results = await db.query(selectQuery, [id_souscript]);
-
-    res.status(200).json(results[0]);
-  } catch (error) {
-    next(error); // Pass the error to the error handler middleware
+    await db.query(updateQuery, [frais_sin, rbt_sin, obs_sin, forced, id]);
+    res.status(200).json({ message: "Déclaration mise à jour !" });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "An error occurred while updating the declaration." });
   }
-});*/
+});
+
+//________________________________DELETE___________________________________
+
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  const deleteQuery = "DELETE FROM decla_sin_temp WHERE id_sin = ?";
+
+  try {
+    await db.query(deleteQuery, [id]);
+    res.status(200).json({ message: "Déclaration supprimée !" });
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

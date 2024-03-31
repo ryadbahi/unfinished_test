@@ -22,7 +22,7 @@
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   justify-content: space-between;
   border-radius: 10px !important;
-  margin: 2rem 4rem 4rem 4rem;
+  margin: 2rem 4rem 1.5rem 4rem;
   width: auto;
   table-layout: auto;
   white-space: normal;
@@ -118,4 +118,31 @@
   cursor: pointer;
   height: 1.4rem;
   width: 1.1rem;
+}
+::ng-deep.mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked:not(.mat-disabled)
+  .mdc-switch__shadow {
+  background-color: rgb(233, 147, 98);
+}
+
+::ng-deep.mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked:not(.mat-disabled)
+  .mdc-switch__track::after {
+  background-color: rgb(156, 140, 229) !important;
+}
+.Card {
+  background-color: hwb(0 100% 0% / 0.6);
+}
+::ng-deep.mat-mdc-tab-group.mat-mdc-tab-group-stretch-tabs
+  > .mat-mdc-tab-header
+  .mat-mdc-tab {
+  background-color: rgba(240, 248, 255, 0.301);
+  box-shadow: #3d3b3b;
+}
+::ng-deep.mat-mdc-tab-header {
+  border-radius: 10px;
+  align-self: center;
+  margin: 0.5rem 0 0.5rem 0;
+}
+.histoDisplayBtn,
+.tables {
+  margin: 0.5rem 1rem 0.5rem 1rem;
 }

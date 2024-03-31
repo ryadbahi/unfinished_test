@@ -71,6 +71,10 @@
     </div>
   </mat-toolbar>
 </div>
+
+<!--___________________________________________________________________________________________________________________-->
+<!--_____________________________________________________FORMULAIRE____________________________________________________-->
+<!--___________________________________________________________________________________________________________________-->
 <div>
   <mat-toolbar class="declaTB">
     <div class="buttons">
@@ -221,9 +225,9 @@
           <input formControlName="obs_sin" matInput placeholder="Observ." />
         </mat-form-field>
 
-        <mat-form-field style="width: 6rem">
-          <input formControlName="statut" matInput placeholder="Statut" />
-        </mat-form-field>
+        <mat-slide-toggle formControlName="forced" style="margin-left: 1rem">
+          Forcer ?
+        </mat-slide-toggle>
       </form>
     </div>
 
@@ -234,134 +238,784 @@
     </div>
   </mat-toolbar>
 </div>
-
-<div style="border-radius: 10px; overflow: hidden">
-  <table mat-table [dataSource]="dataSource">
-    <ng-container matColumnDef="idx">
-      <th mat-header-cell *matHeaderCellDef>N°</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.idx }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="num_opt">
-      <th mat-header-cell *matHeaderCellDef>Option</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.num_opt }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="nom_adherent">
-      <th mat-header-cell *matHeaderCellDef>Nom</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.nom_adherent }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="prenom_adherent">
-      <th mat-header-cell *matHeaderCellDef>Prénom</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.prenom_adherent }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="lien_benef">
-      <th mat-header-cell *matHeaderCellDef>Lien</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.lien_benef }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="prenom_benef">
-      <th mat-header-cell *matHeaderCellDef>Prenom bénéf.</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.prenom_benef }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="date_sin">
-      <th mat-header-cell *matHeaderCellDef>Date de sin.</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.date_sin | date : "dd/MM/yyyy" }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="garantie_describ">
-      <th mat-header-cell *matHeaderCellDef>Acte</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.code_garantie }} : {{ element.garantie_describ }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="frais_sin">
-      <th mat-header-cell *matHeaderCellDef>Frais</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.frais_sin | number : "1.2-2" }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="rbt_sin">
-      <th mat-header-cell *matHeaderCellDef>Remb.</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.rbt_sin | number : "1.2-2" }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="obs_sin">
-      <th mat-header-cell *matHeaderCellDef>Obs.</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.obs_sin }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="rib">
-      <th mat-header-cell *matHeaderCellDef>RIB</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.rib }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="statut">
-      <th mat-header-cell *matHeaderCellDef>Forced ?</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.statut }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="calculate">
-      <th mat-header-cell *matHeaderCellDef>Calculer</th>
-      <td mat-cell *matCellDef="let element">
-        <mat-icon style="cursor: pointer" (click)="getTempSinbyIdSin(element)"
-          >play_for_work</mat-icon
+<!--___________________________________________________________________________________________________________________-->
+<!--________________________________________________TABLE______________________________________________________________-->
+<!--___________________________________________________________________________________________________________________-->
+<mat-card class="Card" dynamic>
+  <mat-tab-group dynamicHeight>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span
+          style="width: 15rem"
+          matBadge="{{ acceptedData.data.length + rejectedData.data.length }}"
+          matBadgeOverlap="false"
+          matBadgeColor="warn"
         >
-      </td>
-    </ng-container>
+          TRAITEMENT
+        </span>
+      </ng-template>
+      <mat-tab-group dynamicHeight
+        ><mat-tab>
+          <ng-template mat-tab-label>
+            <span
+              matBadge="{{ acceptedData.data.length }}"
+              matBadgeOverlap="false"
+              matBadgeColor="primary"
+              >Accepté</span
+            >
+          </ng-template>
+          <div style="border-radius: 10px; overflow: hidden" class="tables">
+            <table mat-table [dataSource]="acceptedData">
+              <ng-container matColumnDef="idx">
+                <th mat-header-cell *matHeaderCellDef>N°</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.idx }}
+                </td>
+              </ng-container>
 
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Édit/Suppr.</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.actions }}
-      </td>
-    </ng-container>
+              <ng-container matColumnDef="num_opt">
+                <th mat-header-cell *matHeaderCellDef>Option</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.num_opt }}
+                </td>
+              </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-  </table>
-</div>
-<div style="height: 5rem">
-  <button
-    mat-raised-button
-    (click)="submitStrSin()"
-    style="
-      background-color: green;
-      color: aliceblue;
-      border-radius: 20px;
-      width: 100px;
-      height: 35px;
-      margin-top: 2rem;
-      float: right;
-    "
-  >
-    Valider
-  </button>
-</div>
+              <ng-container matColumnDef="nom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Nom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.nom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Prénom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lien_benef">
+                <th mat-header-cell *matHeaderCellDef>Lien</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.lien_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_benef">
+                <th mat-header-cell *matHeaderCellDef>Prenom bénéf.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="date_sin">
+                <th mat-header-cell *matHeaderCellDef>Date de sin.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.date_sin | date : "dd/MM/yyyy" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="garantie_describ">
+                <th mat-header-cell *matHeaderCellDef>Acte</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.code_garantie }} : {{ element.garantie_describ }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="frais_sin">
+                <th mat-header-cell *matHeaderCellDef>Frais</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.frais_sin | number : "1.2-2" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rbt_sin">
+                <th mat-header-cell *matHeaderCellDef>Remb.</th>
+                <td mat-cell *matCellDef="let element">
+                  <div *ngIf="element.isEdit">
+                    <input
+                      mat-input
+                      type="number"
+                      [(ngModel)]="element.rbt_sin"
+                    />
+                  </div>
+
+                  <div *ngIf="!element.isEdit">
+                    {{ element.rbt_sin | number : "1.2-2" }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="res_calcul">
+                <th mat-header-cell *matHeaderCellDef>État</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.res_calcul }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="obs_sin">
+                <th mat-header-cell *matHeaderCellDef>Obs.</th>
+                <td mat-cell *matCellDef="let element">
+                  <div *ngIf="element.isEdit">
+                    <input mat-input [(ngModel)]="element.obs_sin" />
+                  </div>
+
+                  <div *ngIf="!element.isEdit">
+                    {{ element.obs_sin }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rib">
+                <th mat-header-cell *matHeaderCellDef>RIB</th>
+                <td mat-cell *matCellDef="let element">
+                  <span
+                    [ngStyle]="{
+                      color:
+                        ribVerify(element) === 'OK'
+                          ? 'green'
+                          : ribVerify(element) === 'NOT OK'
+                          ? 'red'
+                          : 'black'
+                    }"
+                    [matTooltip]="element.rib + ' =>' + element.calculkey"
+                  >
+                    {{ ribVerify(element) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="forced">
+                <th mat-header-cell *matHeaderCellDef>Forcer</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-slide-toggle
+                    (click)="!element.isEdit ? showMessage() : null"
+                    [(ngModel)]="element.forced"
+                    [disabled]="!element.isEdit"
+                  ></mat-slide-toggle>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="calculate">
+                <th mat-header-cell *matHeaderCellDef>Calculer / Copier</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-icon
+                    style="cursor: pointer; color: #5666e1; margin-right: 1rem"
+                    (click)="getTempSinbyIdSin(element)"
+                    fontIcon="calculate"
+                  ></mat-icon>
+                  <mat-icon
+                    fontIcon="file_copy"
+                    (click)="replicateData(element)"
+                    style="cursor: pointer; color: #9c27b07a"
+                  ></mat-icon>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Édit/Suppr.</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-icon
+                    *ngIf="!element.isEdit"
+                    (click)="strtEditDecla(element)"
+                    style="color: #348bfd; cursor: pointer"
+                    >edit</mat-icon
+                  >
+                  <mat-icon
+                    *ngIf="!element.isEdit"
+                    (click)="deleteDeclaTemp(element)"
+                    color="warn"
+                    style="cursor: pointer"
+                    >delete</mat-icon
+                  >
+
+                  <mat-icon
+                    *ngIf="element.isEdit"
+                    (click)="updateDeclaTemp(element)"
+                    >check</mat-icon
+                  >
+                  <mat-icon
+                    *ngIf="element.isEdit"
+                    (click)="cancelEdit(element)"
+                    color="primary"
+                    style="cursor: pointer"
+                    >close</mat-icon
+                  >
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            </table>
+          </div>
+        </mat-tab>
+        <!--___________________________________________________________________________________________________________________-->
+        <!--____________________________________________TABLE REJETS___________________________________________________________-->
+        <!--___________________________________________________________________________________________________________________-->
+
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span
+              matBadge="{{ rejectedData.data.length }}"
+              matBadgeOverlap="false"
+              matBadgeColor="warn"
+              >Rejets</span
+            >
+          </ng-template>
+          <div style="border-radius: 10px; overflow: hidden" class="tables">
+            <table mat-table [dataSource]="rejectedData">
+              <ng-container matColumnDef="idx">
+                <th mat-header-cell *matHeaderCellDef>N°</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.idx }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="num_opt">
+                <th mat-header-cell *matHeaderCellDef>Option</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.num_opt }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="nom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Nom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.nom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Prénom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lien_benef">
+                <th mat-header-cell *matHeaderCellDef>Lien</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.lien_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_benef">
+                <th mat-header-cell *matHeaderCellDef>Prenom bénéf.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="date_sin">
+                <th mat-header-cell *matHeaderCellDef>Date de sin.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.date_sin | date : "dd/MM/yyyy" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="garantie_describ">
+                <th mat-header-cell *matHeaderCellDef>Acte</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.code_garantie }} : {{ element.garantie_describ }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="frais_sin">
+                <th mat-header-cell *matHeaderCellDef>Frais</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.frais_sin | number : "1.2-2" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rbt_sin">
+                <th mat-header-cell *matHeaderCellDef>Remb.</th>
+                <td mat-cell *matCellDef="let element">
+                  <div *ngIf="element.isEdit">
+                    <input
+                      mat-input
+                      type="number"
+                      [(ngModel)]="element.rbt_sin"
+                    />
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="res_calcul">
+                <th mat-header-cell *matHeaderCellDef>État</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.res_calcul }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="obs_sin">
+                <th mat-header-cell *matHeaderCellDef>Obs.</th>
+                <td mat-cell *matCellDef="let element">
+                  <div *ngIf="element.isEdit">
+                    <input mat-input [(ngModel)]="element.obs_sin" />
+                  </div>
+
+                  <div *ngIf="!element.isEdit">
+                    {{ element.obs_sin }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rib">
+                <th mat-header-cell *matHeaderCellDef>RIB</th>
+                <td mat-cell *matCellDef="let element">
+                  <span
+                    [ngStyle]="{
+                      color:
+                        ribVerify(element) === 'OK'
+                          ? 'green'
+                          : ribVerify(element) === 'NOT OK'
+                          ? 'red'
+                          : 'black'
+                    }"
+                    [matTooltip]="element.rib + ' =>' + element.calculkey"
+                  >
+                    {{ ribVerify(element) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="forced">
+                <th mat-header-cell *matHeaderCellDef>Forcer</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-slide-toggle
+                    (click)="!element.isEdit ? showMessage() : null"
+                    [(ngModel)]="element.forced"
+                    [disabled]="!element.isEdit"
+                  ></mat-slide-toggle>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="calculate">
+                <th mat-header-cell *matHeaderCellDef>Calculer / Copier</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-icon
+                    style="cursor: pointer; color: #5666e1; margin-right: 1rem"
+                    (click)="getTempSinbyIdSin(element)"
+                    fontIcon="calculate"
+                  ></mat-icon>
+                  <mat-icon
+                    fontIcon="file_copy"
+                    (click)="replicateData(element)"
+                    style="cursor: pointer; color: #9c27b07a"
+                  ></mat-icon>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Édit/Suppr.</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-icon
+                    *ngIf="!element.isEdit"
+                    (click)="strtEditDecla(element)"
+                    style="color: #348bfd; cursor: pointer"
+                    >edit</mat-icon
+                  >
+                  <mat-icon
+                    *ngIf="!element.isEdit"
+                    (click)="deleteDeclaTemp(element)"
+                    color="warn"
+                    style="cursor: pointer"
+                    >delete</mat-icon
+                  >
+
+                  <mat-icon
+                    *ngIf="element.isEdit"
+                    (click)="updateDeclaTemp(element)"
+                    >check</mat-icon
+                  >
+                  <mat-icon
+                    *ngIf="element.isEdit"
+                    (click)="cancelEdit(element)"
+                    color="primary"
+                    style="cursor: pointer"
+                    >close</mat-icon
+                  >
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedRejetsColumns"></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: displayedRejetsColumns"
+              ></tr>
+            </table>
+          </div> </mat-tab
+      ></mat-tab-group>
+      <div style="height: 5rem">
+        <button
+          mat-raised-button
+          (click)="submitStrSin()"
+          style="
+            background-color: green;
+            color: aliceblue;
+            border-radius: 20px;
+            width: 100px;
+            height: 35px;
+            margin: 1.5rem 1rem 0 0;
+            float: right;
+          "
+        >
+          Valider
+        </button>
+      </div></mat-tab
+    >
+    <!--_______________________________________________________________________________________________________________________________________-->
+    <!--________________________________________________________________HISTORIQUE_____________________________________________________________-->
+    <!--_______________________________________________________________________________________________________________________________________-->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span
+          style="width: 15rem"
+          matBadge="{{
+            histoAcceptedData.data.length + histoRejectedData.data.length
+          }}"
+          matBadgeOverlap="false"
+          matBadgeColor="primary"
+          >Historique</span
+        > </ng-template
+      ><mat-tab-group
+        ><mat-tab>
+          <ng-template mat-tab-label>
+            <span
+              matBadge="{{ histoAcceptedData.data.length }}"
+              matBadgeOverlap="false"
+              matBadgeColor="primary"
+              >Accepté</span
+            >
+          </ng-template>
+
+          <div>
+            <button
+              class="histoDisplayBtn"
+              mat-raised-button
+              (click)="
+                selectedIdContrat &&
+                  getHistoValidSinbyIdContrat(selectedIdContrat);
+                selectedIdContrat &&
+                  getHistoRjectSinbyIdContrat(selectedIdContrat)
+              "
+            >
+              Afficher
+            </button>
+          </div>
+          <div style="border-radius: 10px; overflow: hidden" class="tables">
+            <table mat-table [dataSource]="histoAcceptedData">
+              <ng-container matColumnDef="idx">
+                <th mat-header-cell *matHeaderCellDef>N°</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.idx }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="num_opt">
+                <th mat-header-cell *matHeaderCellDef>Option</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.num_opt }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="nom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Nom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.nom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Prénom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lien_benef">
+                <th mat-header-cell *matHeaderCellDef>Lien</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.lien_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_benef">
+                <th mat-header-cell *matHeaderCellDef>Prenom bénéf.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="date_sin">
+                <th mat-header-cell *matHeaderCellDef>Date de sin.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.date_sin | date : "dd/MM/yyyy" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="garantie_describ">
+                <th mat-header-cell *matHeaderCellDef>Acte</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.code_garantie }} : {{ element.garantie_describ }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="frais_sin">
+                <th mat-header-cell *matHeaderCellDef>Frais</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.frais_sin | number : "1.2-2" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rbt_sin">
+                <th mat-header-cell *matHeaderCellDef>Remb.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.rbt_sin | number : "1.2-2" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="res_calcul">
+                <th mat-header-cell *matHeaderCellDef>État</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.res_calcul }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="obs_sin">
+                <th mat-header-cell *matHeaderCellDef>Obs.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.obs_sin }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rib">
+                <th mat-header-cell *matHeaderCellDef>RIB</th>
+                <td mat-cell *matCellDef="let element">
+                  <span
+                    [ngStyle]="{
+                      color:
+                        ribVerify(element) === 'OK'
+                          ? 'green'
+                          : ribVerify(element) === 'NOT OK'
+                          ? 'red'
+                          : 'black'
+                    }"
+                    [matTooltip]="element.rib + ' =>' + element.calculkey"
+                  >
+                    {{ ribVerify(element) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="forced">
+                <th mat-header-cell *matHeaderCellDef>Forcé</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-slide-toggle
+                    [(ngModel)]="element.forced"
+                    [disabled]="true"
+                  ></mat-slide-toggle>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="calculate">
+                <th mat-header-cell *matHeaderCellDef>Copier</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-icon
+                    fontIcon="file_copy"
+                    (click)="replicateData(element)"
+                    style="cursor: pointer; color: #9c27b07a"
+                  ></mat-icon>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ref_dpt">
+                <th mat-header-cell *matHeaderCellDef>Ref. dépôt</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.ref_dpt }}
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="histoDisplayedColumns"></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: histoDisplayedColumns"
+              ></tr>
+            </table>
+            <mat-paginator
+              [length]="histoAcceptedData.data.length"
+              [page]="1"
+              [pageSizeOptions]="[15, 30, 100]"
+              fxLayoutGap="10px"
+              showFirstLastButtons
+            ></mat-paginator></div
+        ></mat-tab>
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span
+              matBadge="{{ histoRejectedData.data.length }}"
+              matBadgeOverlap="false"
+              matBadgeColor="warn"
+              >Rejets</span
+            >
+          </ng-template>
+
+          <div>
+            <button
+              class="histoDisplayBtn"
+              mat-raised-button
+              (click)="
+                selectedIdContrat &&
+                  getHistoValidSinbyIdContrat(selectedIdContrat);
+                selectedIdContrat &&
+                  getHistoRjectSinbyIdContrat(selectedIdContrat)
+              "
+            >
+              Afficher
+            </button>
+          </div>
+          <div style="border-radius: 10px; overflow: hidden" class="tables">
+            <table mat-table [dataSource]="histoRejectedData">
+              <ng-container matColumnDef="idx">
+                <th mat-header-cell *matHeaderCellDef>N°</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.idx }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="num_opt">
+                <th mat-header-cell *matHeaderCellDef>Option</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.num_opt }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="nom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Nom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.nom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_adherent">
+                <th mat-header-cell *matHeaderCellDef>Prénom</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_adherent }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lien_benef">
+                <th mat-header-cell *matHeaderCellDef>Lien</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.lien_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="prenom_benef">
+                <th mat-header-cell *matHeaderCellDef>Prenom bénéf.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.prenom_benef }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="date_sin">
+                <th mat-header-cell *matHeaderCellDef>Date de sin.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.date_sin | date : "dd/MM/yyyy" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="garantie_describ">
+                <th mat-header-cell *matHeaderCellDef>Acte</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.code_garantie }} : {{ element.garantie_describ }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="frais_sin">
+                <th mat-header-cell *matHeaderCellDef>Frais</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.frais_sin | number : "1.2-2" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="res_calcul">
+                <th mat-header-cell *matHeaderCellDef>État</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.res_calcul }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="obs_sin">
+                <th mat-header-cell *matHeaderCellDef>Obs.</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.obs_sin }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rib">
+                <th mat-header-cell *matHeaderCellDef>RIB</th>
+                <td mat-cell *matCellDef="let element">
+                  <span
+                    [ngStyle]="{
+                      color:
+                        ribVerify(element) === 'OK'
+                          ? 'green'
+                          : ribVerify(element) === 'NOT OK'
+                          ? 'red'
+                          : 'black'
+                    }"
+                    [matTooltip]="element.rib + ' =>' + element.calculkey"
+                  >
+                    {{ ribVerify(element) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="forced">
+                <th mat-header-cell *matHeaderCellDef>Forcé</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-slide-toggle
+                    [disabled]="true"
+                    [(ngModel)]="element.forced"
+                  ></mat-slide-toggle>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="calculate">
+                <th mat-header-cell *matHeaderCellDef>Copier</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-icon
+                    fontIcon="file_copy"
+                    (click)="replicateData(element)"
+                    style="cursor: pointer; color: #9c27b07a"
+                  ></mat-icon>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ref_dpt">
+                <th mat-header-cell *matHeaderCellDef>Ref. dépôt</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.ref_dpt }}
+                </td>
+              </ng-container>
+
+              <tr
+                mat-header-row
+                *matHeaderRowDef="histoRejetsDisplayedColumns"
+              ></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: histoRejetsDisplayedColumns"
+              ></tr>
+            </table>
+            <mat-paginator
+              [length]="histoRejectedData.data.length"
+              [page]="1"
+              [pageSizeOptions]="[15, 30, 100]"
+              fxLayoutGap="10px"
+              showFirstLastButtons
+            ></mat-paginator></div></mat-tab></mat-tab-group
+    ></mat-tab>
+  </mat-tab-group>
+</mat-card>

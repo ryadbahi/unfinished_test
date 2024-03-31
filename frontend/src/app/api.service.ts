@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Subject, from, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -8,13 +8,9 @@ import {
   MreportsData,
 } from './pages/mailreports/MailreportsComponent';
 import { AdherentData } from './pages/adherents/adherents.component';
-import {
-  ParaphOv,
-  ParaphTitles,
-  paraphDetail,
-} from './pages/paraph/histo-paraph/histo-paraph.component';
-import { SouscripData } from './pages/contrat/contrat.component';
-import { OnSameUrlNavigation } from '@angular/router';
+import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
+
+import { DptSin } from './pages/sinistres/sinistres.component';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -61,6 +57,11 @@ export interface MailreportsResponse {
   data: MreportsData[];
   total: number;
   averageDuration: string;
+}
+
+export interface DptSinReponse {
+  data: DptSin[];
+  histoRejectedLength: number;
 }
 
 export interface AdherentResponse {
@@ -472,11 +473,54 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/decla_sin_temp/${id_sin}/sin`);
   }
 
+  getHistoValidSinbyIdContrat(
+    id_contrat: number,
+    page: number,
+    pageSize: number,
+    search: string = ''
+  ): Observable<DptSin[]> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('pageSize', String(pageSize))
+      .set('search', search);
+
+    return this.http.get<DptSin[]>(
+      `${this.apiUrl}/stored_sin/${id_contrat}/stored/accepted`,
+      { params }
+    );
+  }
+  getHistoRejectSinbyIdContrat(
+    id_contrat: number,
+    page: number,
+    pageSize: number,
+    search: string = ''
+  ): Observable<DptSinReponse> {
+    const encodedSearch = encodeURIComponent(search);
+    const url = `${this.apiUrl}/stored_sin/${id_contrat}/stored/rejected?page=${page}&pageSize=${pageSize}&search=${encodedSearch}`;
+    return this.http.get<DptSinReponse>(url).pipe(
+      catchError((error: any) => {
+        console.error(
+          'An error occurred while fetching filtered mailreports data:',
+          error
+        );
+        throw new Error('Failed to fetch filtered mailreports data.');
+      })
+    );
+  }
+
   putSaveDeclaTemp(ids: number[], strd: number) {
     return this.http.put(`${this.apiUrl}/decla_sin_temp`, {
       id_sins: ids,
       strd,
     });
+  }
+
+  deleteIDSinTemp(id: number) {
+    return this.http.delete(`${this.apiUrl}/decla_sin_temp/${id}`);
+  }
+
+  updateDeclaSinTemp(id: number, data: any) {
+    return this.http.put(`${this.apiUrl}/decla_sin_temp/${id}`, data);
   }
 
   //______________________STORED SINISTRE_________________________________

@@ -16,9 +16,13 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import {
+  MatFormFieldControl,
+  MatFormFieldModule,
+} from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 
 import {
   MatSelect,
@@ -30,7 +34,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { ApiService } from '../../api.service';
+import { ApiService, DptSinReponse } from '../../api.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Contrat, SouscripData } from '../contrat/contrat.component';
 import {
@@ -44,6 +48,12 @@ import { fam_adhData } from '../adherents/adherents.component';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { SnackBarService } from '../../snack-bar.service';
+
+import { RibVerifierService } from '../../rib-verifier.service';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatCardModule } from '@angular/material/card';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 
 export interface CrtNomencl {
   id_couv_fmp: number;
@@ -100,7 +110,12 @@ export interface DptSin {
   nbr_unit?: number;
   obs_sin?: string;
   rib?: string;
+  isRibOk?: boolean;
+  calculkey?: string;
   statut?: boolean;
+  res_calcul: string;
+  forced?: boolean;
+  isEdit?: boolean;
   ref_dpt?: string;
 }
 
@@ -125,6 +140,11 @@ export interface DptSin {
     DatePipe,
     MatProgressSpinnerModule,
     NgxMatSelectSearchModule,
+    MatSlideToggleModule,
+    MatTabsModule,
+    MatCardModule,
+    MatBadgeModule,
+    MatPaginatorModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './sinistres.component.html',
@@ -168,6 +188,7 @@ export interface DptSin {
   ],
 })
 export class SinistresComponent implements OnInit {
+  forced: boolean = false;
   fmpFilterCtrl = new FormControl();
   contratFilterCtrl = new FormControl();
   adherentFilterCtrl = new FormControl();
@@ -191,6 +212,17 @@ export class SinistresComponent implements OnInit {
   dptsinForm!: FormGroup;
   nomenclatureList: any[] = [];
   dataSource = new MatTableDataSource<DptSin>();
+  acceptedDataSource = new MatTableDataSource<DptSin>();
+  rejectedDatasource = new MatTableDataSource<DptSin>();
+  acceptedData = new MatTableDataSource<DptSin>();
+  rejectedData = new MatTableDataSource<DptSin>();
+
+  histoDataSource = new MatTableDataSource<DptSin>();
+  histoAcceptedDataSource = new MatTableDataSource<DptSin>();
+  histoRejectedDatasource = new MatTableDataSource<DptSin>();
+  histoAcceptedData = new MatTableDataSource<DptSin>();
+  histoRejectedData = new MatTableDataSource<DptSin>();
+
   rowDataSource = new MatTableDataSource<DptSin>();
   adhDataSource!: MatTableDataSource<SinAdhData>;
   fam_AdhDatasource!: MatTableDataSource<fam_adhData>;
@@ -198,7 +230,7 @@ export class SinistresComponent implements OnInit {
   adh_Data: SinAdhData[] = [];
   fam_Data: fam_adhData[] = [];
   selectedValue: any;
-
+  oldValue!: any;
   displayedColumns: string[] = [
     'idx',
     'num_opt',
@@ -212,16 +244,91 @@ export class SinistresComponent implements OnInit {
     'rbt_sin',
     'obs_sin',
     'rib',
-    'statut',
     'calculate',
+    'res_calcul',
     'actions',
+    'forced',
   ];
+
+  displayedRejetsColumns: string[] = [
+    'idx',
+    'num_opt',
+    'nom_adherent',
+    'prenom_adherent',
+    'lien_benef',
+    'prenom_benef',
+    'date_sin',
+    'garantie_describ',
+    'frais_sin',
+    'rbt_sin',
+    'obs_sin',
+    'rib',
+    'calculate',
+    'res_calcul',
+    'actions',
+    'forced',
+  ];
+
+  histoDisplayedColumns: string[] = [
+    'idx',
+    'num_opt',
+    'nom_adherent',
+    'prenom_adherent',
+    'lien_benef',
+    'prenom_benef',
+    'date_sin',
+    'garantie_describ',
+    'frais_sin',
+    'rbt_sin',
+    'res_calcul',
+    'obs_sin',
+    'rib',
+    'calculate',
+    'forced',
+    'ref_dpt',
+  ];
+
+  histoRejetsDisplayedColumns: string[] = [
+    'idx',
+    'num_opt',
+    'nom_adherent',
+    'prenom_adherent',
+    'lien_benef',
+    'prenom_benef',
+    'date_sin',
+    'garantie_describ',
+    'frais_sin',
+    'res_calcul',
+    'obs_sin',
+    'rib',
+    'calculate',
+    'forced',
+    'ref_dpt',
+  ];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  page: number = 1;
+  pageSize: number = 15;
+  search: string = '';
+  histoRejectedLength!: number;
+
+  ngAfterViewInit() {
+    this.paginator.page.subscribe((pageEvent) => {
+      this.page = pageEvent.pageIndex + 1;
+      this.pageSize = pageEvent.pageSize;
+      // Now you can use this.page and this.pageSize to fill your query
+      console.log('paaage: ', this.page);
+    });
+  }
 
   constructor(
     private formBuilder: FormBuilder,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
-    private snackBar: SnackBarService
+    private snackBar: SnackBarService,
+    private datePipe: DatePipe,
+    private ribVerif: RibVerifierService
   ) {}
 
   @ViewChild('matRef1') matRef1!: MatSelect;
@@ -234,6 +341,8 @@ export class SinistresComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log(this.pageSize);
+
     this.dptsinForm = this.formBuilder.group({
       id_souscript: ['', Validators.required],
       idx: [''],
@@ -264,8 +373,13 @@ export class SinistresComponent implements OnInit {
       obs_sin: [''],
       rib: [''],
       statut: [''],
+      forced: '',
     });
     this.updateindex();
+
+    this.dptsinForm.patchValue({
+      forced: this.forced,
+    });
 
     if (this.dptsinForm && this.dptsinForm.get('date_sin')) {
       this.dptsinForm.get('date_sin')?.valueChanges.subscribe((value) => {
@@ -289,6 +403,10 @@ export class SinistresComponent implements OnInit {
     });
   }
 
+  showMessage() {
+    alert("Pour modifier il faut d'abord cliquer sur éditer");
+  }
+
   updateContratForm() {
     if (this.selectedIdSous) {
       const data = this.selectedContrat;
@@ -300,6 +418,7 @@ export class SinistresComponent implements OnInit {
         date_exp: data?.date_exp,
         nom_souscript: data?.nom_souscript,
         //limit_plan : data?.limit_plan,
+        forced: this.forced,
       });
       this.updateindex();
     }
@@ -468,7 +587,7 @@ export class SinistresComponent implements OnInit {
     }
   }
 
-  onContratSelectionChange(event: MatSelectChange) {
+  async onContratSelectionChange(event: MatSelectChange) {
     const selectedId = event.value;
 
     this.selectedContrat = this.contrat_data.find(
@@ -477,14 +596,15 @@ export class SinistresComponent implements OnInit {
 
     if (this.selectedContrat) {
       this.selectedIdContrat = this.selectedContrat.id_contrat;
-      this.getTempSinbyIdContrat(this.selectedIdContrat);
+      await this.getTempSinbyIdContrat(this.selectedIdContrat);
+
       this.selectedIdSous = this.selectedContrat.id_souscript;
 
       this.resetForm();
 
       this.clearAdhData();
 
-      this.getadhbysousid(this.selectedIdSous);
+      await this.getadhbysousid(this.selectedIdSous);
 
       this.updateContratForm();
     } else {
@@ -540,24 +660,127 @@ export class SinistresComponent implements OnInit {
     }
   }
 
-  getTempSinbyIdContrat(id_contrat: number) {
-    this.apiService.getTempSinByContrat(id_contrat).subscribe({
-      next: (data) => {
-        // Map the data to include the index
-        this.dataSource.data = data.map((item: DptSin, index: number) => {
-          return {
-            ...item, // Spread the properties of the item
-            idx: index + 1, // Fill the idx field with the index (plus one for 1-indexing)
-          };
-        });
-        console.log(id_contrat);
-        console.log('temp Sin retreived', this.dataSource.data);
-      },
-      error: (error) => {
-        console.error('Error fetching temp sin:', error);
-      },
+  getTempSinbyIdContrat(id_contrat: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.apiService.getTempSinByContrat(id_contrat).subscribe({
+        next: (data) => {
+          // Map the data to include the index
+          this.dataSource.data = data.map((item: DptSin, index: number) => {
+            return { ...item, idx: index + 1 };
+          });
+          this.rejectedDatasource.data = this.dataSource.data.filter(
+            (item) => item.rbt_sin === 0
+          );
+          this.acceptedDataSource.data = this.dataSource.data.filter(
+            (item) => item.rbt_sin !== 0
+          );
+
+          this.acceptedData.data = this.acceptedDataSource.data.map(
+            (item: DptSin, index: number) => {
+              return {
+                ...item,
+                idx: index + 1,
+              };
+            }
+          );
+          this.rejectedData.data = this.rejectedDatasource.data.map(
+            (item: DptSin, index: number) => {
+              return {
+                ...item,
+                idx: index + 1,
+              };
+            }
+          );
+          console.log(this.rejectedDatasource.data);
+          resolve();
+        },
+
+        error: (error) => {
+          console.error('Error fetching temp sin:', error);
+          reject(error);
+        },
+      });
     });
   }
+
+  getHistoValidSinbyIdContrat(id_contrat: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.apiService
+        .getHistoValidSinbyIdContrat(
+          id_contrat,
+          this.page,
+          this.pageSize,
+          this.search
+        )
+        .subscribe({
+          next: (data) => {
+            // Map the data to include the index
+            this.histoAcceptedData.data = data.map(
+              (item: DptSin, index: number) => {
+                return {
+                  ...item,
+                  idx: index + 1,
+                };
+              }
+            );
+            resolve();
+          },
+          error: (error) => {
+            console.error('Error fetching temp sin:', error);
+            reject(error);
+          },
+        });
+    });
+  }
+
+  getHistoRjectSinbyIdContrat(id_contrat: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log(
+        'id_contrat',
+        id_contrat,
+        'this.page,',
+        this.page,
+        'this.pageSize',
+        this.pageSize,
+        'this.search',
+        this.search
+      );
+
+      this.apiService
+        .getHistoRejectSinbyIdContrat(
+          id_contrat,
+          this.page,
+          this.pageSize,
+          this.search
+        )
+        .subscribe({
+          next: (response: any) => {
+            // Map the data to include the index
+            this.histoRejectedData.data = response.data.map(
+              (item: DptSin, index: number) => {
+                return {
+                  ...item,
+                  idx: index + 1,
+                };
+              }
+            );
+            console.log('DAAATAAAAA : ', this.histoRejectedData.data);
+
+            this.histoRejectedLength = response.histoRejectedLength;
+
+            console.log(this.histoRejectedLength);
+
+            this.paginator.length = this.histoRejectedLength;
+            resolve();
+          },
+          error: (error) => {
+            console.error('Error fetching temp sin:', error);
+            reject(error);
+          },
+        });
+    });
+  }
+
   getTempSinbyIdSin(element: DptSin) {
     this.apiService.getTempSinbyIdSin(element.id_sin).subscribe({
       next: (data) => {
@@ -579,19 +802,23 @@ export class SinistresComponent implements OnInit {
 
   getadhbysousid(id_souscript: number) {
     this.isLoading = true;
-    this.apiService.getAdhBySousId(id_souscript).subscribe({
-      next: (data: SinAdhData[]) => {
-        this.adhDataSource = new MatTableDataSource(data);
-        this.adh_Data = [...data];
-        this.filteredAdherents = data;
-        console.log(this.adhDataSource.data);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error fetching temp sin:', error);
-        this.snackBar.openSnackBar('Aucun adhérent trouvé', 'Ok !');
-        this.isLoading = false;
-      },
+    return new Promise((resolve, reject) => {
+      this.apiService.getAdhBySousId(id_souscript).subscribe({
+        next: (data: SinAdhData[]) => {
+          this.adhDataSource = new MatTableDataSource(data);
+          this.adh_Data = [...data];
+          this.filteredAdherents = data;
+          console.log(this.adhDataSource.data);
+          this.isLoading = false;
+          resolve(data); // Resolve the promise with the data
+        },
+        error: (error) => {
+          console.error('Error fetching temp sin:', error);
+          this.snackBar.openSnackBar('Aucun adhérent trouvé', 'Ok !');
+          this.isLoading = false;
+          reject(error); // Reject the promise with the error
+        },
+      });
     });
   }
 
@@ -616,35 +843,43 @@ export class SinistresComponent implements OnInit {
 
   getAdhNomencl(id_opt: number) {
     this.isLoading = true;
-    this.apiService.getFmpNomenclByIdOpt(id_opt).subscribe({
-      next: (data: CrtNomencl[]) => {
-        this.fmpDatasource = new MatTableDataSource(data);
-        this.fmpData = [...data];
-        console.log(this.fmpData);
+    return new Promise((resolve, reject) => {
+      this.apiService.getFmpNomenclByIdOpt(id_opt).subscribe({
+        next: (data: CrtNomencl[]) => {
+          this.fmpDatasource = new MatTableDataSource(data);
+          this.fmpData = [...data];
+          console.log(this.fmpData);
 
-        this.filteredFmp.next(this.fmpData.slice());
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error fetching Nomencls of adh', error);
-        this.isLoading = false;
-      },
+          this.filteredFmp.next(this.fmpData.slice());
+          this.isLoading = false;
+          resolve(data); // Resolve the promise with the data
+        },
+        error: (error) => {
+          console.error('Error fetching Nomencls of adh', error);
+          this.isLoading = false;
+          reject(error); // Reject the promise with the error
+        },
+      });
     });
   }
 
   getFamily(id_adherent: number) {
     this.isLoading = true;
-    this.apiService.getFamilyId(id_adherent).subscribe({
-      next: (data: fam_adhData[]) => {
-        this.fam_AdhDatasource = new MatTableDataSource(data);
-        this.fam_Data = [...data];
-        console.log(this.fam_Data);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error fetching family:', error);
-        this.isLoading = false;
-      },
+    return new Promise((resolve, reject) => {
+      this.apiService.getFamilyId(id_adherent).subscribe({
+        next: (data: fam_adhData[]) => {
+          this.fam_AdhDatasource = new MatTableDataSource(data);
+          this.fam_Data = [...data];
+          console.log(this.fam_Data);
+          this.isLoading = false;
+          resolve(data); // Resolve the promise with the data
+        },
+        error: (error) => {
+          console.error('Error fetching family:', error);
+          this.isLoading = false;
+          reject(error); // Reject the promise with the error
+        },
+      });
     });
   }
 
@@ -679,6 +914,7 @@ export class SinistresComponent implements OnInit {
         obs_sin: formData.obs_sin,
         rib: formData.rib,
         statut: formData.statut,
+        forced: formData.forced,
       },
     ];
     console.log('HERE', dataTosumbmit);
@@ -688,6 +924,7 @@ export class SinistresComponent implements OnInit {
         this.snackBar.openSnackBar('Déclaration insérée', 'Ok !');
         this.resetForm();
         this.getTempSinbyIdContrat(contrat);
+
         this.updateContratForm();
       },
       error: (err) => {
@@ -719,7 +956,7 @@ export class SinistresComponent implements OnInit {
 
   submitStrSin(): any {
     const data = this.dataSource.data;
-    const refDpt = prompt('Please enter the reference:');
+    const refDpt = prompt('Veuillez indiquer la référence :');
     if (refDpt !== null) {
       const dataTosubmit = data.map((item) => {
         return { ...item, ref_dpt: refDpt };
@@ -728,7 +965,7 @@ export class SinistresComponent implements OnInit {
 
       this.apiService.postStrdSin(dataTosubmit).subscribe({
         next: (res) => {
-          this.snackBar.openSnackBar('Déclaration insérée', 'Ok !');
+          this.snackBar.openSnackBar('Dépot validé', 'Ok !');
           this.saveDecla();
         },
         error: (err) => {
@@ -742,7 +979,140 @@ export class SinistresComponent implements OnInit {
 
   sendtocalculate() {}
 
+  deleteDeclaTemp(element: DptSin) {
+    const contrat = this.dptsinForm.value.id_contrat;
+
+    const confirmDelete = confirm(
+      'Étes-vous sûr de vouloir supprimer cette déclaration ? '
+    );
+
+    if (confirmDelete) {
+      this.apiService.deleteIDSinTemp(element.id_sin).subscribe((res) => {
+        this.snackBar.openSnackBar('Déclaration supprimée !', 'OK !');
+        this.getTempSinbyIdContrat(contrat);
+      });
+    }
+  }
+
+  strtEditDecla(element: DptSin) {
+    this.oldValue = JSON.stringify(element);
+    element.isEdit = true;
+    this.cdr.detectChanges();
+  }
+
+  cancelEdit(element: DptSin) {
+    const contrat = this.dptsinForm.value.id_contrat;
+
+    element.isEdit = false;
+    this.getTempSinbyIdContrat(contrat);
+  }
+
+  updateDeclaTemp(element: DptSin) {
+    const contrat = this.dptsinForm.value.id_contrat;
+
+    let elementCopy = { ...element };
+    delete elementCopy.isEdit;
+
+    let oldValueCopy = this.oldValue;
+    delete oldValueCopy.isEdit;
+
+    let updateData = JSON.stringify(elementCopy);
+
+    let data = {
+      frais_sin: element.frais_sin,
+      rbt_sin: element.rbt_sin,
+      obs_sin: element.obs_sin,
+      forced: element.forced,
+    };
+
+    if (updateData !== oldValueCopy) {
+      this.apiService.updateDeclaSinTemp(element.id_sin, data).subscribe({
+        next: (res) => {
+          this.snackBar.openSnackBar("C'est corrigé :) ", 'OK !');
+          element.isEdit = false;
+          this.getTempSinbyIdContrat(contrat);
+        },
+        error: (error) => {
+          console.error("Erreur lors de l'édition:", error);
+          this.snackBar.openSnackBar("Erreur lors de l'édition", 'OK :(');
+        },
+      });
+    } else {
+      this.snackBar.openSnackBar('Aucune donnée éditée ', 'hum ?!');
+    }
+  }
+
+  async replicateData(element: DptSin) {
+    let adhId = element.id_adherent;
+    let idFam = element.id_fam;
+    let nomencl = element.id_nomencl;
+    let date_sin = new Date(element.date_sin);
+    let formattedDate = this.datePipe.transform(date_sin, 'yyyy-MM-dd');
+
+    console.log('LA DATE :', element.date_sin, date_sin);
+
+    if (this.selectedIdSous) {
+      try {
+        await this.getadhbysousid(this.selectedIdSous);
+        this.matRef1.value = adhId;
+        console.log(adhId);
+
+        await this.getFamily(element.id_adherent);
+        await this.getAdhNomencl(element.id_opt);
+        this.matRef2.value = idFam;
+        this.matRef3.value = nomencl;
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.log('fk you');
+    }
+
+    this.dptsinForm.patchValue({
+      id_adherent: element.id_adherent,
+      nom_adherent: element.nom_adherent,
+      prenom_adherent: element.prenom_adherent,
+      code_garantie: element.code_garantie,
+      date_nai_benef: element.date_nai_benef,
+      date_sin: formattedDate,
+      frais_sin: element.frais_sin,
+      garantie_describ: element.garantie_describ,
+
+      id_fam: element.id_fam,
+      id_nomencl: element.id_nomencl,
+      id_opt: element.id_opt,
+      lien_benef: element.lien_benef,
+      nbr_unit: element.nbr_unit,
+
+      nom_benef: element.nom_benef,
+      num_opt: element.num_opt,
+      obs_sin: element.obs_sin,
+      option_describ: element.option_describ,
+
+      prenom_benef: element.prenom_benef,
+
+      rib: element.rib,
+      statut: element.statut,
+      forced: element.forced,
+    });
+  }
   test() {
-    console.log(this.dptsinForm.value);
+    const data = this.dptsinForm.value;
+
+    console.log('DATAAAAA', data);
+  }
+  ribVerify(element: DptSin) {
+    let rib = element.rib;
+
+    if (!rib) {
+      return 'RIB vide';
+    }
+    const isRIBValid = this.ribVerif.verifyRIB(rib, element);
+
+    if (isRIBValid) {
+      return 'OK';
+    } else {
+      return 'NOT OK';
+    }
   }
 }
