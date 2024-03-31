@@ -183,23 +183,6 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="agence">
-          <th mat-header-cell *matHeaderCellDef>Agence</th>
-          <td
-            mat-cell
-            *matCellDef="let mrepelem"
-            style="
-              width: 4rem;
-              min-width: 4rem;
-              max-width: 4rem;
-              text-align: center;
-            "
-          >
-            <div>
-              {{ mrepelem.agence | uppercase }}
-            </div>
-          </td>
-        </ng-container>
         <ng-container matColumnDef="contrat">
           <th mat-header-cell *matHeaderCellDef>Contrat</th>
           <td
@@ -208,7 +191,7 @@
             style="width: 9rem; text-align: center"
           >
             <div [matTooltip]="mrepelem.contrat" style="white-space: nowrap">
-              {{ TrimContratct(mrepelem.contrat, 5) | uppercase }}
+              {{ mrepelem.contrat | uppercase }}
             </div>
           </td>
         </ng-container>

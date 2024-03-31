@@ -109,7 +109,7 @@ export interface MreportsData {
 export class MailreportsComponent implements OnInit {
   searchData!: string;
 
-  selectedTraiteePar!: string;
+  selectedTraiteePar: string = '';
   traite_par: string[] = [
     'M.Boularouk',
     'F.Birem',
@@ -127,9 +127,9 @@ export class MailreportsComponent implements OnInit {
   abbrevSortField: string = 'id_abbrev';
   search: string = '';
   statut: string[] = ['Réglée', 'Infondée'];
-  selectedStatut: string = this.statut[0];
+  selectedStatut: string = 'Réglée'; //this.statut[0];
   canal: string[] = ['Mail', 'Tel'];
-  selectedCanal: string = this.statut[0];
+  selectedCanal: string = 'Mail'; //= this.statut[0];
   items: MreportsData[] = [];
   isNew: boolean = false;
   selectedFile: any;
@@ -144,47 +144,16 @@ export class MailreportsComponent implements OnInit {
     'reception',
     'canal',
     'traite_par',
-    'agence',
     'contrat',
     'souscripteur',
     'adherent',
     'objet',
     'statut',
     'reponse',
-
     'score',
     'observation',
     'actions',
   ];
-  abbrevList: { [key: string]: string } = {
-    'ATLAS COPCO ALGERIE': 'ATLAS COPCO',
-    'BERGERAT MONNOYEUR ALGERIE': 'BMA',
-    'GLAXOSMITHKLINE ALGÉRIE': 'GSK',
-    'GAZPROM INTERNATIONAL LIMITED ILLC': 'GAZPROM',
-    'PT PERTAMINA ALGERIA EKSPLORASI PRODUKSI': 'PERTAMINA',
-    'DHL GLOBAL FORWARDING ALGERIE': 'DHL',
-    'SOCIÉTÉ GENERAL ALGERIE': 'SGA',
-    'MSD IDEA ALGERIE': 'MSD',
-    'CAN HYGIENE SPA': 'CAN HYGIENE',
-    'SARL MERIPLAST': 'MERIPLAST',
-    'AMS ALGERIE SPA': 'AMS',
-    'MAGHREB LEASING ALGERIE PC CO GE MAGHREB': 'MLA',
-    'CLARIANT OIL SERVICES UK LTD': 'CLARIANT UK',
-    'ACCENTIS PHARMA ALGERIE': 'ACCENTIS',
-    'SUEZ WATER TECHNOLOGIES AND SOLUTIONS ALGERIA SPA': 'SUEZ WATER',
-    'ABDI IBRAHIM REMEDE PHARMA': 'AIRP DZ',
-    'EURL TABUK ALGERIE': 'TABUK',
-    'HENKEL ALGÉRIE': 'HENKEL',
-    'BRITISH AMERICAN  TOBACCO ALGERIE SPA': 'BAT',
-    'THALES SIX GTS FRANCE SAS': 'THALES SIX GTS',
-    'THALES INTERNATIONAL ALGERIE SARL': 'THALES INT',
-    'ALCATEL-LUCENT INTERNATIONAL SUCCURSALE ALGÉRIE': 'ALCATEL',
-    'JMC MOTORS ALGÉRIE': 'JMC',
-    'SARL ALPHAREP': 'ALPHAREP',
-    'SARL MASTER BUILDERS SOLUTIONS ALGERIA': 'MASTER BUILDERS',
-    'IPSEN PHARMA ALGERIE SPA': 'IPSEN',
-    'TEKNACHEM ALGÉRIE SPA (GSH)': 'TEKNACHEM(GSH)',
-  };
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -232,11 +201,12 @@ export class MailreportsComponent implements OnInit {
       dropzone.style.display = 'none';
     }
 
+    let msgFiles: File[] = [];
     if (event.dataTransfer) {
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
         const file = event.dataTransfer.files[i];
         if (this.isMsgFile(file)) {
-          this.readMsgFile(file);
+          msgFiles.push(file);
         } else {
           this.snackBService.openSnackBar(
             "Ceci n'est pas un fichier .MSG",
@@ -245,6 +215,9 @@ export class MailreportsComponent implements OnInit {
           console.error('Invalid file type. Please drop only .msg files.');
         }
       }
+    }
+    if (msgFiles.length > 0) {
+      this.readMsgFiles(msgFiles);
     }
   }
 
@@ -393,8 +366,6 @@ export class MailreportsComponent implements OnInit {
       //console.log(this.Oldmrepelem);
 
       // Set dropdown values based on the current values of mrepelem
-
-      this.cdr.detectChanges();
     }
   }
 
@@ -424,10 +395,11 @@ export class MailreportsComponent implements OnInit {
     const files: FileList | null = event.target.files;
 
     if (files && files.length > 0) {
+      const msgFiles: File[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (this.isMsgFile(file)) {
-          this.readMsgFile(file);
+          msgFiles.push(file);
         } else {
           this.snackBService.openSnackBar(
             "Ceci n'est pas un fichier .MSG",
@@ -435,6 +407,9 @@ export class MailreportsComponent implements OnInit {
           );
           console.error('Invalid file type. Please select a .msg file.');
         }
+      }
+      if (msgFiles.length > 0) {
+        this.readMsgFiles(msgFiles);
       }
     } else {
       console.error('No files selected.');
@@ -448,125 +423,132 @@ export class MailreportsComponent implements OnInit {
     return allowedExtensions.some((ext) => fileName.endsWith(ext));
   }
 
-  readMsgFile(file: File) {
-    let fileReader = new FileReader();
-    fileReader.onload = (e) => {
-      let arrayBuffer = fileReader.result as ArrayBuffer;
-      let msgReader = new MsgReader(arrayBuffer);
-      let msgFileData = msgReader.getFileData();
+  readMsgFiles(files: File[]) {
+    files.forEach((file) => {
+      let fileReader = new FileReader();
+      fileReader.onload = (e) => {
+        let arrayBuffer = fileReader.result as ArrayBuffer;
+        let msgReader = new MsgReader(arrayBuffer);
+        let msgFileData = msgReader.getFileData();
 
-      if (msgFileData.body) {
-        let sentOnDate: Date | null = null;
+        if (msgFileData.body) {
+          let sentOnDate: Date | null = null;
 
-        console.log(msgFileData.clientSubmitTime);
+          console.log(msgFileData.clientSubmitTime);
 
-        let sentOnMatch = msgFileData.body.match(/Envoyé : (.+)/);
+          let sentOnMatch = msgFileData.body.match(/Envoyé : (.+)/);
 
-        if (sentOnMatch && sentOnMatch.length > 1) {
-          let sentOnString = sentOnMatch[1];
+          if (sentOnMatch && sentOnMatch.length > 1) {
+            let sentOnString = sentOnMatch[1];
 
-          let months: { [key: string]: string } = {
-            janvier: 'January',
-            février: 'February',
-            mars: 'March',
-            avril: 'April',
-            mai: 'May',
-            juin: 'June',
-            juillet: 'July',
-            août: 'August',
-            septembre: 'September',
-            octobre: 'October',
-            novembre: 'November',
-            décembre: 'December',
-          };
-
-          for (let month in months) {
-            sentOnString = sentOnString.replace(month, months[month]);
-          }
-
-          sentOnDate = new Date(Date.parse(sentOnString));
-        } else {
-          console.error('Unable to match "Envoyé" line in the message body.');
-          this.snackBService.openSnackBar(
-            'Ce mail viens des éléments envoyés ?',
-            ''
-          );
-        }
-
-        if (msgFileData.subject) {
-          let subjectMatch = msgFileData.subject.match(
-            /RE:\s*(\w+)\s*(\d+\s*\d+\s*\d+\s*\d+)(?:\/\d+)?\s*-\s*([^\/]+)\s*\/\s*([^:]+)\s*:/
-          );
-
-          if (subjectMatch && subjectMatch.length > 4) {
-            let agence = subjectMatch[1];
-            let contrat = subjectMatch[1] + ' ' + subjectMatch[2];
-            let souscripteur = subjectMatch[3].trim();
-            let adherent = subjectMatch[4].trim();
-
-            console.log(agence);
-            console.log(contrat);
-            console.log(souscripteur);
-            console.log(adherent);
-
-            let newRow: MreportsData = {
-              id_mail: '',
-              reception: sentOnDate || new Date(),
-              canal: this.selectedCanal,
-              traite_par: this.selectedTraiteePar,
-              agence: agence,
-              contrat: contrat,
-              souscripteur: souscripteur,
-              adherent: adherent,
-              objet: '',
-              statut: this.selectedStatut,
-              reponse: msgFileData.clientSubmitTime
-                ? new Date(msgFileData.clientSubmitTime)
-                : new Date(),
-              tdr: '',
-              score: '',
-              observation: '',
-              isEdit: false,
-              isNew: true,
+            let months: { [key: string]: string } = {
+              janvier: 'January',
+              février: 'February',
+              mars: 'March',
+              avril: 'April',
+              mai: 'May',
+              juin: 'June',
+              juillet: 'July',
+              août: 'August',
+              septembre: 'September',
+              octobre: 'October',
+              novembre: 'November',
+              décembre: 'December',
             };
-            // newRow.index = this.dataSource.data.length + 1;
-            // Calculate the score using the service
-            newRow.score = this.businessHoursService
-              .calculateBusinessTimeDifference(newRow.reception, newRow.reponse)
-              .toString();
 
-            let timeDifference = Math.abs(
-              newRow.reponse.getTime() - newRow.reception.getTime()
-            );
+            for (let month in months) {
+              sentOnString = sentOnString.replace(month, months[month]);
+            }
 
-            let hours = Math.floor(timeDifference / (1000 * 60 * 60));
-            let minutes = Math.floor(
-              (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
-            );
-
-            let seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-            let formattedTDR = `${hours}h ${minutes}m ${seconds}s`;
-
-            newRow.tdr = formattedTDR;
-
-            this.dataSource.data.unshift(newRow);
-
-            this.dataSource = new MatTableDataSource(this.dataSource.data);
-
-            this.dataSource.sort = this.sort;
-            this.dataSource.paginator = this.paginator;
-
-            this.strteditmrep(newRow);
-
-            this.cdr.detectChanges();
+            sentOnDate = new Date(Date.parse(sentOnString));
           } else {
-            console.error('Unable to match subject line in the message.');
+            console.error('Unable to match "Envoyé" line in the message body.');
+            this.snackBService.openSnackBar(
+              'Ce mail viens des éléments envoyés ?',
+              ''
+            );
+          }
+
+          if (msgFileData.subject) {
+            let subjectMatch = msgFileData.subject.match(
+              /(RE|TR):\s*(\w+)\s*(\d+\s*\d+\s*\d+\s*\d+)(?:\/\d+)?\s*-\s*([^\/]+)\s*\/\s*([^:]+)\s*:/
+            );
+
+            if (subjectMatch && subjectMatch.length > 4) {
+              let agence = subjectMatch[1];
+              let contrat = subjectMatch[1] + ' ' + subjectMatch[2];
+              let souscripteur = subjectMatch[3].trim();
+              let adherent = subjectMatch[4].trim();
+
+              console.log(agence);
+              console.log(contrat);
+              console.log(souscripteur);
+              console.log(adherent);
+
+              let newRow: MreportsData = {
+                id_mail: '',
+                reception: sentOnDate || new Date(),
+                canal: this.selectedCanal,
+                traite_par: this.selectedTraiteePar,
+                agence: agence,
+                contrat: contrat,
+                souscripteur: souscripteur,
+                adherent: adherent,
+                objet: '',
+                statut: this.selectedStatut,
+                reponse: msgFileData.clientSubmitTime
+                  ? new Date(msgFileData.clientSubmitTime)
+                  : new Date(),
+                tdr: '',
+                score: '',
+                observation: '',
+                isEdit: false,
+                isNew: true,
+              };
+              // newRow.index = this.dataSource.data.length + 1;
+              // Calculate the score using the service
+              newRow.score = this.businessHoursService
+                .calculateBusinessTimeDifference(
+                  newRow.reception,
+                  newRow.reponse
+                )
+                .toString();
+
+              let timeDifference = Math.abs(
+                newRow.reponse.getTime() - newRow.reception.getTime()
+              );
+
+              let hours = Math.floor(timeDifference / (1000 * 60 * 60));
+              let minutes = Math.floor(
+                (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+              );
+
+              let seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+              let formattedTDR = `${hours}h ${minutes}m ${seconds}s`;
+
+              newRow.tdr = formattedTDR;
+
+              this.dataSource.data.unshift(newRow);
+
+              this.dataSource = new MatTableDataSource(this.dataSource.data);
+
+              this.dataSource.sort = this.sort;
+              this.dataSource.paginator = this.paginator;
+
+              this.submitNewRow(newRow);
+
+              /* this.strteditmrep(newRow);*/
+
+              this.cdr.detectChanges();
+            } else {
+              console.error('Unable to match subject line in the message.');
+            }
           }
         }
-      }
-    };
-    fileReader.readAsArrayBuffer(file);
+      };
+      fileReader.readAsArrayBuffer(file);
+    });
   }
 
   submitNewRow(mrepelem: MreportsData) {
