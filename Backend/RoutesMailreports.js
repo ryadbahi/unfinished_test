@@ -36,6 +36,7 @@ async function insertMailReport(data) {
   const {
     reception,
     canal,
+    content,
     traite_par,
     agence,
     contrat,
@@ -57,6 +58,7 @@ async function insertMailReport(data) {
     INSERT INTO mailreports (
       reception,
       canal,
+      content,
       traite_par,
       agence,
       contrat,
@@ -68,13 +70,14 @@ async function insertMailReport(data) {
       tdr,
       score,
       observation
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
     await db.query(insertQuery, [
       recepformattedDate,
       canal,
+      content,
       traite_par,
       agence,
       contrat,
@@ -110,6 +113,7 @@ router.get("/", async (req, res, next) => {
     "id_mail",
     "reception",
     "canal",
+    "content",
     "traite_par",
     "agence",
     "contrat",
@@ -138,6 +142,7 @@ router.get("/", async (req, res, next) => {
     COALESCE(id_mail, ''), ' ',
     COALESCE(reception, ''), ' ',
     COALESCE(canal, ''), ' ',
+    COALESCE(content, ''), ' ',
     COALESCE(traite_par, ''), ' ',
     COALESCE(agence, ''), ' ',
     COALESCE(contrat, ''), ' ',
@@ -159,6 +164,7 @@ router.get("/", async (req, res, next) => {
     COALESCE(id_mail, ''), ' ',
     COALESCE(reception, ''), ' ',
     COALESCE(canal, ''), ' ',
+    COALESCE(content, ''), ' ',
     COALESCE(traite_par, ''), ' ',
     COALESCE(agence, ''), ' ',
     COALESCE(contrat, ''), ' ',

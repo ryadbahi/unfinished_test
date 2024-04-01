@@ -36,7 +36,7 @@ import MsgReader from '@kenjiuno/msgreader';
 import { BusinessHoursService } from '../../businessdayshours.service';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 
 import * as XLSX from 'xlsx';
 import { SnackBarService } from '../../snack-bar.service';
@@ -77,6 +77,7 @@ export interface MreportsData {
   observation: string;
   isEdit?: boolean;
   isNew?: boolean;
+  content?: string;
   [key: string]: any;
 }
 
@@ -143,6 +144,7 @@ export class MailreportsComponent implements OnInit {
     'id_mail',
     'reception',
     'canal',
+    'content',
     'traite_par',
     'contrat',
     'souscripteur',
@@ -158,6 +160,12 @@ export class MailreportsComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('fileInput') fileInput!: ElementRef;
+  @ViewChild('tooltip') tooltip!: MatTooltip;
+
+  showToolTip(content: string) {
+    this.tooltip.message = content;
+    this.tooltip.show();
+  }
 
   private dragCounter = 0;
 
@@ -469,9 +477,9 @@ export class MailreportsComponent implements OnInit {
             );
           }
 
-          if (msgFileData.subject) {
-            let subjectMatch = msgFileData.subject.match(
-              /(RE|TR):\s*(\w+)\s*(\d+\s*\d+\s*\d+\s*\d+)(?:\/\d+)?\s*-\s*([^\/]+)\s*\/\s*([^:]+)\s*:/
+          if (msgFileData.normalizedSubject) {
+            let subjectMatch = msgFileData.normalizedSubject.match(
+              /\s*(\w+)\s*(\d+\s*\d+\s*\d+\s*\d+)(?:\/\d+)?\s*-\s*([^\/]+)\s*\/\s*([^:]+)\s*:/
             );
 
             if (subjectMatch && subjectMatch.length > 4) {
@@ -479,15 +487,25 @@ export class MailreportsComponent implements OnInit {
               let contrat = subjectMatch[1] + ' ' + subjectMatch[2];
               let souscripteur = subjectMatch[3].trim();
               let adherent = subjectMatch[4].trim();
+              let content =
+                msgFileData.normalizedSubject +
+                '\n' +
+                '\n' +
+                msgFileData.clientSubmitTime +
+                '\n' +
+                '\n' +
+                msgFileData.body;
+              // console.log('here', content);
 
-              console.log(agence);
-              console.log(contrat);
-              console.log(souscripteur);
-              console.log(adherent);
+              // console.log(agence);
+              // console.log(contrat);
+              // console.log(souscripteur);
+              //  console.log(adherent);
 
               let newRow: MreportsData = {
                 id_mail: '',
                 reception: sentOnDate || new Date(),
+                content: content,
                 canal: this.selectedCanal,
                 traite_par: this.selectedTraiteePar,
                 agence: agence,
@@ -562,6 +580,8 @@ export class MailreportsComponent implements OnInit {
         this.snackBService.openSnackBar('Rapport Ajouté ', 'Okey :)');
         mrepelem.isNew = false;
         mrepelem.isEdit = false;
+        console.log(this.dataSource.data);
+
         this.service.triggerDataChange();
         this.refreshTable();
       },
@@ -660,9 +680,45 @@ export class MailreportsComponent implements OnInit {
       next: (response: any) => {
         // Convert all data to Excel format using XLSX
         const excelData: any[] = response.data.map((item: MreportsData) => {
-          // Map the properties you want to include in the Excel file
+          let recepToDate = new Date(item.reception);
+          let repToDate = new Date(item.reponse);
+
+          let reception_date = `${recepToDate
+            .getDate()
+            .toString()
+            .padStart(2, '0')}/${(recepToDate.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}/${recepToDate.getFullYear()}`;
+          let reception_heure = `${recepToDate
+            .getHours()
+            .toString()
+            .padStart(2, '0')}:${recepToDate
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}:${recepToDate
+            .getSeconds()
+            .toString()
+            .padStart(2, '0')}`;
+          let reponse_date = `${repToDate
+            .getDate()
+            .toString()
+            .padStart(2, '0')}/${(repToDate.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}/${repToDate.getFullYear()}`;
+          let reponse_heure = `${repToDate
+            .getHours()
+            .toString()
+            .padStart(2, '0')}:${repToDate
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}:${repToDate
+            .getSeconds()
+            .toString()
+            .padStart(2, '0')}`;
+
           return {
-            Reception: new Date(item.reception),
+            Reception: reception_date, //new Date(item.reception),
+            'Heure recep': reception_heure,
             Canal: String(item.canal),
             Traité_par: String(item.traite_par),
             Agence: String(item.agence),
@@ -670,8 +726,9 @@ export class MailreportsComponent implements OnInit {
             Souscripteur: String(item.souscripteur),
             Adhérent: String(item.adherent),
             Objet: String(item.objet),
-            Staut: String(item.statut),
-            Réponse: new Date(item.reponse),
+            Statut: String(item.statut),
+            Réponse: reponse_date,
+            Heure_rep: reponse_heure,
             Ratio: String(item.score),
             Observation: String(item.observation),
           };

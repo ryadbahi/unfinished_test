@@ -199,3 +199,9 @@ td {
 
   justify-content: center;
 }
+::ng-deep.mat-mdc-tooltip .mdc-tooltip__surface {
+  max-width: none !important;
+
+  overflow: auto;
+  white-space: pre-line;
+}

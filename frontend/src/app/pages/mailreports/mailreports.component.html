@@ -18,6 +18,8 @@
             type="file"
             (change)="handleFileUpload($event)"
             style="display: none"
+            webkitdirectory
+            multiple
           />
         </button>
         <h4 style="margin-left: 25px; font-size: 25px">Suivi des requétes</h4>
@@ -40,6 +42,7 @@
   >
     >>>>>>>> lachez ici ! <<<<<<<<<
   </div>
+
   <div style="display: flex; justify-content: space-between">
     <mat-toolbar class="matoolB" id="search">
       <div class="searchField">
@@ -118,7 +121,6 @@
             </div>
             <div
               *ngIf="!mrepelem.isEdit && !mrepelem.isNew"
-              [matTooltip]="mrepelem.canal"
               style="text-align: center"
             >
               <mat-icon
@@ -142,6 +144,34 @@
             </div>
           </td>
         </ng-container>
+
+        <ng-container matColumnDef="content">
+          <th mat-header-cell *matHeaderCellDef>Contenu</th>
+          <td
+            #tooltip="matTooltip"
+            [matTooltip]="mrepelem.content"
+            (mouseenter)="$event.stopImmediatePropagation()"
+            (mouseleave)="$event.stopImmediatePropagation()"
+            (click)="showToolTip(mrepelem.content)"
+            mat-cell
+            *matCellDef="let mrepelem"
+            style="
+              text-align: center;
+
+              width: 4rem;
+              min-width: 4rem;
+              max-width: 4rem;
+            "
+          >
+            <div style="font-size: 12px">
+              <mat-icon
+                fontIcon="description"
+                style="color: #3f51b5f2; cursor: pointer"
+              ></mat-icon>
+            </div>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="traite_par">
           <th mat-header-cell *matHeaderCellDef>Traité par</th>
           <td
@@ -202,7 +232,7 @@
               [matTooltip]="mrepelem.souscripteur"
               style="text-align: nowrap"
             >
-              {{ mrepelem.abbrev_sousc | uppercase }}
+              {{ CharLimit(mrepelem.abbrev_sousc, 20) | uppercase }}
             </div>
           </td>
         </ng-container>
