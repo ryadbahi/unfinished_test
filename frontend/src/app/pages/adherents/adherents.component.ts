@@ -19,7 +19,7 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AdherentResponse, ApiService } from '../../api.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { MatdialogComponent } from '../../components/matdialog/matdialog.component';
+
 import { RouterModule, RouterLink, ActivatedRoute } from '@angular/router';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -76,7 +76,7 @@ export interface fam_adhData {
     MatToolbarModule,
     RouterLink,
     RouterModule,
-    MatdialogComponent,
+
     DatePipe,
     MatDatepickerModule,
     MatNativeDateModule,
@@ -173,15 +173,6 @@ export class AdherentsComponent implements OnInit {
     if (this.adhdataSource.paginator) {
       this.adhdataSource.paginator.firstPage();
     }
-  }
-
-  openAdhdialog() {
-    const config = new MatDialogConfig();
-    config.disableClose = true;
-    config.autoFocus = true;
-    config.data = { formGroupToShow: 'AdhForm' }; // Pass the form group to show
-
-    this.dialog.open(MatdialogComponent, config);
   }
 
   updateAdhData(elemadh: any) {

@@ -4,6 +4,7 @@ import {
   Component,
   OnInit,
   ViewChild,
+  viewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
@@ -34,7 +35,11 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { ApiService, DptSinReponse } from '../../api.service';
+import {
+  ApiService,
+  DptAcceptedSinReponse,
+  DptRejectedSinReponse,
+} from '../../api.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Contrat, SouscripData } from '../contrat/contrat.component';
 import {
@@ -53,7 +58,11 @@ import { RibVerifierService } from '../../rib-verifier.service';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatBadgeModule } from '@angular/material/badge';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import {
+  MatPaginator,
+  MatPaginatorModule,
+  PageEvent,
+} from '@angular/material/paginator';
 
 export interface CrtNomencl {
   id_couv_fmp: number;
@@ -280,6 +289,7 @@ export class SinistresComponent implements OnInit {
     'garantie_describ',
     'frais_sin',
     'rbt_sin',
+    'nbr_unit',
     'res_calcul',
     'obs_sin',
     'rib',
@@ -306,19 +316,39 @@ export class SinistresComponent implements OnInit {
     'ref_dpt',
   ];
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  /*@ViewChild(MatPaginator) rejectedPaginator!: MatPaginator;*/
+  /*@ViewChild(MatPaginator) acceptedPaginator!: MatPaginator;*/
 
-  page: number = 1;
-  pageSize: number = 15;
+  @ViewChild('acceptedPaginator', { static: true })
+  public acceptedPaginator!: MatPaginator;
+  @ViewChild('rejectedPaginator', { static: true })
+  public rejectedPaginator!: MatPaginator;
+
+  acceptedPage: number = 1;
+  accepetedPageSize: number = 15;
+
+  rejectedpage: number = 1;
+  rejectedpageSize: number = 15;
+
   search: string = '';
   histoRejectedLength!: number;
+  histoAcceptedLength!: number;
 
   ngAfterViewInit() {
-    this.paginator.page.subscribe((pageEvent) => {
-      this.page = pageEvent.pageIndex + 1;
-      this.pageSize = pageEvent.pageSize;
-      // Now you can use this.page and this.pageSize to fill your query
-      console.log('paaage: ', this.page);
+    this.rejectedPaginator.page.subscribe(() => {
+      this.rejectedpage = this.rejectedPaginator.pageIndex + 1;
+      this.rejectedpageSize = this.rejectedPaginator.pageSize;
+      if (this.selectedIdContrat) {
+        this.getHistoRjectSinbyIdContrat(this.selectedIdContrat);
+      }
+    });
+
+    this.acceptedPaginator.page.subscribe(() => {
+      this.acceptedPage = this.acceptedPaginator.pageIndex + 1;
+      this.accepetedPageSize = this.acceptedPaginator.pageSize;
+      if (this.selectedIdContrat) {
+        this.getHistoValidSinbyIdContrat(this.selectedIdContrat);
+      }
     });
   }
 
@@ -341,8 +371,6 @@ export class SinistresComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log(this.pageSize);
-
     this.dptsinForm = this.formBuilder.group({
       id_souscript: ['', Validators.required],
       idx: [''],
@@ -597,6 +625,8 @@ export class SinistresComponent implements OnInit {
     if (this.selectedContrat) {
       this.selectedIdContrat = this.selectedContrat.id_contrat;
       await this.getTempSinbyIdContrat(this.selectedIdContrat);
+      await this.getHistoValidSinbyIdContrat(this.selectedIdContrat);
+      await this.getHistoRjectSinbyIdContrat(this.selectedIdContrat);
 
       this.selectedIdSous = this.selectedContrat.id_souscript;
 
@@ -708,14 +738,14 @@ export class SinistresComponent implements OnInit {
       this.apiService
         .getHistoValidSinbyIdContrat(
           id_contrat,
-          this.page,
-          this.pageSize,
+          this.acceptedPage,
+          this.accepetedPageSize,
           this.search
         )
         .subscribe({
-          next: (data) => {
+          next: (response: DptAcceptedSinReponse) => {
             // Map the data to include the index
-            this.histoAcceptedData.data = data.map(
+            this.histoAcceptedData.data = response.data.map(
               (item: DptSin, index: number) => {
                 return {
                   ...item,
@@ -723,6 +753,9 @@ export class SinistresComponent implements OnInit {
                 };
               }
             );
+            this.histoAcceptedLength = response.histoAcceptedLength;
+            this.acceptedPaginator.length = this.histoAcceptedLength;
+
             resolve();
           },
           error: (error) => {
@@ -735,26 +768,15 @@ export class SinistresComponent implements OnInit {
 
   getHistoRjectSinbyIdContrat(id_contrat: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log(
-        'id_contrat',
-        id_contrat,
-        'this.page,',
-        this.page,
-        'this.pageSize',
-        this.pageSize,
-        'this.search',
-        this.search
-      );
-
       this.apiService
         .getHistoRejectSinbyIdContrat(
           id_contrat,
-          this.page,
-          this.pageSize,
+          this.rejectedpage,
+          this.rejectedpageSize,
           this.search
         )
         .subscribe({
-          next: (response: any) => {
+          next: (response: DptRejectedSinReponse) => {
             // Map the data to include the index
             this.histoRejectedData.data = response.data.map(
               (item: DptSin, index: number) => {
@@ -770,7 +792,7 @@ export class SinistresComponent implements OnInit {
 
             console.log(this.histoRejectedLength);
 
-            this.paginator.length = this.histoRejectedLength;
+            this.rejectedPaginator.length = this.histoRejectedLength;
             resolve();
           },
           error: (error) => {

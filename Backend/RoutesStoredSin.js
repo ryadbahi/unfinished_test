@@ -138,13 +138,15 @@ router.get("/", async (req, res) => {
 router.get("/:id_contrat/stored/accepted", async (req, res) => {
   try {
     const { id_contrat } = req.params;
-    const {
-      page = page || 1,
-      pageSize = pageSize || 10,
-      search = "",
-    } = req.query;
+    const { page = 1, pageSize = 10, search = "" } = req.query;
 
     const offset = (page - 1) * pageSize;
+
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM stored_sin 
+      WHERE stored_sin.id_contrat = ? AND rbt_sin != 0 AND (stored_sin.nom_adherent LIKE ? OR stored_sin.prenom_adherent LIKE ?)
+    `;
 
     const selectQuery = `
       SELECT
@@ -177,6 +179,12 @@ router.get("/:id_contrat/stored/accepted", async (req, res) => {
       LIMIT ? OFFSET ?
     `;
 
+    const [totalResults] = await db.query(countQuery, [
+      id_contrat,
+      `%${search}%`,
+      `%${search}%`,
+    ]);
+
     const results = await db.query(selectQuery, [
       id_contrat,
       `%${search}%`,
@@ -184,7 +192,11 @@ router.get("/:id_contrat/stored/accepted", async (req, res) => {
       parseInt(pageSize),
       offset,
     ]);
-    res.status(200).json(results[0]);
+    console.log("Accepted", totalResults[0].total);
+    res.status(200).json({
+      data: results[0],
+      histoAcceptedLength: totalResults[0].total,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An error occurred while fetching data" });
@@ -248,7 +260,7 @@ router.get("/:id_contrat/stored/rejected", async (req, res) => {
       parseInt(pageSize),
       offset,
     ]);
-
+    console.log("Rejected", totalResults[0].total);
     res.status(200).json({
       data: results[0],
       histoRejectedLength: totalResults[0].total,

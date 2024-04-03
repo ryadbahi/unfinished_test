@@ -59,9 +59,14 @@ export interface MailreportsResponse {
   averageDuration: string;
 }
 
-export interface DptSinReponse {
+export interface DptRejectedSinReponse {
   data: DptSin[];
   histoRejectedLength: number;
+}
+
+export interface DptAcceptedSinReponse {
+  data: DptSin[];
+  histoAcceptedLength: number;
 }
 
 export interface AdherentResponse {
@@ -478,15 +483,22 @@ export class ApiService {
     page: number,
     pageSize: number,
     search: string = ''
-  ): Observable<DptSin[]> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('pageSize', String(pageSize))
-      .set('search', search);
-
-    return this.http.get<DptSin[]>(
-      `${this.apiUrl}/stored_sin/${id_contrat}/stored/accepted`,
-      { params }
+  ): Observable<DptAcceptedSinReponse> {
+    const encodedSearch = encodeURIComponent(search);
+    const url = `${this.apiUrl}/stored_sin/${id_contrat}/stored/accepted?page=${page}&pageSize=${pageSize}&search=${encodedSearch}`;
+    return this.http.get<DptAcceptedSinReponse>(url).pipe(
+      catchError((error: any) => {
+        console.error('An error occurred while fetching data:', error);
+        throw new Error('Failed to fetch  data.');
+      }),
+      map((response: DptAcceptedSinReponse) => {
+        const dptAcceptedSinReponse: DptAcceptedSinReponse = {
+          data: response.data,
+          histoAcceptedLength: response.histoAcceptedLength,
+        };
+        console.log('FROM API', dptAcceptedSinReponse);
+        return dptAcceptedSinReponse;
+      })
     );
   }
   getHistoRejectSinbyIdContrat(
@@ -494,16 +506,24 @@ export class ApiService {
     page: number,
     pageSize: number,
     search: string = ''
-  ): Observable<DptSinReponse> {
+  ): Observable<DptRejectedSinReponse> {
     const encodedSearch = encodeURIComponent(search);
     const url = `${this.apiUrl}/stored_sin/${id_contrat}/stored/rejected?page=${page}&pageSize=${pageSize}&search=${encodedSearch}`;
-    return this.http.get<DptSinReponse>(url).pipe(
+    return this.http.get<DptRejectedSinReponse>(url).pipe(
       catchError((error: any) => {
         console.error(
           'An error occurred while fetching filtered mailreports data:',
           error
         );
         throw new Error('Failed to fetch filtered mailreports data.');
+      }),
+      map((response: DptRejectedSinReponse) => {
+        const dptRejectedSinReponse: DptRejectedSinReponse = {
+          data: response.data,
+          histoRejectedLength: response.histoRejectedLength,
+        };
+        console.log('FROM API', dptRejectedSinReponse);
+        return dptRejectedSinReponse;
       })
     );
   }

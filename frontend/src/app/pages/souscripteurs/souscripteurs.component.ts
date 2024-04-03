@@ -13,7 +13,7 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ApiService } from '../../api.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { MatdialogComponent } from '../../components/matdialog/matdialog.component';
+
 import { RouterModule, RouterLink, ActivatedRoute } from '@angular/router';
 
 export interface SouscripData {
@@ -49,7 +49,6 @@ export interface SouscripData {
     MatToolbarModule,
     RouterLink,
     RouterModule,
-    MatdialogComponent,
   ],
   templateUrl: './souscripteurs.component.html',
   styleUrls: ['./souscripteurs.component.scss'],
@@ -112,15 +111,6 @@ export class SouscripteursComponent implements OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
-  }
-
-  openSouscripDialog() {
-    const config = new MatDialogConfig();
-    config.disableClose = true;
-    config.autoFocus = true;
-    config.data = { formGroupToShow: 'SouscripForm' }; // Pass the form group to show
-
-    this.dialog.open(MatdialogComponent, config);
   }
 
   updateSouscripData(elemsous: SouscripData) {

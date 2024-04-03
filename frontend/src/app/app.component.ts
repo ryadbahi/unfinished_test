@@ -2,7 +2,7 @@ import { signal, Component, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { MatMenuModule } from '@angular/material/menu';
-import { DefaultSidenavComponent } from './components/default-sidenav/default-sidenav.component';
+
 import { SouscripteursComponent } from './pages/souscripteurs/souscripteurs.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -13,8 +13,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
-import { MatdialogComponent } from './components/matdialog/matdialog.component';
-import { MultiaddComponent } from './pages/multiadd/multiadd.component';
+
 import { CdkDrag } from '@angular/cdk/drag-drop';
 
 @Component({
@@ -30,14 +29,13 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
     MatSidenavModule,
     RouterModule,
     MatListModule,
-    DefaultSidenavComponent,
+
     FormsModule,
     MatFormFieldModule,
     MatCardModule,
     SouscripteursComponent,
     MatTableModule,
-    MatdialogComponent,
-    MultiaddComponent,
+
     CdkDrag,
   ],
   templateUrl: './app.component.html',

@@ -246,22 +246,46 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <span
-          style="width: 15rem"
-          matBadge="{{ acceptedData.data.length + rejectedData.data.length }}"
-          matBadgeOverlap="false"
-          matBadgeColor="warn"
+          style="
+            width: 15rem;
+            display: flex;
+            white-space: break-spaces;
+            justify-content: center;
+            font-weight: bolder;
+          "
         >
           TRAITEMENT
+          <div
+            style="color: brown"
+            *ngIf="
+              acceptedData.data.length + rejectedData.data.length > 0
+                ? acceptedData.data.length + rejectedData.data.length
+                : null
+            "
+          >
+            ({{ acceptedData.data.length + rejectedData.data.length }})
+          </div>
         </span>
       </ng-template>
       <mat-tab-group dynamicHeight
         ><mat-tab>
           <ng-template mat-tab-label>
             <span
-              matBadge="{{ acceptedData.data.length }}"
-              matBadgeOverlap="false"
-              matBadgeColor="primary"
-              >Accepté</span
+              style="
+                display: flex;
+                white-space: break-spaces;
+                justify-content: center;
+                font-weight: bolder;
+              "
+              >Acceptées
+              <div
+                style="color: green"
+                *ngIf="
+                  acceptedData.data.length > 0 ? acceptedData.data.length : null
+                "
+              >
+                ({{ acceptedData.data.length }})
+              </div></span
             >
           </ng-template>
           <div style="border-radius: 10px; overflow: hidden" class="tables">
@@ -456,10 +480,21 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <span
-              matBadge="{{ rejectedData.data.length }}"
-              matBadgeOverlap="false"
-              matBadgeColor="warn"
-              >Rejets</span
+              style="
+                display: flex;
+                white-space: break-spaces;
+                justify-content: center;
+                font-weight: bolder;
+              "
+              >Rejets
+              <div
+                style="color: red"
+                *ngIf="
+                  rejectedData.data.length > 0 ? rejectedData.data.length : null
+                "
+              >
+                ({{ rejectedData.data.length }})
+              </div></span
             >
           </ng-template>
           <div style="border-radius: 10px; overflow: hidden" class="tables">
@@ -670,39 +705,45 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <span
-          style="width: 15rem"
-          matBadge="{{
-            histoAcceptedData.data.length + histoRejectedData.data.length
-          }}"
-          matBadgeOverlap="false"
-          matBadgeColor="primary"
-          >Historique</span
+          style="
+            width: 15rem;
+            display: flex;
+            white-space: break-spaces;
+            justify-content: center;
+            font-weight: bolder;
+          "
+          >HISTORIQUE
+          <div
+            style="color: brown"
+            *ngIf="
+              histoAcceptedLength + histoRejectedLength > 0
+                ? histoAcceptedLength + histoRejectedLength
+                : null
+            "
+          >
+            ({{ histoAcceptedLength + histoRejectedLength }})
+          </div></span
         > </ng-template
       ><mat-tab-group
         ><mat-tab>
           <ng-template mat-tab-label>
             <span
-              matBadge="{{ histoAcceptedData.data.length }}"
-              matBadgeOverlap="false"
-              matBadgeColor="primary"
-              >Accepté</span
+              style="
+                display: flex;
+                white-space: break-spaces;
+                justify-content: center;
+                font-weight: bolder;
+              "
+              >Acceptées
+              <div
+                style="color: green"
+                *ngIf="histoAcceptedLength > 0 ? histoAcceptedLength : null"
+              >
+                ({{ histoAcceptedLength }})
+              </div></span
             >
           </ng-template>
 
-          <div>
-            <button
-              class="histoDisplayBtn"
-              mat-raised-button
-              (click)="
-                selectedIdContrat &&
-                  getHistoValidSinbyIdContrat(selectedIdContrat);
-                selectedIdContrat &&
-                  getHistoRjectSinbyIdContrat(selectedIdContrat)
-              "
-            >
-              Afficher
-            </button>
-          </div>
           <div style="border-radius: 10px; overflow: hidden" class="tables">
             <table mat-table [dataSource]="histoAcceptedData">
               <ng-container matColumnDef="idx">
@@ -765,6 +806,13 @@
                 <th mat-header-cell *matHeaderCellDef>Frais</th>
                 <td mat-cell *matCellDef="let element">
                   {{ element.frais_sin | number : "1.2-2" }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="nbr_unit">
+                <th mat-header-cell *matHeaderCellDef>Unité</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.nbr_unit }}
                 </td>
               </ng-container>
 
@@ -843,8 +891,8 @@
               ></tr>
             </table>
             <mat-paginator
-              [length]="histoAcceptedData.data.length"
-              [page]="1"
+              #acceptedPaginator
+              [length]="histoAcceptedLength"
               [pageSizeOptions]="[15, 30, 100]"
               fxLayoutGap="10px"
               showFirstLastButtons
@@ -853,27 +901,22 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <span
-              matBadge="{{ histoRejectedData.data.length }}"
-              matBadgeOverlap="false"
-              matBadgeColor="warn"
-              >Rejets</span
+              style="
+                display: flex;
+                white-space: break-spaces;
+                justify-content: center;
+                font-weight: bolder;
+              "
+              >Rejets
+              <div
+                style="color: red"
+                *ngIf="histoRejectedLength > 0 ? histoRejectedLength : null"
+              >
+                ({{ histoRejectedLength }})
+              </div></span
             >
           </ng-template>
 
-          <div>
-            <button
-              class="histoDisplayBtn"
-              mat-raised-button
-              (click)="
-                selectedIdContrat &&
-                  getHistoValidSinbyIdContrat(selectedIdContrat);
-                selectedIdContrat &&
-                  getHistoRjectSinbyIdContrat(selectedIdContrat)
-              "
-            >
-              Afficher
-            </button>
-          </div>
           <div style="border-radius: 10px; overflow: hidden" class="tables">
             <table mat-table [dataSource]="histoRejectedData">
               <ng-container matColumnDef="idx">
@@ -1010,8 +1053,8 @@
               ></tr>
             </table>
             <mat-paginator
-              [length]="histoRejectedData.data.length"
-              [page]="1"
+              #rejectedPaginator
+              [length]="histoRejectedLength"
               [pageSizeOptions]="[15, 30, 100]"
               fxLayoutGap="10px"
               showFirstLastButtons

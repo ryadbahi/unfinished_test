@@ -76,7 +76,7 @@ export interface MreportsData {
   score: string;
   observation: string;
   isEdit?: boolean;
-  isNew?: boolean;
+
   content?: string;
   [key: string]: any;
 }
@@ -110,7 +110,7 @@ export interface MreportsData {
 export class MailreportsComponent implements OnInit {
   searchData!: string;
 
-  selectedTraiteePar: string = '';
+  selectedTraiteePar: string = 'R.Bahi';
   traite_par: string[] = [
     'M.Boularouk',
     'F.Birem',
@@ -132,13 +132,12 @@ export class MailreportsComponent implements OnInit {
   canal: string[] = ['Mail', 'Tel'];
   selectedCanal: string = 'Mail'; //= this.statut[0];
   items: MreportsData[] = [];
-  isNew: boolean = false;
+  item!: MreportsData;
   selectedFile: any;
   Oldmrepelem: any;
-  isEditing = false;
   getDataValue: any;
   MreportsForm: any = {};
-  dataSource!: MatTableDataSource<any>;
+  dataSource = new MatTableDataSource<MreportsData>();
   abbrevDataSource!: MatTableDataSource<AbbrevList>;
   displayedColumns: string[] = [
     'id_mail',
@@ -238,13 +237,6 @@ export class MailreportsComponent implements OnInit {
     private dialog: MatDialog,
     private snackBService: SnackBarService
   ) {}
-  isNewRow(row: MreportsData) {
-    if ('isNew' in row) {
-      return row.isNew;
-    } else {
-      return false;
-    }
-  }
 
   ngOnInit(): void {
     this.refreshTable();
@@ -311,7 +303,7 @@ export class MailreportsComponent implements OnInit {
       .getMailreportsData(this.page, this.pageSize, this.sortField)
       .subscribe({
         next: (response: MailreportsResponse) => {
-          this.dataSource = new MatTableDataSource(response.data);
+          this.dataSource.data = response.data;
           this.total = response.total;
           this.averageScore = response.averageDuration;
 
@@ -338,7 +330,7 @@ export class MailreportsComponent implements OnInit {
         next: (response: MailreportsResponse) => {
           console.log(response);
 
-          this.dataSource = new MatTableDataSource(response.data);
+          this.dataSource.data = response.data;
 
           this.total = response.total;
 
@@ -353,50 +345,27 @@ export class MailreportsComponent implements OnInit {
       });
   }
 
-  strteditmrep(mrepelem: any) {
-    if (this.dataSource) {
-      // Cancel editing for all other rows
-      this.dataSource.data.forEach((row: any) => {
-        if (row.isEdit) {
-          row.isEdit = false;
-          row.isNew = false;
-        }
-      });
+  strteditmrep(mrepelem: MreportsData) {
+    mrepelem.isEdit = true;
+    this.selectedTraiteePar = mrepelem.traite_par;
+    this.selectedStatut = mrepelem.statut;
+    this.selectedCanal = mrepelem.canal;
 
-      // Now start editing for the selected row
-      mrepelem.isEdit = true;
-      this.selectedTraiteePar = mrepelem.traite_par;
-      this.selectedStatut = mrepelem.statut;
-      this.selectedCanal = mrepelem.canal;
+    // Store the current state of mrepelem
+    this.Oldmrepelem = JSON.stringify(mrepelem);
+    //console.log(this.Oldmrepelem);
 
-      // Store the current state of mrepelem
-      this.Oldmrepelem = JSON.stringify(mrepelem);
-      //console.log(this.Oldmrepelem);
-
-      // Set dropdown values based on the current values of mrepelem
-    }
+    // Set dropdown values based on the current values of mrepelem
   }
 
   // Add a method to handle canceling the new row
-  CancelNew() {
-    const index = this.dataSource.data.findIndex((mrepelem) => mrepelem.isNew);
-    if (index !== -1) {
-      this.dataSource.data.splice(index, 1);
-      this.dataSource = new MatTableDataSource(this.dataSource.data);
-      this.refreshTable();
-    }
-  }
 
   // Modify Cancel to handle both existing and new rows
   Cancel(mrepelem: any) {
-    if (this.isNew) {
-      this.CancelNew();
-      this.isNew = false;
-    } else {
-      // Restore the original values
-      Object.assign(mrepelem, this.Oldmrepelem);
-      mrepelem.isEdit = false;
-    }
+    // Restore the original values
+
+    mrepelem.isEdit = false;
+    this.refreshTable();
   }
 
   handleFileUpload(event: any) {
@@ -521,7 +490,6 @@ export class MailreportsComponent implements OnInit {
                 score: '',
                 observation: '',
                 isEdit: false,
-                isNew: true,
               };
               // newRow.index = this.dataSource.data.length + 1;
               // Calculate the score using the service
@@ -558,7 +526,7 @@ export class MailreportsComponent implements OnInit {
 
               /* this.strteditmrep(newRow);*/
 
-              this.cdr.detectChanges();
+              this.refreshTable();
             } else {
               console.error('Unable to match subject line in the message.');
             }
@@ -578,7 +546,7 @@ export class MailreportsComponent implements OnInit {
       (response) => {
         console.log('Row added successfully:', response);
         this.snackBService.openSnackBar('Rapport Ajouté ', 'Okey :)');
-        mrepelem.isNew = false;
+
         mrepelem.isEdit = false;
         console.log(this.dataSource.data);
 
@@ -806,7 +774,13 @@ export class MailreportsComponent implements OnInit {
   }
 }
 
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
 //////////////////////// __________________ DIALOG ______________________/////////////////////////
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
 
 @Component({
   selector: 'mat_dialog_abbrev',
@@ -847,7 +821,6 @@ export class MatDialogAbbrev implements OnInit {
   total: number = 0;
   oldAbbrev: any;
   abbrevForm!: FormGroup;
-  isEdit = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
