@@ -64,6 +64,23 @@ async function insertFamily(data, res) {
     throw err;
   }
 }
+
+//___________________POST FROM ADHERENT_______________________________________________
+
+router.post("/adherent", async (req, res, next) => {
+  const { id_adherent, id_lien, nom_benef, prenom_benef, date_nai_benef } =
+    req.body;
+  try {
+    const result = await db.query(
+      "INSERT INTO fam_adh (id_adherent, id_lien, nom_benef,prenom_benef, date_nai_benef) VALUES (?, ?, ?, ? ,?)",
+      [id_adherent, id_lien, nom_benef, prenom_benef, date_nai_benef]
+    );
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // FAMILY____________________ READ - GET___________________________________
 router.get("/", async (req, res, next) => {
   const {
@@ -150,22 +167,50 @@ router.get("/:id", async (req, res, next) => {
   const id = req.params.id;
 
   const selectQuery = `
-    SELECT fa.*, a.nom_adherent, a.prenom_adherent
+    SELECT fa.id_fam, fa.id_adherent, fa.nom_benef, fa.prenom_benef, fa.date_nai_benef, lb.lien_benef
     FROM fam_adh fa
-    INNER JOIN adherents a ON fa.id_adherent = a.id_adherent
+    INNER JOIN liens_benef lb ON fa.id_lien = lb.id_lien
+    WHERE fa.id_adherent = ? AND fa.id_lien != 0`;
+
+  try {
+    const [result] = await db.query(selectQuery, [id]);
+
+    if (result.length > 0) {
+      res.status(200).json(result);
+      console.log(result);
+    } else {
+      // Send a custom object when no record is found
+      res.status(200).json([
+        {
+          id_fam: 0,
+          id_adherent: 0,
+          lien_benef: "Aucun bénéficiaire enregistré",
+          nom_benef: "",
+          prenom_benef: "",
+          date_nai_benef: "",
+        },
+      ]);
+    }
+  } catch (err) {
+    next(err); // Pass the error to the error handler middleware
+  }
+});
+
+//________________________________GET FOR DECLARATION ___________________________________________________________________________________
+
+router.get("/:id/decla", async (req, res, next) => {
+  const id = req.params.id;
+
+  const selectQuery = `
+    SELECT fa.id_fam, fa.nom_benef, fa.prenom_benef, fa.date_nai_benef, lb.lien_benef, fa.id_lien
+    FROM fam_adh fa
+    INNER JOIN liens_benef lb ON fa.id_lien = lb.id_lien
     WHERE fa.id_adherent = ?`;
 
   try {
     const [result] = await db.query(selectQuery, [id]);
 
     if (result.length > 0) {
-      result.forEach((item) => {
-        item.date_nai_benef = format(
-          new Date(item.date_nai_benef),
-          "dd/MM/yyyy"
-        );
-      });
-
       res.status(200).json(result);
     } else {
       // Send a custom object when no record is found
@@ -185,8 +230,8 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-// FAMILY DELETE
-router.delete("/:id", async (req, res) => {
+// __________________________________________________________FAMILY DELETE_________________________________________________________________
+router.delete("/:id", async (req, res, next) => {
   const id = req.params.id;
   const deleteQuery = "DELETE FROM fam_adh WHERE id_fam = ?";
 
@@ -200,23 +245,13 @@ router.delete("/:id", async (req, res) => {
 // FAMILY ________________________ UPDATE - PUT_____________________________
 router.put("/:id", async (req, res) => {
   const id = req.params.id;
-  const { id_adherent, lien_benef, nom_benef, prenom_benef, date_nai_benef } =
-    req.body;
-
-  const formattedDate_nai = format(new Date(date_nai_benef), "yyyy-MM-dd");
+  const { nom_benef, prenom_benef, date_nai_benef } = req.body;
 
   const updateQuery =
-    "UPDATE fam_adh SET id_adherent = ?, lien_benef = ?, nom_benef = ?, prenom_benef = ?, date_nai_benef = ? WHERE id_adherent = ?";
+    "UPDATE fam_adh SET nom_benef = ?, prenom_benef = ?, date_nai_benef = ? WHERE id_fam = ?";
 
   try {
-    await db.query(updateQuery, [
-      id_adherent,
-      lien_benef,
-      nom_benef,
-      prenom_benef,
-      formattedDate_nai,
-      id,
-    ]);
+    await db.query(updateQuery, [nom_benef, prenom_benef, date_nai_benef, id]);
     res.status(200).json({ message: "Family updated successfully" });
   } catch (err) {
     next(err); // Pass the error to the error handler middleware

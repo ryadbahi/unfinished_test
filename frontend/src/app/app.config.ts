@@ -1,4 +1,4 @@
-import { ApplicationConfig, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import {
@@ -6,30 +6,36 @@ import {
   provideAnimations,
 } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
-import { DatePipe, DecimalPipe, registerLocaleData } from '@angular/common';
-import localeFr from '@angular/common/locales/fr';
-import { provideToastr } from 'ngx-toastr';
+import { DatePipe, DecimalPipe } from '@angular/common';
+import 'moment/locale/fr';
+import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { CustomDateAdapter } from './date-adapter';
 import { MatTableModule } from '@angular/material/table';
-
 import { NgxSpinnerModule } from 'ngx-spinner';
-registerLocaleData(localeFr, 'fr');
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DDMMYYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: LOCALE_ID, useValue: 'fr-FR' },
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
+
     provideRouter(routes, withViewTransitions()),
     provideAnimations(),
     BrowserAnimationsModule,
     provideAnimations(),
     provideHttpClient(),
     DatePipe,
-    provideToastr({
-      positionClass: 'toast-bottom-center',
-      timeOut: 999999,
-      tapToDismiss: true,
-      maxOpened: 1,
-      autoDismiss: true,
-    }),
     MatTableModule,
     NgxSpinnerModule,
     DecimalPipe,

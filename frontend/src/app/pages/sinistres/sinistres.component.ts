@@ -4,7 +4,6 @@ import {
   Component,
   OnInit,
   ViewChild,
-  viewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
@@ -106,6 +105,7 @@ export interface DptSin {
   nom_adherent: string;
   prenom_adherent: string;
   id_fam: number;
+  id_lien: number;
   lien_benef: string;
   nom_benef: string;
   prenom_benef: string;
@@ -387,6 +387,7 @@ export class SinistresComponent implements OnInit {
       nom_adherent: ['', Validators.required],
       prenom_adherent: ['', Validators.required],
       id_fam: ['', Validators.required],
+      id_lien: ['', Validators.required],
       lien_benef: ['', Validators.required],
       nom_benef: ['', Validators.required],
       prenom_benef: ['', Validators.required],
@@ -484,8 +485,10 @@ export class SinistresComponent implements OnInit {
   updateFamilyForm() {
     if (this.selectedFamily) {
       const data = this.selectedFamily;
+
       this.dptsinForm.patchValue({
         id_fam: data?.id_fam,
+        id_lien: data?.id_lien,
         nom_benef: data?.nom_benef,
         prenom_benef: data?.prenom_benef,
         date_nai_benef: data?.date_nai_benef,
@@ -654,7 +657,6 @@ export class SinistresComponent implements OnInit {
     );
 
     if (this.selectedFmp) {
-      const id_nomencl = this.selectedFmp.id_nomencl;
       this.updateNomenclForm();
     } else {
       console.error('No Family found with id:', selectedNomencl);
@@ -669,7 +671,6 @@ export class SinistresComponent implements OnInit {
     );
 
     if (this.selectedFamily) {
-      const id_fam = this.selectedFamily.id_fam;
       this.updateFamilyForm();
     } else {
       console.error('No Family found with id:', selectedFam);
@@ -888,7 +889,7 @@ export class SinistresComponent implements OnInit {
   getFamily(id_adherent: number) {
     this.isLoading = true;
     return new Promise((resolve, reject) => {
-      this.apiService.getFamilyId(id_adherent).subscribe({
+      this.apiService.getFamilyDeclaId(id_adherent).subscribe({
         next: (data: fam_adhData[]) => {
           this.fam_AdhDatasource = new MatTableDataSource(data);
           this.fam_Data = [...data];
@@ -1103,6 +1104,7 @@ export class SinistresComponent implements OnInit {
       id_fam: element.id_fam,
       id_nomencl: element.id_nomencl,
       id_opt: element.id_opt,
+      id_lien: element.id_lien,
       lien_benef: element.lien_benef,
       nbr_unit: element.nbr_unit,
 

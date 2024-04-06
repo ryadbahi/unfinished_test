@@ -7,7 +7,11 @@ import {
   AbbrevList,
   MreportsData,
 } from './pages/mailreports/MailreportsComponent';
-import { AdherentData } from './pages/adherents/adherents.component';
+import {
+  AdherentData,
+  Liens_benef,
+  fam_adhData,
+} from './pages/adherents/adherents.component';
 import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
 
 import { DptSin } from './pages/sinistres/sinistres.component';
@@ -354,14 +358,47 @@ export class ApiService {
 
   //_____________________ FAMILY______________________________
 
+  //_______________________Post_________________________________
+
+  postFamData(data: any) {
+    return this.http.post(`${this.apiUrl}/fam_adh/adherent`, data);
+  }
+
   //get family by id________
-  getFamilyId(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/fam_adh/${id}`).pipe(
+  getFamilyId(id: number): Observable<fam_adhResponse> {
+    return this.http.get<fam_adhResponse>(`${this.apiUrl}/fam_adh/${id}`).pipe(
       catchError((error) => {
         console.error('No record found for this id:', id);
         return throwError(() => error); // Use a factory function
       })
     );
+  }
+
+  //_______________delete fam_____________________________
+
+  deleteFam(id: number) {
+    return this.http.delete(`${this.apiUrl}/fam_adh/${id}`);
+  }
+
+  updateFam(id: number, data: any) {
+    return this.http.put(`${this.apiUrl}/fam_adh/${id}`, data);
+  }
+
+  //get family for declaration___________________________
+
+  getFamilyDeclaId(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/fam_adh/${id}/decla`).pipe(
+      catchError((error) => {
+        console.error('No record found for this id:', id);
+        return throwError(() => error); // Use a factory function
+      })
+    );
+  }
+
+  //________________________liens_benef____________________________
+
+  getLiensBenef(): Observable<Liens_benef[]> {
+    return this.http.get<Liens_benef[]>(`${this.apiUrl}/liens_benef`);
   }
 
   // _____MGSREADER_________________________________

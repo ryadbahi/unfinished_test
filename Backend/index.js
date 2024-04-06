@@ -15,6 +15,7 @@ const optionsRoutes = require("./RoutesOptions.js");
 const Decla_Sin_TempRoutes = require("./RoutesDecla_Sin_Temp.js");
 const abbrevRoutes = require("./RoutesAbbrev.js");
 const storedSin = require("./RoutesStoredSin.js");
+const liensBenefRoutes = require("./RoutesLiensBenef.js");
 
 const app = express();
 
@@ -25,6 +26,8 @@ app.use((req, res, next) => {
   next();
   console.log(req.body); // Log the raw request body
 });
+
+app.use("/liens_benef", liensBenefRoutes);
 
 //_________________________STORED SINISTRES_______________________________
 app.use("/stored_sin", storedSin);

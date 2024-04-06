@@ -11,26 +11,34 @@
 }
 
 input {
-  size: fit-content;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .familydisplay {
-  overflow: hidden !important;
   display: flex !important;
-  width: 60rem;
+  max-width: 60rem;
 }
 tr.detail-row {
   height: 0;
 }
-.mat-elevation-z8 {
+.Tablegrp {
+  display: flex;
+
+  justify-content: center;
+}
+
+.table {
+  width: 110rem;
+  min-width: 110rem;
+  max-width: 110rem;
   border-radius: 10px;
   overflow: hidden;
-  margin: 0 0 2% 0;
-  width: 110rem;
-  max-width: 110rem;
+  box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2),
+    0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
 }
 #childtable {
+  border-radius: 10px;
+  overflow: hidden;
   margin-top: 10px;
   margin-bottom: 10px;
 }
@@ -38,6 +46,7 @@ tr.detail-row {
   position: relative;
   height: auto;
   font-size: 12px;
+  padding: 0 7px 0 7px;
 }
 
 .matoolB,

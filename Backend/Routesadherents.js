@@ -215,7 +215,6 @@ router.get("/", async (req, res, next) => {
       data: results,
       total: total,
     });
-    console.log(results);
   } catch (err) {
     next(err); // Pass the error to the error handler middleware
   }
@@ -257,7 +256,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // ADHERENTS UPDATE - PUT
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req, res, next) => {
   const id = req.params.id;
   const {
     id_opt,
@@ -269,34 +268,50 @@ router.put("/:id", async (req, res) => {
     email_adh,
     tel_adh,
     statut,
+    effet_couv,
+    exp_couv,
   } = req.body;
 
-  // Format date_nai_adh
-  //const parts = date_nai_adh.split("/");
-  //const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-  const formattedDate_nai = format(new Date(date_nai_adh), "yyyy-MM-dd");
+  const updateAdherentsQuery =
+    "UPDATE adherents SET id_opt= ?, nom_adherent = ?, prenom_adherent = ?, date_nai_adh = ?, situa_fam = ?, rib_adh = ?, email_adh = ?, tel_adh = ?, statut = ?, effet_couv = ?, exp_couv = ? WHERE id_adherent = ?";
 
-  const updateQuery =
-    "UPDATE adherents SET id_opt= ?, nom_adherent = ?, prenom_adherent = ?, date_nai_adh = ?, situa_fam = ?, rib_adh = ?, email_adh = ?, tel_adh = ?, statut = ? WHERE id_adherent = ?";
+  const updateFamAdhQuery =
+    "UPDATE fam_adh SET nom_benef = ?, prenom_benef = ?, date_nai_benef = ? WHERE id_adherent = ? AND id_lien = 0";
 
   try {
-    await db.query(updateQuery, [
+    await db.query(updateAdherentsQuery, [
       id_opt,
       nom_adherent,
       prenom_adherent,
-      formattedDate_nai,
+      date_nai_adh,
       situa_fam,
       rib_adh,
       email_adh,
       tel_adh,
       statut,
+      effet_couv,
+      exp_couv,
       id,
     ]);
-    res.status(200).json({ message: "Adherent updated successfully" });
+
+    await db.query(updateFamAdhQuery, [
+      nom_adherent,
+      prenom_adherent,
+      date_nai_adh,
+      id,
+    ]);
+
+    console.log("date_nai_adh", date_nai_adh);
+
+    res
+      .status(200)
+      .json({ message: "Adherent and fam_adh updated successfully" });
   } catch (err) {
     next(err); // Pass the error to the error handler middleware
   }
 });
+
+////___________________________________GET BY ID SOUSCRIPT________________________________
 
 router.get("/souscript/:id_souscript", async (req, res) => {
   const id_souscript = req.params.id_souscript;

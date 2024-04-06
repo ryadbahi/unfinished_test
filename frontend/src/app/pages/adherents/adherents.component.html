@@ -1,270 +1,782 @@
 <body class="adhpage">
-  <mat-toolbar class="matoolB">Adherents</mat-toolbar>
+  <div>
+    <mat-toolbar class="matoolB">Adherents</mat-toolbar
+    ><button (click)="test()">test</button>
+  </div>
 
-  <mat-form-field>
-    <mat-label>Filter</mat-label>
-    <input
-      matInput
-      (keyup)="applyFilter($event)"
-      placeholder="Ex. Ahmed"
-      #input
-    />
-  </mat-form-field>
-  <div class="mat-elevation-z8" id="maintable">
-    <table mat-table [dataSource]="adhdataSource" matSort multiTemplateDataRows>
-      <ng-container matColumnDef="id_adherent">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-        <td mat-cell *matCellDef="let elemadh">
-          {{ elemadh.id_adherent }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="nom_souscript">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Souscripteur</th>
-        <td mat-cell *matCellDef="let elemadh">
-          {{ elemadh.nom_souscript }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="nom_adherent">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.nom_adherent" type="text" />
-          </div>
-          <div *ngIf="!elemadh.isEdit">
-            {{ elemadh.nom_adherent | uppercase }}
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="prenom_adherent">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Prenom</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.prenom_adherent" type="text" />
-          </div>
-          <div *ngIf="!elemadh.isEdit">
-            {{ elemadh.prenom_adherent | titlecase }}
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="date_nai_adh">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          Date de naissance
-        </th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.date_nai_adh" matInput />
-          </div>
-          <div *ngIf="!elemadh.isEdit">
-            {{ elemadh.date_nai_adh | date : "dd/MM/yyyy" }}
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="situa_fam">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          Situation fam.
-        </th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.situa_fam" type="text" />
-          </div>
-          <div *ngIf="!elemadh.isEdit">
-            {{ elemadh.situa_fam | titlecase }}
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="id_opt">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Opt N°</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input
-              [(ngModel)]="elemadh.id_opt"
-              type="text"
-              (click)="$event.stopPropagation()"
-            />
-          </div>
-          <div *ngIf="!elemadh.isEdit">
-            {{ elemadh.id_opt }}
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="rib_adh">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>RIB</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.rib_adh" type="text" />
-          </div>
-          <div *ngIf="!elemadh.isEdit">
-            <span (click)="$event.stopPropagation()">{{
-              elemadh.rib_adh
-            }}</span>
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="email_adh">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input [(ngModel)]="elemadh.email_adh" type="email" />
-          </div>
-          <div *ngIf="!elemadh.isEdit">{{ elemadh.email_adh }}</div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="tel_adh">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tel</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input
-              maxlength="13"
-              size="12"
-              type="tel"
-              [(ngModel)]="elemadh.tel_adh"
-            />
-          </div>
-          <div *ngIf="!elemadh.isEdit">{{ elemadh.tel_adh }}</div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="statut">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="elemadh.isEdit">
-            <input
-              maxlength="13"
-              size="12"
-              type="tel"
-              [(ngModel)]="elemadh.statut"
-            />
-          </div>
-          <div *ngIf="!elemadh.isEdit">{{ elemadh.statut }}</div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Edit / Supr.</th>
-        <td mat-cell *matCellDef="let elemadh">
-          <div *ngIf="!elemadh.isEdit">
-            <mat-icon
-              style="margin: 0; color: #348bfd; cursor: pointer"
-              [routerLink]="['/adherents', elemadh.id_adherent]"
-              (click)="strteditadh(elemadh); $event.stopPropagation()"
-              >edit</mat-icon
-            >
-
-            <mat-icon
-              color="warn"
-              style="margin: 0"
-              (click)="
-                deleteIDAdh(elemadh.id_adherent); $event.stopPropagation()
-              "
-              >delete</mat-icon
-            >
-          </div>
-          <!----------------------------ALTERNATE BUTTONS------------------------------->
-          <div *ngIf="elemadh.isEdit">
-            <mat-icon
-              style="
-                margin: 0;
-                color: green;
-                font-weight: bolder;
-                cursor: pointer;
-              "
-              (click)="updateAdhData(elemadh); $event.stopPropagation()"
-              >check</mat-icon
-            >
-
-            <mat-icon
-              style="
-                margin: 0;
-                color: grey;
-                font-weight: bolder;
-                cursor: pointer;
-              "
-              (click)="Cancel(elemadh); $event.stopPropagation()"
-              >close</mat-icon
-            >
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="expandedDetail">
-        <td
-          mat-cell
-          *matCellDef="let element"
-          [attr.colspan]="displayedColumns.length"
-        >
-          <div
-            class="familydisplay"
-            [@detailExpand]="
-              element == expandedElement ? 'expanded' : 'collapsed'
-            "
+  <div>
+    <mat-form-field>
+      <mat-label>Filter</mat-label>
+      <input
+        matInput
+        (keyup)="applyFilter($event)"
+        placeholder="Ex. Ahmed"
+        #input
+      />
+    </mat-form-field>
+  </div>
+  <div class="Tablegrp">
+    <div class="table">
+      <table
+        mat-table
+        [dataSource]="adhdataSource"
+        matSort
+        multiTemplateDataRows
+      >
+        <ng-container matColumnDef="id_adherent">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 3rem; min-width: 3rem; width: 3rem"
           >
-            <table
-              mat-table
-              [dataSource]="element.fam_adh"
-              class="mat-elevation-z8"
-              id="childtable"
+            ID
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            style="max-width: 3rem; min-width: 3rem; width: 3rem; height: 3rem"
+          >
+            {{ elemadh.id_adherent }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="nom_souscript">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 7rem; min-width: 7rem; width: 7rem"
+          >
+            Souscripteur
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            style="max-width: 7rem; min-width: 7rem; width: 7rem"
+          >
+            {{ elemadh.nom_souscript }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="nom_adherent">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 9rem; min-width: 9rem; width: 9rem"
+          >
+            Nom
+          </th>
+          <td mat-cell *matCellDef="let elemadh">
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
             >
-              <ng-container matColumnDef="lien_benef">
-                <th mat-header-cell *matHeaderCellDef>Lien</th>
-                <td mat-cell *matCellDef="let fam">{{ fam.lien_benef }}</td>
-              </ng-container>
-              <ng-container matColumnDef="nom_benef">
-                <th mat-header-cell *matHeaderCellDef>Nom</th>
-                <td mat-cell *matCellDef="let fam">{{ fam.nom_benef }}</td>
-              </ng-container>
-              <ng-container matColumnDef="prenom_benef">
-                <th mat-header-cell *matHeaderCellDef>Prénom</th>
-                <td mat-cell *matCellDef="let fam">{{ fam.prenom_benef }}</td>
-              </ng-container>
-              <ng-container matColumnDef="date_nai_benef">
-                <th mat-header-cell *matHeaderCellDef>Date de naissance</th>
-                <td mat-cell *matCellDef="let fam">{{ fam.date_nai_benef }}</td>
-              </ng-container>
+              <input
+                [(ngModel)]="elemadh.nom_adherent"
+                style="max-width: 7rem; min-width: 7rem; width: 7rem"
+              />
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              {{ elemadh.nom_adherent | uppercase }}
+            </div>
+          </td>
+        </ng-container>
 
-              <!-- Other columns go here -->
+        <ng-container matColumnDef="prenom_adherent">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 9rem; min-width: 9rem; width: 9rem"
+          >
+            Prenom
+          </th>
+          <td mat-cell *matCellDef="let elemadh">
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              <input
+                [(ngModel)]="elemadh.prenom_adherent"
+                style="max-width: 7rem; min-width: 7rem; width: 7rem"
+              />
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              {{ elemadh.prenom_adherent | titlecase }}
+            </div>
+          </td>
+        </ng-container>
 
-              <tr mat-header-row *matHeaderRowDef="famdisplayedColumns"></tr>
-              <tr
-                mat-row
-                *matRowDef="let row; columns: famdisplayedColumns"
-              ></tr>
-            </table>
-          </div>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="date_nai_adh">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 9rem; min-width: 9rem; width: 9rem"
+          >
+            Date de naissance
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            style="max-width: 8rem; min-width: 8rem; width: 8rem"
+          >
+            <div
+              *ngIf="elemadh.isEdit"
+              (click)="$event.stopPropagation()"
+              style="
+                max-width: 8rem;
+                min-width: 8rem;
+                width: 8rem;
+                display: inline-flex;
+                gap: 2rem;
+              "
+            >
+              <div style="margin: auto">
+                <input
+                  style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                  [(ngModel)]="elemadh.date_nai_adh"
+                  matInput
+                  [matDatepicker]="picker"
+                />
+              </div>
+              <div>
+                <mat-datepicker-toggle matIconSuffix [for]="picker">
+                </mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </div>
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              {{ elemadh.date_nai_adh | date : "dd/MM/yyyy" }}
+            </div>
+          </td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr
-        mat-row
-        *matRowDef="let element; columns: displayedColumns"
-        (click)="toggleFam(element)"
-      ></tr>
-      <tr
-        mat-row
-        *matRowDef="let row; columns: ['expandedDetail']"
-        class="detail-row"
-      ></tr>
+        <ng-container matColumnDef="situa_fam">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 9rem; min-width: 9rem; width: 9rem"
+          >
+            Situation fam.
+          </th>
+          <td mat-cell *matCellDef="let elemadh">
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 2rem; min-width: 2rem; width: 2rem"
+            >
+              <input
+                style="max-width: 2rem; min-width: 2rem; width: 2rem"
+                [(ngModel)]="elemadh.situa_fam"
+                type="text"
+              />
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 2rem; min-width: 2rem; width: 2rem"
+            >
+              {{ elemadh.situa_fam | titlecase }}
+            </div>
+          </td>
+        </ng-container>
 
-      <!-- Row shown when there is no matching data. -->
-      <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" colspan="4">
-          Pas de résultats pour "{{ input.value }}"
-        </td>
-      </tr>
-    </table>
+        <ng-container matColumnDef="id_opt">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 6rem; min-width: 6rem; width: 6rem"
+          >
+            Opt N°
+          </th>
+          <td mat-cell *matCellDef="let elemadh">
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 2rem; min-width: 2rem; width: 2rem"
+            >
+              <input
+                style="max-width: 2rem; min-width: 2rem; width: 2rem"
+                [(ngModel)]="elemadh.id_opt"
+                (click)="$event.stopPropagation()"
+              />
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 2rem; min-width: 2rem; width: 2rem"
+            >
+              {{ elemadh.id_opt }}
+            </div>
+          </td>
+        </ng-container>
 
-    <mat-paginator
-      [pageSizeOptions]="[10, 30, 60, 120]"
-      aria-label="Select page of users"
-    ></mat-paginator>
+        <ng-container matColumnDef="rib_adh">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 11rem; min-width: 11rem; width: 11rem"
+          >
+            RIB
+          </th>
+          <td mat-cell *matCellDef="let elemadh">
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              <input
+                [(ngModel)]="elemadh.rib_adh"
+                style="max-width: 9rem; min-width: 9rem; width: 9rem"
+              />
+            </div>
+            <div *ngIf="!elemadh.isEdit">
+              <span (click)="$event.stopPropagation()">{{
+                elemadh.rib_adh
+              }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="effet_couv">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 10rem; min-width: 10rem; width: 10rem"
+          >
+            Effet
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            style="max-width: 10rem; min-width: 10rem; width: 10rem"
+          >
+            <div
+              *ngIf="elemadh.isEdit"
+              (click)="$event.stopPropagation()"
+              style="
+                max-width: 8rem;
+                min-width: 8rem;
+                width: 8rem;
+                display: inline-flex;
+                gap: 2rem;
+              "
+            >
+              <div style="margin: auto">
+                <input
+                  style="width: 5rem"
+                  [(ngModel)]="elemadh.effet_couv"
+                  matInput
+                  [matDatepicker]="picker"
+                />
+              </div>
+              <div>
+                <mat-datepicker-toggle
+                  matIconSuffix
+                  [for]="picker"
+                  style="position: relative"
+                >
+                </mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </div>
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              {{ elemadh.effet_couv | date : "dd/MM/yyyy" }}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="exp_couv">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 10rem; min-width: 10rem; width: 10rem"
+          >
+            Éxpir.
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            style="max-width: 10rem; min-width: 10rem; width: 10rem"
+          >
+            <div
+              *ngIf="elemadh.isEdit"
+              (click)="$event.stopPropagation()"
+              style="
+                max-width: 8rem;
+                min-width: 8rem;
+                width: 8rem;
+                display: inline-flex;
+                gap: 2rem;
+              "
+            >
+              <div style="margin: auto">
+                <input
+                  style="width: 5rem"
+                  [(ngModel)]="elemadh.exp_couv"
+                  matInput
+                  [matDatepicker]="picker"
+                />
+              </div>
+              <div>
+                <mat-datepicker-toggle
+                  matIconSuffix
+                  [for]="picker"
+                  style="position: relative"
+                >
+                </mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </div>
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              {{ elemadh.exp_couv | date : "dd/MM/yyyy" }}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email_adh">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 11rem; min-width: 11rem; width: 11rem"
+          >
+            Email
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            (click)="$event.stopPropagation()"
+          >
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              <input [(ngModel)]="elemadh.email_adh" type="email" />
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              {{ elemadh.email_adh }}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="tel_adh">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 7rem; min-width: 7rem; width: 7rem"
+          >
+            Tel
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            (click)="$event.stopPropagation()"
+          >
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 5rem; min-width: 5rem; width: 5rem"
+            >
+              <input
+                maxlength="13"
+                size="12"
+                type="tel"
+                [(ngModel)]="elemadh.tel_adh"
+                style="max-width: 5rem; min-width: 5rem; width: 5rem"
+              />
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 5rem; min-width: 5rem; width: 5rem"
+            >
+              {{ elemadh.tel_adh }}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="statut">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            style="max-width: 4rem; min-width: 4rem; width: 4rem"
+          >
+            Statut
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let elemadh"
+            (click)="$event.stopPropagation()"
+          >
+            <div
+              *ngIf="elemadh.isEdit"
+              style="max-width: 3rem; min-width: 3rem; width: 3rem"
+            >
+              <input
+                style="max-width: 3rem; min-width: 3rem; width: 3rem"
+                maxlength="13"
+                size="12"
+                type="tel"
+                [(ngModel)]="elemadh.statut"
+              />
+            </div>
+            <div
+              *ngIf="!elemadh.isEdit"
+              style="max-width: 3rem; min-width: 3rem; width: 3rem"
+            >
+              {{ elemadh.statut }}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Edit / Supr.</th>
+          <td mat-cell *matCellDef="let elemadh">
+            <div *ngIf="!elemadh.isEdit">
+              <mat-icon
+                style="margin: 0; color: #348bfd; cursor: pointer"
+                (click)="strteditadh(elemadh); $event.stopPropagation()"
+                >edit</mat-icon
+              >
+
+              <mat-icon
+                color="warn"
+                style="margin: 0"
+                (click)="
+                  deleteIDAdh(elemadh.id_adherent); $event.stopPropagation()
+                "
+                >delete</mat-icon
+              >
+            </div>
+            <!----------------------------ALTERNATE BUTTONS------------------------------->
+            <div *ngIf="elemadh.isEdit">
+              <mat-icon
+                style="
+                  margin: 0;
+                  color: green;
+                  font-weight: bolder;
+                  cursor: pointer;
+                "
+                (click)="updateAdhData(elemadh); $event.stopPropagation()"
+                >check</mat-icon
+              >
+
+              <mat-icon
+                style="
+                  margin: 0;
+                  color: grey;
+                  font-weight: bolder;
+                  cursor: pointer;
+                "
+                (click)="Cancel(elemadh); $event.stopPropagation()"
+                >close</mat-icon
+              >
+            </div>
+          </td>
+        </ng-container>
+
+        <!--________________________________________________________________________________________________________________________________-->
+        <!--________________________________________________________________________________________________________________________________-->
+        <!--___________________________________________________________FAMILY TABLE_________________________________________________________-->
+        <!--________________________________________________________________________________________________________________________________-->
+        <!--________________________________________________________________________________________________________________________________-->
+        <ng-container matColumnDef="expandedDetail">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [attr.colspan]="displayedColumns.length"
+          >
+            <div
+              class="familydisplay"
+              [@detailExpand]="
+                element == expandedElement ? 'expanded' : 'collapsed'
+              "
+            >
+              <table
+                mat-table
+                [dataSource]="element.fam_adh"
+                class="mat-elevation-z8"
+                id="childtable"
+              >
+                <ng-container matColumnDef="lien_benef">
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                  >
+                    Lien
+                  </th>
+                  <td
+                    mat-cell
+                    *matCellDef="let fam"
+                    style="
+                      max-width: 5rem;
+                      min-width: 5rem;
+                      width: 5rem;
+                      height: 3rem;
+                    "
+                  >
+                    <div
+                      *ngIf="fam.isEdit || fam.isNew"
+                      style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                    >
+                      <mat-select
+                        style="
+                          font-size: 12px;
+                          max-width: 5rem;
+                          min-width: 5rem;
+                          width: 5rem;
+                        "
+                        placeholder="Selection"
+                        (click)="getLiensBenef()"
+                        (selectionChange)="onFamSelectChange($event)"
+                      >
+                        <mat-option
+                          *ngFor="let elem of liensBenef"
+                          [value]="elem.id_lien"
+                        >
+                          {{ elem.lien_benef }}
+                        </mat-option>
+                      </mat-select>
+                    </div>
+
+                    <div
+                      *ngIf="!fam.isEdit && !fam.isNew"
+                      style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                    >
+                      {{ fam.lien_benef }}
+                    </div>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="nom_benef">
+                  <th mat-header-cell *matHeaderCellDef>Nom</th>
+                  <td
+                    mat-cell
+                    *matCellDef="let fam"
+                    style="max-width: 7rem; min-width: 7rem; width: 7rem"
+                  >
+                    <div
+                      *ngIf="fam.isEdit || fam.isNew"
+                      style="max-width: 7rem; min-width: 7rem; width: 7rem"
+                    >
+                      <input [(ngModel)]="fam.nom_benef" type="text" />
+                    </div>
+
+                    <div
+                      *ngIf="!fam.isEdit && !fam.isNew"
+                      style="max-width: 7rem; min-width: 7rem; width: 7rem"
+                    >
+                      {{ fam.nom_benef }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="prenom_benef">
+                  <th mat-header-cell *matHeaderCellDef>Prénom</th>
+                  <td
+                    mat-cell
+                    *matCellDef="let fam"
+                    style="max-width: 7rem; min-width: 7rem; width: 7rem"
+                  >
+                    <div *ngIf="fam.isEdit || fam.isNew">
+                      <input [(ngModel)]="fam.prenom_benef" />
+                    </div>
+
+                    <div *ngIf="!fam.isEdit && !fam.isNew">
+                      {{ fam.prenom_benef }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="date_nai_benef">
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    style="max-width: 8rem; min-width: 8rem; width: 8rem"
+                  >
+                    Date de naissance
+                  </th>
+                  <td
+                    mat-cell
+                    *matCellDef="let fam"
+                    style="max-width: 7rem; min-width: 7rem; width: 7rem"
+                  >
+                    <div
+                      *ngIf="fam.isEdit || fam.isNew"
+                      (click)="$event.stopPropagation()"
+                      style="
+                        max-width: 12rem;
+                        min-width: 12rem;
+                        width: 12rem;
+                        display: inline-flex;
+                      "
+                    >
+                      <div style="margin: auto 0 auto 0">
+                        <input
+                          style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                          [(ngModel)]="fam.date_nai_benef"
+                          matInput
+                          [matDatepicker]="picker"
+                        />
+                      </div>
+                      <div>
+                        <mat-datepicker-toggle matIconSuffix [for]="picker">
+                        </mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                      </div>
+                    </div>
+
+                    <div
+                      *ngIf="!fam.isEdit && !fam.isNew"
+                      style="max-width: 7rem; min-width: 7rem; width: 7rem"
+                    >
+                      {{ fam.date_nai_benef | date : "dd/MM/yyyy" }}
+                    </div>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Edit / Supr.</th>
+                  <td
+                    mat-cell
+                    *matCellDef="let fam"
+                    style="max-width: 4rem; min-width: 4rem; width: 4rem"
+                  >
+                    <div
+                      *ngIf="!fam.isEdit && !fam.isNew"
+                      (click)="$event.stopPropagation()"
+                      style="max-width: 4rem; min-width: 4rem; width: 4rem"
+                    >
+                      <mat-icon
+                        style="margin: 0; color: #348bfd; cursor: pointer"
+                        (click)="strtEditFam(fam); $event.stopPropagation()"
+                        >edit</mat-icon
+                      >
+
+                      <mat-icon
+                        color="warn"
+                        style="margin: 0"
+                        (click)="deleteFam(fam); $event.stopPropagation()"
+                        >delete</mat-icon
+                      >
+                    </div>
+                    <!----------------------------ALTERNATE BUTTONS------------------------------->
+                    <div *ngIf="fam.isEdit">
+                      <mat-icon
+                        style="
+                          margin: 0;
+                          color: green;
+                          font-weight: bolder;
+                          cursor: pointer;
+                        "
+                        (click)="updateFamily(fam); $event.stopPropagation()"
+                        >check</mat-icon
+                      >
+
+                      <mat-icon
+                        style="
+                          margin: 0;
+                          color: grey;
+                          font-weight: bolder;
+                          cursor: pointer;
+                        "
+                        (click)="cancelFam(fam); $event.stopPropagation()"
+                        >close</mat-icon
+                      >
+                    </div>
+
+                    <div
+                      *ngIf="fam.isNew"
+                      style="max-width: 4rem; min-width: 4rem; width: 4rem"
+                    >
+                      <mat-icon
+                        (click)="submitNewFamData(fam)"
+                        style="
+                          margin: 0;
+                          color: #348bfd;
+                          cursor: pointer;
+                          font-weight: bolder;
+                        "
+                        >check</mat-icon
+                      >
+                      <mat-icon
+                        style="
+                          margin: 0;
+                          color: grey;
+                          font-weight: bolder;
+                          cursor: pointer;
+                        "
+                        (click)="cancelFam(fam); $event.stopPropagation()"
+                        >close</mat-icon
+                      >
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Other columns go here -->
+
+                <tr mat-header-row *matHeaderRowDef="famdisplayedColumns"></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: famdisplayedColumns"
+                ></tr>
+              </table>
+              <div>
+                <mat-icon
+                  fontIcon="add"
+                  style="margin: 3vh 0 0 1vh; cursor: pointer"
+                  (click)="AddNewFamRow()"
+                ></mat-icon>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let element; columns: displayedColumns"
+          (click)="toggleFam(element)"
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: ['expandedDetail']"
+          class="detail-row"
+        ></tr>
+
+        <!-- Row shown when there is no matching data. -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="4">
+            Pas de résultats pour "{{ input.value }}"
+          </td>
+        </tr>
+      </table>
+
+      <mat-paginator
+        [pageSizeOptions]="[10, 30, 60, 120]"
+        aria-label="Select page of users"
+      ></mat-paginator>
+    </div>
   </div>
 </body>
