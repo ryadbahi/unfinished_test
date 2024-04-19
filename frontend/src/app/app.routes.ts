@@ -11,6 +11,7 @@ import { VerifsinComponent } from './pages/verifsin/verifsin.component';
 import { ParaphComponent } from './pages/paraph/paraph.component';
 import { HistoParaphComponent } from './pages/paraph/histo-paraph/histo-paraph.component';
 import { ContratComponent } from './pages/contrat/contrat.component';
+import { TycComponent } from './pages/tyc/tyc.component';
 
 export const routes: Routes = [
   {
@@ -72,5 +73,11 @@ export const routes: Routes = [
     path: 'contrat',
     component: ContratComponent,
     title: 'Contrats',
+  },
+
+  {
+    path: 'tyc',
+    component: TycComponent,
+    title: 'Conso sur 2 ans',
   },
 ];

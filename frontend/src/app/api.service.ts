@@ -15,6 +15,7 @@ import {
 import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
 
 import { DptSin } from './pages/sinistres/sinistres.component';
+import { JsonData } from './pages/tyc/tyc.component';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -96,6 +97,8 @@ export class ApiService {
   dataChange = this.dataChangeSubject.asObservable();
 
   apiUrl = 'http://localhost:3000';
+
+  JsonDataFile = 'C:/Users/Ryad BAHI/Desktop/data.json';
 
   triggerDataChange() {
     this.dataChangeSubject.next();
@@ -404,12 +407,22 @@ export class ApiService {
   // _____MGSREADER_________________________________
 
   uploadMsgFile(file: File) {
-    console.log('Uploading file:', file); // Add this line
+    console.log('Uploading file:', file);
 
     const formData = new FormData();
     formData.append('file', file);
 
     return this.http.post(`/upload`, formData);
+  }
+
+  msgToParse(files: FileList) {
+    const formData = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
+
+    return this.http.post<any>(`${this.apiUrl}/mailreports/msg`, formData);
   }
 
   //_______________________________PDF PARSING__________________
@@ -606,5 +619,11 @@ export class ApiService {
     console.log('FROM API', id_opt);
 
     return this.http.get(`${this.apiUrl}/options/${id_opt}`);
+  }
+
+  //________________JSON DATA FILE________________________________
+
+  getJsonData(): Observable<any> {
+    return this.http.get(`${this.JsonDataFile}`);
   }
 }

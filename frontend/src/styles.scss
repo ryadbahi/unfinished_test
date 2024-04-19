@@ -9,7 +9,12 @@
 }
 html {
   //background-image: url("/assets/background.png");
-  background-image: url("/assets/blue-pink-gradient-linear.jpg");
+  // background-image: url("/assets/blue-pink-gradient-linear.jpg");
+  background: linear-gradient(
+    63deg,
+    rgba(154, 151, 215, 1) 43%,
+    rgba(2, 204, 245, 1) 100%
+  );
   background-size: cover;
 }
 body {

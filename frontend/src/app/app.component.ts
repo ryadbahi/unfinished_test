@@ -42,7 +42,4 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
 
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
-  collapsed = signal(true);
-  sidenavWidth = computed(() => (this.collapsed() ? '65px' : '250px'));
-}
+export class AppComponent {}

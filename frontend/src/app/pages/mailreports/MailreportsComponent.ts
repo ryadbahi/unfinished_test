@@ -30,8 +30,7 @@ import {
 } from '../../api.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import MsgReader from '@kenjiuno/msgreader';
-import { BusinessHoursService } from '../../businessdayshours.service';
+
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
@@ -121,7 +120,7 @@ export class MailreportsComponent implements OnInit {
   total: number = 0;
   page: number = 1;
   pageSize: number = 15;
-  sortField: string = 'id_mail';
+  sortField: string = 'reponse';
   abbrevSortField: string = 'id_abbrev';
   search: string = '';
   statut: string[] = ['Réglée', 'Infondée'];
@@ -205,12 +204,15 @@ export class MailreportsComponent implements OnInit {
       dropzone.style.display = 'none';
     }
 
-    let msgFiles: File[] = [];
+    // Create a new DataTransfer object
+    const dataTransfer = new DataTransfer();
+
     if (event.dataTransfer) {
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
         const file = event.dataTransfer.files[i];
         if (this.isMsgFile(file)) {
-          msgFiles.push(file);
+          // Add the .msg file to the DataTransfer object
+          dataTransfer.items.add(file);
         } else {
           this.snackBService.openSnackBar(
             "Ceci n'est pas un fichier .MSG",
@@ -220,15 +222,18 @@ export class MailreportsComponent implements OnInit {
         }
       }
     }
+
+    // Get a FileList object from the DataTransfer object
+    const msgFiles: FileList = dataTransfer.files;
+
     if (msgFiles.length > 0) {
-      this.readMsgFiles(msgFiles);
+      this.sendMsgToServ(msgFiles);
     }
   }
 
   constructor(
     private datePipe: DatePipe,
     private service: ApiService,
-    private businessHoursService: BusinessHoursService,
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
     private dialog: MatDialog,
@@ -369,11 +374,14 @@ export class MailreportsComponent implements OnInit {
     const files: FileList | null = event.target.files;
 
     if (files && files.length > 0) {
-      const msgFiles: File[] = [];
+      // Create a new DataTransfer object
+      const dataTransfer = new DataTransfer();
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (this.isMsgFile(file)) {
-          msgFiles.push(file);
+          // Add the .msg file to the DataTransfer object
+          dataTransfer.items.add(file);
         } else {
           this.snackBService.openSnackBar(
             "Ceci n'est pas un fichier .MSG",
@@ -382,8 +390,12 @@ export class MailreportsComponent implements OnInit {
           console.error('Invalid file type. Please select a .msg file.');
         }
       }
+
+      // Get a FileList object from the DataTransfer object
+      const msgFiles: FileList = dataTransfer.files;
+
       if (msgFiles.length > 0) {
-        this.readMsgFiles(msgFiles);
+        this.sendMsgToServ(msgFiles);
       }
     } else {
       console.error('No files selected.');
@@ -395,143 +407,6 @@ export class MailreportsComponent implements OnInit {
     const allowedExtensions = ['.msg'];
     const fileName = file.name.toLowerCase();
     return allowedExtensions.some((ext) => fileName.endsWith(ext));
-  }
-
-  readMsgFiles(files: File[]) {
-    files.forEach((file) => {
-      let fileReader = new FileReader();
-      fileReader.onload = (e) => {
-        let arrayBuffer = fileReader.result as ArrayBuffer;
-        let msgReader = new MsgReader(arrayBuffer);
-        let msgFileData = msgReader.getFileData();
-
-        if (msgFileData.body) {
-          let sentOnDate: Date | null = null;
-
-          console.log(msgFileData.clientSubmitTime);
-
-          let sentOnMatch = msgFileData.body.match(/Envoyé : (.+)/);
-
-          if (sentOnMatch && sentOnMatch.length > 1) {
-            let sentOnString = sentOnMatch[1];
-
-            let months: { [key: string]: string } = {
-              janvier: 'January',
-              février: 'February',
-              mars: 'March',
-              avril: 'April',
-              mai: 'May',
-              juin: 'June',
-              juillet: 'July',
-              août: 'August',
-              septembre: 'September',
-              octobre: 'October',
-              novembre: 'November',
-              décembre: 'December',
-            };
-
-            for (let month in months) {
-              sentOnString = sentOnString.replace(month, months[month]);
-            }
-
-            sentOnDate = new Date(Date.parse(sentOnString));
-          } else {
-            console.error('Unable to match "Envoyé" line in the message body.');
-            this.snackBService.openSnackBar(
-              'Ce mail viens des éléments envoyés ?',
-              ''
-            );
-          }
-
-          if (msgFileData.normalizedSubject) {
-            let subjectMatch = msgFileData.normalizedSubject.match(
-              /\s*(\w+)\s*(\d+\s*\d+\s*\d+\s*\d+)(?:\/\d+)?\s*-\s*([^\/]+)\s*\/\s*([^:]+)\s*:/
-            );
-
-            if (subjectMatch && subjectMatch.length > 4) {
-              let agence = subjectMatch[1];
-              let contrat = subjectMatch[1] + ' ' + subjectMatch[2];
-              let souscripteur = subjectMatch[3].trim();
-              let adherent = subjectMatch[4].trim();
-              let content =
-                msgFileData.normalizedSubject +
-                '\n' +
-                '\n' +
-                msgFileData.clientSubmitTime +
-                '\n' +
-                '\n' +
-                msgFileData.body;
-              // console.log('here', content);
-
-              // console.log(agence);
-              // console.log(contrat);
-              // console.log(souscripteur);
-              //  console.log(adherent);
-
-              let newRow: MreportsData = {
-                id_mail: '',
-                reception: sentOnDate || new Date(),
-                content: content,
-                canal: this.selectedCanal,
-                traite_par: this.selectedTraiteePar,
-                agence: agence,
-                contrat: contrat,
-                souscripteur: souscripteur,
-                adherent: adherent,
-                objet: '',
-                statut: this.selectedStatut,
-                reponse: msgFileData.clientSubmitTime
-                  ? new Date(msgFileData.clientSubmitTime)
-                  : new Date(),
-                tdr: '',
-                score: '',
-                observation: '',
-                isEdit: false,
-              };
-              // newRow.index = this.dataSource.data.length + 1;
-              // Calculate the score using the service
-              newRow.score = this.businessHoursService
-                .calculateBusinessTimeDifference(
-                  newRow.reception,
-                  newRow.reponse
-                )
-                .toString();
-
-              let timeDifference = Math.abs(
-                newRow.reponse.getTime() - newRow.reception.getTime()
-              );
-
-              let hours = Math.floor(timeDifference / (1000 * 60 * 60));
-              let minutes = Math.floor(
-                (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
-              );
-
-              let seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-              let formattedTDR = `${hours}h ${minutes}m ${seconds}s`;
-
-              newRow.tdr = formattedTDR;
-
-              this.dataSource.data.unshift(newRow);
-
-              this.dataSource = new MatTableDataSource(this.dataSource.data);
-
-              this.dataSource.sort = this.sort;
-              this.dataSource.paginator = this.paginator;
-
-              this.submitNewRow(newRow);
-
-              /* this.strteditmrep(newRow);*/
-
-              this.refreshTable();
-            } else {
-              console.error('Unable to match subject line in the message.');
-            }
-          }
-        }
-      };
-      fileReader.readAsArrayBuffer(file);
-    });
   }
 
   submitNewRow(mrepelem: MreportsData) {
@@ -767,6 +642,20 @@ export class MailreportsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       console.log('The dialog was closed');
+    });
+  }
+
+  onFileChange(event: any) {
+    const files: FileList = event.target.files;
+    this.sendMsgToServ(files);
+  }
+
+  sendMsgToServ(files: FileList) {
+    this.service.msgToParse(files).subscribe({
+      next: (res: any) => {
+        console.log('Datcha sent succesfoulay', res);
+        this.refreshTable();
+      },
     });
   }
 }
