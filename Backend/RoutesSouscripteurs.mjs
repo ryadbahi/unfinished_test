@@ -86,6 +86,30 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// GET WITH SEARCH___________________________________________________
+
+router.get("/search", async (req, res, next) => {
+  const search = req.query.search || "";
+
+  console.log(search);
+  let selectQuery;
+
+  if (search === "") {
+    selectQuery = `SELECT * FROM souscripteurs 
+      ORDER BY id_souscript DESC 
+      LIMIT 5 `;
+  } else {
+    selectQuery = `SELECT * FROM souscripteurs WHERE nom_souscript LIKE ?`;
+  }
+
+  try {
+    const [results] = await db.query(selectQuery, [`%${search}%`]);
+    res.status(200).json(results);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // SOUSCRIPTEURS GET a single record by ID
 router.get("/:id", async (req, res, next) => {
   const id = req.params.id;

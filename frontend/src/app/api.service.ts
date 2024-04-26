@@ -15,7 +15,9 @@ import {
 import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
 
 import { DptSin } from './pages/sinistres/sinistres.component';
-import { JsonData } from './pages/tyc/tyc.component';
+
+import { SouscripData } from './pages/contrat/contrat.component';
+import { CycleData } from './pages/tyc/tyc.component';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -108,6 +110,15 @@ export class ApiService {
 
   getAllSouscripteursData() {
     return this.http.get(`${this.apiUrl}/souscripteurs`);
+  }
+
+  getSousWithSearch(search: string = ''): Observable<SouscripData[]> {
+    return this.http.get<SouscripData[]>(
+      `${this.apiUrl}/souscripteurs/search`,
+      {
+        params: { search: search },
+      }
+    );
   }
 
   addSouscripteurData(data: any) {
@@ -621,9 +632,19 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/options/${id_opt}`);
   }
 
-  //________________JSON DATA FILE________________________________
+  //________________SUIVI DEUX ANS________________________________
 
-  getJsonData(): Observable<any> {
-    return this.http.get(`${this.JsonDataFile}`);
+  //_______________________GET CYCLE_____________________________
+
+  getCycleByIdSouscript(id: number): Observable<CycleData[]> {
+    return this.http.get<CycleData[]>(
+      `${this.apiUrl}/suivideuxans/souscript/${id}`
+    );
+  }
+
+  getCycleById(id: number): Observable<CycleData[]> {
+    return this.http.get<CycleData[]>(
+      `${this.apiUrl}/suivideuxans/cycle/${id}`
+    );
   }
 }

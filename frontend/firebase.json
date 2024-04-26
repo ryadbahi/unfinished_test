@@ -1,0 +1,23 @@
+{
+  "hosting": [
+    {
+      "public": "dist/frontend",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/browser/index.html"
+        }
+      ]
+    },
+    {
+      "target": "frontend",
+      "source": ".",
+      "frameworksBackend": {}
+    }
+  ]
+}

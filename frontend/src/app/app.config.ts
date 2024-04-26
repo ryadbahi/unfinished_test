@@ -7,7 +7,7 @@ import {
 } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import 'moment/locale/fr';
+
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from './date-adapter';
 import { MatTableModule } from '@angular/material/table';

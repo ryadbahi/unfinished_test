@@ -18,10 +18,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AdherentResponse, ApiService } from '../../api.service';
-import { MatDialog } from '@angular/material/dialog';
 import { RouterModule, RouterLink, ActivatedRoute } from '@angular/router';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-
 import {
   animate,
   state,
@@ -29,11 +27,8 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import 'moment/locale/fr';
 import { SnackBarService } from '../../snack-bar.service';
-
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
-import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 

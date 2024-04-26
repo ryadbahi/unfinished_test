@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "toolbox-ffc1f"
+  },
+  "targets": {
+    "toolbox-ffc1f": {
+      "hosting": {
+        "frontend": [
+          "toolbox-ffc1f"
+        ]
+      }
+    }
+  }
+}

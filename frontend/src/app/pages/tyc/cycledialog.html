@@ -1,0 +1,62 @@
+<div class="CycleDialog">
+  <h2 mat-dialog-title>Nouveau Cycle</h2>
+  <mat-dialog-content>
+    <form [formGroup]="cycleForm" style="display: flex; flex-direction: column">
+      <mat-form-field>
+        <input
+          formControlName="cycle"
+          matInput
+          placeholder="Cycle"
+          maxlength="9"
+          minlength="9"
+          pattern="^[0-9]{4}-[0-9]{4}$"
+          placeholder="Ex : 2023-2024"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="date_start"
+          matInput
+          placeholder="Date de début"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input formControlName="date_end" matInput placeholder="Date de fin" />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="contrat_start"
+          matInput
+          placeholder="Contrat début"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="contrat_end"
+          matInput
+          placeholder="Contrat fin"
+        />
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <div class="submitbtn">
+      <button
+        mat-raised-button
+        style="
+          width: 5rem;
+          float: right;
+          margin: 0.5rem 0.5rem 0.5rem 0;
+          border-radius: 20px;
+        "
+        (click)="SubmitCycle()"
+      >
+        Valider
+      </button>
+    </div>
+  </mat-dialog-actions>
+</div>

@@ -16,6 +16,7 @@ import Decla_Sin_TempRoutes from "./RoutesDecla_Sin_Temp.mjs";
 import abbrevRoutes from "./RoutesAbbrev.mjs";
 import storedSin from "./RoutesStoredSin.mjs";
 import liensBenefRoutes from "./RoutesLiensBenef.mjs";
+import suiviDeuxAnsRoutes from "./RoutesSuiviDeuxAns.mjs";
 
 const app = express();
 
@@ -28,6 +29,10 @@ app.use((req, res, next) => {
 });
 
 app.use("/liens_benef", liensBenefRoutes);
+
+//_________________________SUIVI DEUX ANS__________________________________
+
+app.use("/suivideuxans", suiviDeuxAnsRoutes);
 
 //_________________________STORED SINISTRES_______________________________
 app.use("/stored_sin", storedSin);

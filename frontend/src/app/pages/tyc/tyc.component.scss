@@ -24,3 +24,81 @@
 .mat-mdc-table {
   background-color: hwb(0 100% 0% / 0.3);
 }
+.selectCard {
+  background-color: rgba(240, 248, 255, 0.301);
+  height: 8rem;
+  border-radius: 10px;
+  margin: 0 0 10px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.upperBlock {
+  align-content: center;
+}
+.selectSous,
+.selectCycle {
+  margin: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.mat-mdc-form-field {
+  height: 25px;
+  font-size: 12px;
+  margin-bottom: 5px;
+  display: inline-flex;
+  flex-direction: row;
+  padding-left: 1px;
+  padding-right: 1px;
+  width: 40rem;
+}
+.Add {
+  margin-right: 1rem;
+}
+
+.conditions {
+  background-color: rgba(240, 248, 255, 0.301);
+
+  min-height: 4rem;
+  min-width: 40rem;
+
+  margin: 2rem 2rem 2rem 2rem;
+}
+
+.CycleTable {
+  margin: 1rem;
+  align-self: center;
+  max-width: 70rem;
+  width: 70rem;
+}
+
+::ng-deep.mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined)
+  .mat-mdc-form-field-infix {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep.mat-mdc-form-field-infix {
+  flex: auto;
+  min-width: 0;
+  width: 180px;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 0 !important;
+}
+
+::ng-deep.mat-mdc-form-field-subscript-wrapper {
+  width: 0 !important;
+  border-radius: 0;
+}
+::ng-deep.mat-mdc-form-field-type-mat-select:not(.mat-form-field-disabled)
+  .mat-mdc-text-field-wrapper {
+  border-radius: 0;
+}
+
+::ng-deep.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  border-radius: 0;
+}

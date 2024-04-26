@@ -1,0 +1,38 @@
+<div class="SousDialog">
+  <h2 mat-dialog-title>Nouveau souscripteur</h2>
+  <mat-dialog-content>
+    <form [formGroup]="sousForm" style="display: flex; flex-direction: column">
+      <mat-form-field>
+        <input
+          formControlName="nom_souscript"
+          matInput
+          placeholder="Raison sociale"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="adresse_souscript"
+          matInput
+          placeholder="Adresse"
+        />
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <div class="submitbtn">
+      <button
+        mat-raised-button
+        style="
+          width: 5rem;
+          float: right;
+          margin: 0.5rem 0.5rem 0.5rem 0;
+          border-radius: 20px;
+        "
+        (click)="sumbmitSous()"
+      >
+        Valider
+      </button>
+    </div>
+  </mat-dialog-actions>
+</div>
