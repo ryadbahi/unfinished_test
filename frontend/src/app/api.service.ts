@@ -17,7 +17,7 @@ import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
 import { DptSin } from './pages/sinistres/sinistres.component';
 
 import { SouscripData } from './pages/contrat/contrat.component';
-import { CycleData } from './pages/tyc/tyc.component';
+import { Conditions, CycleData } from './pages/tyc/tyc.component';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -632,7 +632,7 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/options/${id_opt}`);
   }
 
-  //________________SUIVI DEUX ANS________________________________
+  ///////////////////////////////////////////////////________________SUIVI DEUX ANS________________________________
 
   //_______________________GET CYCLE_____________________________
 
@@ -646,5 +646,30 @@ export class ApiService {
     return this.http.get<CycleData[]>(
       `${this.apiUrl}/suivideuxans/cycle/${id}`
     );
+  }
+
+  //_______________________GET CONDITIONS _____________________________
+
+  getConditionsByCycleID(id: number): Observable<Conditions[]> {
+    return this.http.get<Conditions[]>(
+      `${this.apiUrl}/suivideuxans/conditions/${id}`
+    );
+  }
+
+  //___________________POST CYCLE_________________________
+
+  postCycle(data: CycleData) {
+    return this.http.post(`${this.apiUrl}/suivideuxans`, data);
+  }
+
+  //___________________DELETE CYCLE_________________________
+  deleteCycle(id: number) {
+    return this.http.delete(`${this.apiUrl}/suivideuxans/${id}`);
+  }
+
+  //___________________ UPDATE CYCLE _________________________
+
+  updateCycle(id: number, data: any) {
+    return this.http.put(`${this.apiUrl}/suivideuxans/${id}`, data);
   }
 }

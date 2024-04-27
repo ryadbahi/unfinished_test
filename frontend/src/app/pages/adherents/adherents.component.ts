@@ -93,7 +93,6 @@ export interface Liens_benef {
     MatDatepickerModule,
     ReactiveFormsModule,
     MatSelectModule,
-    CommonModule,
     MatTabsModule,
     MatProgressSpinnerModule,
   ],

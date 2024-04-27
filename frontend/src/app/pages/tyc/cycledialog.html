@@ -18,12 +18,28 @@
         <input
           formControlName="date_start"
           matInput
+          [matDatepicker]="picker1"
           placeholder="Date de début"
         />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="picker1"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker1></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field>
-        <input formControlName="date_end" matInput placeholder="Date de fin" />
+        <input
+          formControlName="date_end"
+          matInput
+          [matDatepicker]="picker2"
+          placeholder="Date de fin"
+        />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="picker2"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker2></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field>

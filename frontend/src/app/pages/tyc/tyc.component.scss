@@ -71,8 +71,19 @@
 .CycleTable {
   margin: 1rem;
   align-self: center;
-  max-width: 70rem;
-  width: 70rem;
+  max-width: 58rem;
+  width: 56rem;
+}
+
+.ActionBtns {
+  display: flex;
+  justify-content: space-between;
+}
+.display_Contrat {
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 58rem;
+  margin-top: 1.5rem;
 }
 
 ::ng-deep.mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined)
