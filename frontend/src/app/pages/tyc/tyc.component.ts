@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe, NgFor } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
@@ -29,7 +29,11 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ApiService } from '../../api.service';
-import { SouscripData } from '../contrat/contrat.component';
+import {
+  DataItem,
+  NomenclatureItem,
+  SouscripData,
+} from '../contrat/contrat.component';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import {
   Subject,
@@ -52,6 +56,7 @@ import { SnackBarService } from '../../snack-bar.service';
 import { RouterLink } from '@angular/router';
 
 export interface CycleData {
+  idx: number;
   id_cycle: number;
   id_souscript: number;
   cycle: string;
@@ -63,6 +68,7 @@ export interface CycleData {
 }
 
 export interface Conditions {
+  idx: number;
   id_couv: number;
   id_cycle: number;
   id_nomencl: number;
@@ -75,6 +81,22 @@ export interface Conditions {
   limit_gar_describ: string;
   nbr_of_unit: number;
   unit_value: number;
+}
+
+export interface Conso {
+  idx: number;
+  id_conso: number;
+  id_cycle: number;
+  nom_adherent: string;
+  prenom_adherent: string;
+  lien: string;
+  prenom_lien: string;
+  date_sin: Date;
+  frais_expo: number;
+  rbt_sin: number;
+  remains: number;
+  forced: boolean;
+  isedit?: boolean;
 }
 
 @Component({
@@ -125,20 +147,25 @@ export class TycComponent implements OnInit {
     'actions',
   ];
   SinDisplayedColumns: string[] = [
-    'nom',
-    'prenom',
+    'idx',
+    'nom_adherent',
+    'prenom_adherent',
     'lien',
     'prenom_lien',
     'date_sin',
     'frais_expo',
     'rbt_sin',
     'restant',
+    'forced',
+    'actions',
   ];
   _onDestroy = new Subject<void>();
 
   isLoading = false;
 
   conditionsDataSource!: MatTableDataSource<Conditions>;
+
+  consoDataSource!: MatTableDataSource<Conso>;
 
   souscripData: SouscripData[] = [];
   selectedSous?: SouscripData | null = null;
@@ -208,7 +235,9 @@ export class TycComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.service.getCycleByIdSouscript(souscript_id).subscribe({
         next: (data: CycleData[]) => {
-          this.cycleData = data;
+          this.cycleData = data.map((item: CycleData, index: number) => {
+            return { ...item, idx: index };
+          });
           this.isLoading = false;
 
           resolve();
@@ -223,11 +252,38 @@ export class TycComponent implements OnInit {
   }
 
   getCycleById(id_cycle: number): Promise<void> {
+    let index = +1;
     return new Promise((resolve, reject) => {
       this.service.getCycleById(id_cycle).subscribe({
         next: (data: CycleData[]) => {
-          this.cycleDataSource = new MatTableDataSource(data);
+          this.cycleDataSource = new MatTableDataSource(
+            data.map((item: CycleData) => {
+              return { ...item, idx: index };
+            })
+          );
+          console.log('here', this.cycleDataSource.data);
 
+          this.isLoading = false;
+          resolve();
+        },
+        error: (error) => {
+          console.error(error);
+          this.isLoading = false;
+          reject(error);
+        },
+      });
+    });
+  }
+
+  getConso(id_cycle: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.service.getConsoByCycleId(id_cycle).subscribe({
+        next: (data: Conso[]) => {
+          this.consoDataSource = new MatTableDataSource(
+            data.map((item: Conso, index: number) => {
+              return { ...item, idx: index + 1 };
+            })
+          );
           this.isLoading = false;
           resolve();
         },
@@ -267,6 +323,7 @@ export class TycComponent implements OnInit {
 
       await this.getCycleById(this.selectedIdCycle);
       await this.getConditions(this.selectedIdCycle);
+      await this.getConso(this.selectedIdCycle);
     } else {
       console.error(`Issue with ${selectedId} ID`);
     }
@@ -325,7 +382,11 @@ export class TycComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.service.getConditionsByCycleID(id).subscribe({
         next: (data: Conditions[]) => {
-          this.conditionsDataSource = new MatTableDataSource(data);
+          this.conditionsDataSource = new MatTableDataSource(
+            data.map((item: Conditions, index: number) => {
+              return { ...item, idx: index + 1 };
+            })
+          );
           this.isLoading = false;
           console.log(this.conditionsDataSource.data);
 
@@ -359,12 +420,32 @@ export class TycComponent implements OnInit {
       });
       dialogRef.afterClosed().subscribe((result) => {
         console.log('The dialog was closed');
-        if (this.selectedIdSous) {
-          this.getCycleById(this.selectedIdSous);
+        if (this.selectedIdCycle) {
+          console.log(this.selectedIdCycle);
+
+          this.getCycleById(this.selectedIdCycle);
         }
       });
     } else {
       window.alert("Veuillez d'abord séléctioner un souscripteur");
+    }
+  }
+
+  openConditionsDialog() {
+    if (this.selectedIdCycle) {
+      const dialogRef = this.dialog.open(ConditionsDialog, {
+        data: this.selectedIdCycle,
+      });
+      dialogRef.afterClosed().subscribe((result) => {
+        console.log('diag closed');
+        if (this.selectedIdCycle) {
+          console.log(this.selectedIdCycle);
+
+          this.getCycleById(this.selectedIdCycle);
+        }
+      });
+    } else {
+      window.alert("Veuillez d'abord séléctioner un cycle");
     }
   }
 }
@@ -512,5 +593,142 @@ export class CycleDialog implements OnInit {
         );
       },
     });
+  }
+}
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
+//////////////////////// __________________ DIALOG CONDITIONS ______________________/////////////////////////
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________________
+
+@Component({
+  selector: 'conditionsdialog',
+  templateUrl: 'conditionsdialog.html',
+  styleUrl: 'conditionsdialog.scss',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+    MatTableModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    RouterLink,
+    MatDatepickerModule,
+    MatSelectModule,
+    NgFor,
+    NgxMatSelectSearchModule,
+  ],
+})
+export class ConditionsDialog implements OnInit {
+  conditionsForm!: FormGroup;
+  nomenclature: DataItem[] = [];
+  filteredNomenclatureData: DataItem[] = [];
+  selectedIdNomencl!: number;
+  filteredNomenclature = new FormControl();
+  garPar: string[] = ['Assuré', 'Bénéficiaire', 'Acte'];
+
+  constructor(
+    private datePipe: DatePipe,
+    private fb: FormBuilder,
+    private apiService: ApiService,
+    private snackBar: SnackBarService,
+    public dialogRef: MatDialogRef<ConditionsDialog>,
+    @Inject(MAT_DIALOG_DATA) public id_cycle: number
+  ) {
+    this.conditionsForm = this.fb.group({
+      id_cycle: new FormControl('', Validators.required),
+      id_nomencl: ['', Validators.required],
+      applied_on: ['', Validators.required],
+      taux_rbt: ['100', Validators.required],
+      limit_act: [''],
+      limit_gar: [''],
+      limit_gar_describ: [''],
+      nbr_of_unit: [''],
+      unit_value: [''],
+    });
+  }
+
+  ngOnInit(): void {
+    console.log(this.id_cycle);
+    this.conditionsForm.patchValue({
+      id_cycle: this.id_cycle,
+    });
+
+    this.getNomencl();
+
+    this.filteredNomenclature.valueChanges.subscribe((searchText) => {
+      this.filterNomenclature(searchText);
+    });
+  }
+
+  getNomencl(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.apiService.getAllNomencl().subscribe({
+        next: (data) => {
+          this.nomenclature = data;
+          this.filteredNomenclatureData = this.nomenclature;
+
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error fetching Nomenclature List:', error);
+          reject();
+        },
+      });
+    });
+  }
+
+  filterNomenclature(searchText: string): void {
+    if (!searchText) {
+      this.filteredNomenclatureData = this.nomenclature;
+      return;
+    }
+
+    this.filteredNomenclatureData = this.nomenclature.filter(
+      (element) =>
+        element.code_garantie
+          .toLowerCase()
+          .includes(searchText.toLowerCase()) ||
+        element.garantie_describ
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
+    );
+  }
+
+  onSelectNomenclChange(event: MatSelectChange) {
+    this.selectedIdNomencl = event.value;
+    this.conditionsForm.patchValue({
+      id_nomencl: this.selectedIdNomencl,
+    });
+  }
+
+  onSearchInput(value: string): void {
+    // Filter the nomenclature based on user input
+    const filteredOptions = this.nomenclature.filter((element) =>
+      element.code_garantie.toLowerCase().includes(value.toLowerCase())
+    );
+
+    // Update the filtered options in the FormControl
+    this.filteredNomenclature.setValue(filteredOptions);
+  }
+
+  formatDate(date: Date): string {
+    return this.datePipe.transform(date, 'yyyy/MM/dd') || '';
+  }
+
+  SubmitCondition() {
+    let element = this.conditionsForm.value;
+
+    console.log(element);
   }
 }

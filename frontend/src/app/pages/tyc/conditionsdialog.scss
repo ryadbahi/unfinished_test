@@ -1,0 +1,21 @@
+.ConditionsDialog {
+  width: 40rem;
+  height: auto;
+  text-align: center;
+}
+.mat-mdc-dialog-actions {
+  justify-content: end;
+}
+.mat-mdc-form-field {
+  height: 25px;
+  font-size: 12px;
+  margin-bottom: 1rem;
+  display: inline-flex;
+  flex-direction: row;
+  padding-left: 1px;
+  padding-right: 1px;
+  width: 35rem;
+}
+.mat-mdc-option.mdc-list-item {
+  min-height: 2rem;
+}

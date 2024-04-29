@@ -26,6 +26,8 @@ router.post("/", async (req, res) => {
   }
 });
 
+// _____________ Nomencle GET Categorized ________________
+
 router.get("/", async (req, res, next) => {
   try {
     const result = await db.query("SELECT * FROM nomencl");
@@ -78,6 +80,20 @@ function categorizeByCategory(data) {
 
   return categorizedData;
 }
+
+// _____________ Nomencle GET ALL ________________
+
+router.get("/getall", async (req, res, next) => {
+  try {
+    const result = await db.query(
+      "SELECT id_nomencl, code_garantie, garantie_describ FROM nomencl"
+    );
+
+    res.status(200).json(result[0]);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // _____________ Nomencle GET by ID ________________
 

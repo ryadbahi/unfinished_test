@@ -17,7 +17,7 @@ import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
 import { DptSin } from './pages/sinistres/sinistres.component';
 
 import { SouscripData } from './pages/contrat/contrat.component';
-import { Conditions, CycleData } from './pages/tyc/tyc.component';
+import { Conditions, Conso, CycleData } from './pages/tyc/tyc.component';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -99,8 +99,6 @@ export class ApiService {
   dataChange = this.dataChangeSubject.asObservable();
 
   apiUrl = 'http://localhost:3000';
-
-  JsonDataFile = 'C:/Users/Ryad BAHI/Desktop/data.json';
 
   triggerDataChange() {
     this.dataChangeSubject.next();
@@ -501,6 +499,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/nomencl`);
   }
 
+  getAllNomencl(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/nomencl/getall`);
+  }
+
   //______________________Contrats_______________________________
   getAllContrats(): Observable<any> {
     return this.http.get(`${this.apiUrl}/contrats`);
@@ -671,5 +673,11 @@ export class ApiService {
 
   updateCycle(id: number, data: any) {
     return this.http.put(`${this.apiUrl}/suivideuxans/${id}`, data);
+  }
+
+  //______________________GET CONSO _________________________________
+
+  getConsoByCycleId(id: number) {
+    return this.http.get<Conso[]>(`${this.apiUrl}/suivideuxans/conso/${id}`);
   }
 }

@@ -72,6 +72,39 @@ FROM suivideuxans
   }
 });
 
+//______________________________ GET CONSO ____________________________________
+
+router.get("/conso/:id", async (req, res, next) => {
+  const id = req.params.id;
+
+  const selectQuery = `
+SELECT
+    consosuivi.id_conso,
+    consosuivi.id_cycle,
+    consosuivi.nom_adherent,
+    consosuivi.prenom_adherent,
+    consosuivi.lien,
+    consosuivi.prenom_lien,
+    consosuivi.id_nomencl,
+    nomencl.code_garantie,
+    nomencl.garantie_describ,
+    consosuivi.date_sin,
+    consosuivi.frais_expo,
+    consosuivi.rbt_sin,
+    consosuivi.remains,
+    consosuivi.forced
+  FROM consosuivi
+  LEFT JOIN nomencl ON consosuivi.id_nomencl = nomencl.id_nomencl
+  WHERE id_cycle = ?`;
+
+  try {
+    const [result] = await db.query(selectQuery, id);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
 /*_____________________________________________________________________________
 _______________________________________________________________________________
 ________________________________   POST   _____________________________________

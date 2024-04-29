@@ -1,0 +1,100 @@
+<div class="ConditionsDialog">
+  <h2 mat-dialog-title>Nouvelle condition</h2>
+  <mat-dialog-content>
+    <form [formGroup]="conditionsForm">
+      <mat-form-field>
+        <mat-select
+          (selectionChange)="onSelectNomenclChange($event)"
+          placeholder="Sélectionnez la garantie"
+          style="font-size: 12px"
+        >
+          <mat-option>
+            <ngx-mat-select-search
+              [formControl]="filteredNomenclature"
+              placeholderLabel="Recherche"
+              noEntriesFoundLabel="Aucun acte trouvé....."
+            ></ngx-mat-select-search
+          ></mat-option>
+          <mat-option
+            *ngFor="let element of filteredNomenclatureData"
+            [value]="element.id_nomencl"
+          >
+            {{ element.code_garantie }} : {{ element.garantie_describ }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-select
+          formControlName="applied_on"
+          placeholder="Garantie par.."
+          style="font-size: 12px"
+        >
+          <mat-option *ngFor="let element of garPar" [value]="element">
+            {{ element }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="taux_rbt"
+          matInput
+          placeholder="Taux de remboursement"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="limit_act"
+          matInput
+          placeholder="Limite par acte"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input formControlName="limit_gar" matInput placeholder="Plafond" />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="limit_gar_describ"
+          matInput
+          placeholder="Description"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="nbr_of_unit"
+          matInput
+          placeholder="Nombre d'unitése"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          formControlName="unit_value"
+          matInput
+          placeholder="Valeur unitaire"
+        />
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <div class="submitbtn">
+      <button
+        mat-raised-button
+        style="
+          width: 5rem;
+          float: right;
+          margin: 0.5rem 0.5rem 0.5rem 0;
+          border-radius: 20px;
+        "
+        (click)="SubmitCondition()"
+      >
+        Valider
+      </button>
+    </div>
+  </mat-dialog-actions>
+</div>
