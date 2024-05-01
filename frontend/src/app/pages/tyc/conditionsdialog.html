@@ -4,6 +4,7 @@
     <form [formGroup]="conditionsForm">
       <mat-form-field>
         <mat-select
+          #matRef1
           (selectionChange)="onSelectNomenclChange($event)"
           placeholder="Sélectionnez la garantie"
           style="font-size: 12px"
@@ -68,7 +69,7 @@
         <input
           formControlName="nbr_of_unit"
           matInput
-          placeholder="Nombre d'unitése"
+          placeholder="Nombre d'unitées"
         />
       </mat-form-field>
 
@@ -82,6 +83,7 @@
     </form>
   </mat-dialog-content>
   <mat-dialog-actions>
+    @if(!(this.data.conditions && this.data.conditions.isEdit)){
     <div class="submitbtn">
       <button
         mat-raised-button
@@ -96,5 +98,23 @@
         Valider
       </button>
     </div>
+    }@else{
+    <div class="submitbtn">
+      <button
+        mat-raised-button
+        style="
+          width: 5rem;
+          float: right;
+          margin: 0.5rem 0.5rem 0.5rem 0;
+          border-radius: 20px;
+          background-color: green;
+          color: aliceblue;
+        "
+        (click)="this.data.conditions && updateConditions(this.data.conditions)"
+      >
+        Éditer
+      </button>
+    </div>
+    }
   </mat-dialog-actions>
 </div>

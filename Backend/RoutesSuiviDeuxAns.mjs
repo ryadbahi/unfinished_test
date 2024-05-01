@@ -133,19 +133,72 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+//________________________________  POST CONDITIONS ___________________________________
+
+router.post("/conditions", async (req, res, next) => {
+  try {
+    const {
+      id_cycle,
+      id_nomencl,
+      applied_on,
+      taux_rbt,
+      limit_act,
+      limit_gar,
+      limit_gar_describ,
+      nbr_of_unit,
+      unit_value,
+    } = req.body;
+
+    const result = await db.query(
+      `INSERT INTO suivideuxans (
+        id_cycle, id_nomencl, applied_on, taux_rbt, limit_act, limit_gar, limit_gar_describ, nbr_of_unit, unit_value)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id_cycle,
+        id_nomencl,
+        applied_on,
+        taux_rbt,
+        limit_act,
+        limit_gar,
+        limit_gar_describ,
+        nbr_of_unit,
+        unit_value,
+      ]
+    );
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
 /*_____________________________________________________________________________
 _______________________________________________________________________________
 ________________________________   DELETE   _____________________________________
 _______________________________________________________________________________
 _____________________________________________________________________________*/
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   const id = req.params.id;
   const deleteQuery = `DELETE FROM cycle WHERE id_cycle = ?`;
 
   try {
     await db.query(deleteQuery, id);
     res.status(200).json({ message: "Cycle deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+//________________________ DELETE _________________________________________
+
+router.delete("/conditions/:id", async (req, res, next) => {
+  const id = req.params.id;
+  const deleteQuery = `DELETE FROM suivideuxans WHERE id_couv = ?`;
+
+  try {
+    await db.query(deleteQuery, id);
+    res.status(200).json({ message: "Conditions deleted succesfully" });
   } catch (err) {
     next(err);
   }
@@ -174,6 +227,49 @@ router.put("/:id", async (req, res, next) => {
       id,
     ]);
     res.status(200).json({ message: `Cycle mis à jour !` });
+  } catch (err) {
+    next(err);
+  }
+});
+
+//____________________________________ UPDATE CONDTIONS __________________________________
+router.put("/conditions/update/:id", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const {
+      id_nomencl,
+      applied_on,
+      taux_rbt,
+      limit_act,
+      limit_gar,
+      limit_gar_describ,
+      nbr_of_unit,
+      unit_value,
+    } = req.body;
+    const updateQuery = `UPDATE suivideuxans SET
+      
+      id_nomencl = ?,
+      applied_on = ?,
+      taux_rbt = ?,
+      limit_act = ?,
+      limit_gar = ?,
+      limit_gar_describ = ?,
+      nbr_of_unit = ?,
+      unit_value = ? 
+    WHERE id_couv = ?`;
+
+    await db.query(updateQuery, [
+      id_nomencl,
+      applied_on,
+      taux_rbt,
+      limit_act,
+      limit_gar,
+      limit_gar_describ,
+      nbr_of_unit,
+      unit_value,
+      id,
+    ]);
+    res.status(200).json({ message: "Garantie mise à jour" });
   } catch (err) {
     next(err);
   }

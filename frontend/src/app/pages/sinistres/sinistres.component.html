@@ -749,8 +749,12 @@
             <table mat-table [dataSource]="histoAcceptedData">
               <ng-container matColumnDef="idx">
                 <th mat-header-cell *matHeaderCellDef>N°</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.idx }}
+                <td mat-cell *matCellDef="let element; let i = index">
+                  {{
+                    acceptedPaginator.pageIndex * acceptedPaginator.pageSize +
+                      i +
+                      1
+                  }}
                 </td>
               </ng-container>
 
@@ -922,8 +926,12 @@
             <table mat-table [dataSource]="histoRejectedData">
               <ng-container matColumnDef="idx">
                 <th mat-header-cell *matHeaderCellDef>N°</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.idx }}
+                <td mat-cell *matCellDef="let element; let i = index">
+                  {{
+                    rejectedPaginator.pageIndex * rejectedPaginator.pageSize +
+                      i +
+                      1
+                  }}
                 </td>
               </ng-container>
 

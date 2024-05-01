@@ -658,6 +658,27 @@ export class ApiService {
     );
   }
 
+  //________________________POST CONDITIONS ____________________
+
+  postConditions(data: Conditions) {
+    return this.http.post(`${this.apiUrl}/suivideuxans/conditions`, data);
+  }
+
+  //_________________________ DELETE CONDITION __________________________
+
+  deleteconditions(id: number) {
+    return this.http.delete(`${this.apiUrl}/suivideuxans/conditions/${id}`);
+  }
+
+  //_________________________ UPDATE CONDITION __________________________
+
+  updateConditions(id: number, data: Conditions) {
+    return this.http.put(
+      `${this.apiUrl}/suivideuxans/conditions/update/${id}`,
+      data
+    );
+  }
+
   //___________________POST CYCLE_________________________
 
   postCycle(data: CycleData) {

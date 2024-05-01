@@ -102,201 +102,206 @@
           </mat-form-field>
         </div>
       </div>
+      <div class="CycleTable" [hidden]="!cycleDataSource">
+        <table
+          mat-table
+          [dataSource]="cycleDataSource"
+          style="overflow: hidden; border-radius: 10px"
+        >
+          <ng-container matColumnDef="cycle">
+            <th mat-header-cell *matHeaderCellDef>Cycle</th>
+
+            <td
+              mat-cell
+              *matCellDef="let element"
+              style="max-width: 7rem; min-width: 7rem; width: 7rem"
+            >
+              <div *ngIf="element.isEdit">
+                <input
+                  mat-input
+                  [(ngModel)]="element.cycle"
+                  maxlength="9"
+                  minlength="9"
+                  style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                />
+              </div>
+              <div *ngIf="!element.isEdit">{{ element.cycle }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="date_start">
+            <th mat-header-cell *matHeaderCellDef>Début</th>
+            <td
+              mat-cell
+              *matCellDef="let element"
+              style="max-width: 10rem; min-width: 10rem; width: 10rem"
+            >
+              <div
+                *ngIf="element.isEdit"
+                style="
+                  max-width: 8rem;
+                  min-width: 8rem;
+                  width: 8rem;
+                  display: inline-flex;
+                  gap: 1rem;
+                "
+              >
+                <div style="margin: auto">
+                  <input
+                    style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                    [(ngModel)]="element.date_start"
+                    matInput
+                    [matDatepicker]="picker"
+                  />
+                </div>
+                <div>
+                  <mat-datepicker-toggle matIconSuffix [for]="picker">
+                  </mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </div>
+              </div>
+              <div *ngIf="!element.isEdit">
+                {{ element.date_start | date : "dd/MM/yyyy" }}
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="date_end">
+            <th mat-header-cell *matHeaderCellDef>Fin</th>
+            <td
+              mat-cell
+              *matCellDef="let element"
+              style="max-width: 10rem; min-width: 10rem; width: 10rem"
+            >
+              <div
+                *ngIf="element.isEdit"
+                style="
+                  max-width: 8rem;
+                  min-width: 8rem;
+                  width: 8rem;
+                  display: inline-flex;
+                  gap: 1rem;
+                "
+              >
+                <div style="margin: auto">
+                  <input
+                    style="max-width: 5rem; min-width: 5rem; width: 5rem"
+                    [(ngModel)]="element.date_end"
+                    matInput
+                    [matDatepicker]="picker"
+                  />
+                </div>
+                <div>
+                  <mat-datepicker-toggle matIconSuffix [for]="picker">
+                  </mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </div>
+              </div>
+              <div *ngIf="!element.isEdit">
+                {{ element.date_end | date : "dd/MM/yyyy" }}
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="contrat_start">
+            <th mat-header-cell *matHeaderCellDef>Contrat début</th>
+            <td
+              mat-cell
+              *matCellDef="let element"
+              style="max-width: 11rem; min-width: 11rem; width: 11rem"
+            >
+              <div *ngIf="element.isEdit">
+                <input
+                  mat-input
+                  [(ngModel)]="element.contrat_start"
+                  maxlength="19"
+                  minlength="19"
+                  style="max-width: 9rem; min-width: 9rem; width: 9rem"
+                />
+              </div>
+
+              <div *ngIf="!element.isEdit">{{ element.contrat_start }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="contrat_end">
+            <th mat-header-cell *matHeaderCellDef>Contrat fin</th>
+            <td
+              mat-cell
+              *matCellDef="let element"
+              style="max-width: 11rem; min-width: 11rem; width: 11rem"
+            >
+              <div *ngIf="element.isEdit">
+                <input
+                  mat-input
+                  [(ngModel)]="element.contrat_end"
+                  maxlength="19"
+                  minlength="19"
+                  style="max-width: 9rem; min-width: 9rem; width: 9rem"
+                />
+              </div>
+              <div *ngIf="!element.isEdit">{{ element.contrat_end }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Suppr./Édit.</th>
+            <td mat-cell *matCellDef="let element">
+              <div *ngIf="!element.isEdit" class="ActionBtns">
+                <mat-icon
+                  color="primary"
+                  fontIcon="edit"
+                  style="cursor: pointer; font-weight: bolder"
+                  (click)="startEdit(element)"
+                ></mat-icon>
+                <mat-icon
+                  color="warn"
+                  fontIcon="delete"
+                  style="cursor: pointer"
+                  (click)="selectedIdCycle && deleteCycle(selectedIdCycle)"
+                ></mat-icon>
+              </div>
+              <div *ngIf="element.isEdit" class="ActionBtns">
+                <mat-icon
+                  style="
+                    margin: 0;
+                    color: green;
+                    font-weight: bolder;
+                    cursor: pointer;
+                  "
+                  (click)="
+                    updateCycle(element.id_cycle, element);
+                    $event.stopPropagation()
+                  "
+                  >check</mat-icon
+                >
+
+                <mat-icon
+                  color="primary"
+                  fontIcon="close"
+                  style="cursor: pointer; font-weight: bolder"
+                  (click)="cancelEdit(element)"
+                ></mat-icon>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="cycleDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: cycleDisplayedColumns"></tr>
+        </table>
+      </div>
     </div>
   </mat-card>
 </div>
 
+<!--__________________________________________________________________________________
+  ____________________________________________________________________________________
+  ____________________________________ CONDITIONS _________________________________
+  ____________________________________________________________________________________
+  _________________________________________________________________________________-->
+
 <div [hidden]="!cycleDataSource">
   <mat-card class="conditions">
-    <div class="CycleTable">
-      <table
-        mat-table
-        [dataSource]="cycleDataSource"
-        style="overflow: hidden; border-radius: 10px"
-      >
-        <ng-container matColumnDef="cycle">
-          <th mat-header-cell *matHeaderCellDef>Cycle</th>
-
-          <td
-            mat-cell
-            *matCellDef="let element"
-            style="max-width: 7rem; min-width: 7rem; width: 7rem"
-          >
-            <div *ngIf="element.isEdit">
-              <input
-                mat-input
-                [(ngModel)]="element.cycle"
-                maxlength="9"
-                minlength="9"
-                style="max-width: 5rem; min-width: 5rem; width: 5rem"
-              />
-            </div>
-            <div *ngIf="!element.isEdit">{{ element.cycle }}</div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="date_start">
-          <th mat-header-cell *matHeaderCellDef>Début</th>
-          <td
-            mat-cell
-            *matCellDef="let element"
-            style="max-width: 10rem; min-width: 10rem; width: 10rem"
-          >
-            <div
-              *ngIf="element.isEdit"
-              style="
-                max-width: 8rem;
-                min-width: 8rem;
-                width: 8rem;
-                display: inline-flex;
-                gap: 1rem;
-              "
-            >
-              <div style="margin: auto">
-                <input
-                  style="max-width: 5rem; min-width: 5rem; width: 5rem"
-                  [(ngModel)]="element.date_start"
-                  matInput
-                  [matDatepicker]="picker"
-                />
-              </div>
-              <div>
-                <mat-datepicker-toggle matIconSuffix [for]="picker">
-                </mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </div>
-            </div>
-            <div *ngIf="!element.isEdit">
-              {{ element.date_start | date : "dd/MM/yyyy" }}
-            </div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="date_end">
-          <th mat-header-cell *matHeaderCellDef>Fin</th>
-          <td
-            mat-cell
-            *matCellDef="let element"
-            style="max-width: 10rem; min-width: 10rem; width: 10rem"
-          >
-            <div
-              *ngIf="element.isEdit"
-              style="
-                max-width: 8rem;
-                min-width: 8rem;
-                width: 8rem;
-                display: inline-flex;
-                gap: 1rem;
-              "
-            >
-              <div style="margin: auto">
-                <input
-                  style="max-width: 5rem; min-width: 5rem; width: 5rem"
-                  [(ngModel)]="element.date_end"
-                  matInput
-                  [matDatepicker]="picker"
-                />
-              </div>
-              <div>
-                <mat-datepicker-toggle matIconSuffix [for]="picker">
-                </mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </div>
-            </div>
-            <div *ngIf="!element.isEdit">
-              {{ element.date_end | date : "dd/MM/yyyy" }}
-            </div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="contrat_start">
-          <th mat-header-cell *matHeaderCellDef>Contrat début</th>
-          <td
-            mat-cell
-            *matCellDef="let element"
-            style="max-width: 11rem; min-width: 11rem; width: 11rem"
-          >
-            <div *ngIf="element.isEdit">
-              <input
-                mat-input
-                [(ngModel)]="element.contrat_start"
-                maxlength="19"
-                minlength="19"
-                style="max-width: 9rem; min-width: 9rem; width: 9rem"
-              />
-            </div>
-
-            <div *ngIf="!element.isEdit">{{ element.contrat_start }}</div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="contrat_end">
-          <th mat-header-cell *matHeaderCellDef>Contrat fin</th>
-          <td
-            mat-cell
-            *matCellDef="let element"
-            style="max-width: 11rem; min-width: 11rem; width: 11rem"
-          >
-            <div *ngIf="element.isEdit">
-              <input
-                mat-input
-                [(ngModel)]="element.contrat_end"
-                maxlength="19"
-                minlength="19"
-                style="max-width: 9rem; min-width: 9rem; width: 9rem"
-              />
-            </div>
-            <div *ngIf="!element.isEdit">{{ element.contrat_end }}</div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>Suppr./Édit.</th>
-          <td mat-cell *matCellDef="let element">
-            <div *ngIf="!element.isEdit" class="ActionBtns">
-              <mat-icon
-                color="primary"
-                fontIcon="edit"
-                style="cursor: pointer; font-weight: bolder"
-                (click)="startEdit(element)"
-              ></mat-icon>
-              <mat-icon
-                color="warn"
-                fontIcon="delete"
-                style="cursor: pointer"
-                (click)="selectedIdCycle && deleteCycle(selectedIdCycle)"
-              ></mat-icon>
-            </div>
-            <div *ngIf="element.isEdit" class="ActionBtns">
-              <mat-icon
-                style="
-                  margin: 0;
-                  color: green;
-                  font-weight: bolder;
-                  cursor: pointer;
-                "
-                (click)="
-                  updateCycle(element.id_cycle, element);
-                  $event.stopPropagation()
-                "
-                >check</mat-icon
-              >
-
-              <mat-icon
-                color="primary"
-                fontIcon="close"
-                style="cursor: pointer; font-weight: bolder"
-                (click)="cancelEdit(element)"
-              ></mat-icon>
-            </div>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="cycleDisplayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: cycleDisplayedColumns"></tr>
-      </table>
-    </div>
-
     <div class="garanties">
       <div class="Add">
         <button
@@ -373,6 +378,30 @@
             </td>
           </ng-container>
 
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Suppr./Édit.</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="ActionBtns">
+                <div>
+                  <mat-icon
+                    style="cursor: pointer"
+                    fontIcon="edit"
+                    color="primary"
+                    (click)="openConditionsDialogToEdit(element)"
+                  ></mat-icon>
+                </div>
+                <div>
+                  <mat-icon
+                    style="cursor: pointer"
+                    color="warn"
+                    (click)="deleteCondition(element.id_couv)"
+                    fontIcon="delete"
+                  ></mat-icon>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
           <tr mat-header-row *matHeaderRowDef="conditionsDisplayedColumns"></tr>
           <tr
             mat-row
@@ -382,6 +411,12 @@
       </div></div
   ></mat-card>
 </div>
+
+<!--__________________________________________________________________________________
+  ____________________________________________________________________________________
+  ____________________________________ CONSOMMATIONS _________________________________
+  ____________________________________________________________________________________
+  _________________________________________________________________________________-->
 
 <div [hidden]="!consoDataSource">
   <table

@@ -24,7 +24,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import {
+  MatSelect,
+  MatSelectChange,
+  MatSelectModule,
+} from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -76,11 +80,12 @@ export interface Conditions {
   garantie_describ: string;
   applied_on: string;
   taux_rbt: number;
-  limite_act: number;
-  limite_gar: number;
+  limit_act: number;
+  limit_gar: number;
   limit_gar_describ: string;
   nbr_of_unit: number;
   unit_value: number;
+  isEdit?: boolean;
 }
 
 export interface Conso {
@@ -137,6 +142,7 @@ export class TycComponent implements OnInit {
     'limit_gar_describ',
     'nbr_of_unit',
     'unit_value',
+    'actions',
   ];
   cycleDisplayedColumns: string[] = [
     'cycle',
@@ -337,7 +343,7 @@ export class TycComponent implements OnInit {
 
     if (confirmDelete) {
       this.service.deleteCycle(id).subscribe((res) => {
-        this.snackBar.openSnackBar(`Cycle supprimé`, 'OK!');
+        this.snackBar.openSnackBar(`Cycle ${cycle?.cycle}supprimé`, 'OK!');
         if (this.selectedIdCycle) {
           this.getCycleById(this.selectedIdCycle);
         }
@@ -401,6 +407,31 @@ export class TycComponent implements OnInit {
     });
   }
 
+  deleteCondition(id: number) {
+    let code = this.conditionsDataSource.data.find(
+      (item) => item.code_garantie
+    );
+    let gar = this.conditionsDataSource.data.find(
+      (item) => item.garantie_describ
+    );
+
+    const confirmDelete = confirm(
+      `Voulez vous vraiement supprimer ${code?.code_garantie} : ${gar?.garantie_describ}`
+    );
+
+    if (confirmDelete) {
+      this.service.deleteconditions(id).subscribe(() => {
+        this.snackBar.openSnackBar(
+          `La garantie ${code?.code_garantie} : ${gar?.garantie_describ} a bien été supprimée`,
+          'Ok :)'
+        );
+        if (this.selectedIdCycle) {
+          this.getConditions(this.selectedIdCycle);
+        }
+      });
+    }
+  }
+
   formatDate(date: Date): string {
     return this.datePipe.transform(date, 'yyyy/MM/dd') || '';
   }
@@ -434,7 +465,7 @@ export class TycComponent implements OnInit {
   openConditionsDialog() {
     if (this.selectedIdCycle) {
       const dialogRef = this.dialog.open(ConditionsDialog, {
-        data: this.selectedIdCycle,
+        data: { id_cycle: this.selectedIdCycle },
       });
       dialogRef.afterClosed().subscribe((result) => {
         console.log('diag closed');
@@ -442,6 +473,27 @@ export class TycComponent implements OnInit {
           console.log(this.selectedIdCycle);
 
           this.getCycleById(this.selectedIdCycle);
+          this.getConditions(this.selectedIdCycle);
+        }
+      });
+    } else {
+      window.alert("Veuillez d'abord séléctioner un cycle");
+    }
+  }
+
+  openConditionsDialogToEdit(element: Conditions) {
+    if (this.selectedIdCycle) {
+      element.isEdit = true;
+      const dialogRef = this.dialog.open(ConditionsDialog, {
+        data: { id_cycle: this.selectedIdCycle, conditions: element },
+      });
+      dialogRef.afterClosed().subscribe(() => {
+        console.log('diag closed');
+        if (this.selectedIdCycle) {
+          console.log(this.selectedIdCycle);
+
+          this.getCycleById(this.selectedIdCycle);
+          this.getConditions(this.selectedIdCycle);
         }
       });
     } else {
@@ -636,6 +688,9 @@ export class ConditionsDialog implements OnInit {
   selectedIdNomencl!: number;
   filteredNomenclature = new FormControl();
   garPar: string[] = ['Assuré', 'Bénéficiaire', 'Acte'];
+  conditions!: Conditions;
+
+  @ViewChild('matRef1') matRef1!: MatSelect;
 
   constructor(
     private datePipe: DatePipe,
@@ -643,25 +698,33 @@ export class ConditionsDialog implements OnInit {
     private apiService: ApiService,
     private snackBar: SnackBarService,
     public dialogRef: MatDialogRef<ConditionsDialog>,
-    @Inject(MAT_DIALOG_DATA) public id_cycle: number
+    @Inject(MAT_DIALOG_DATA)
+    public data: { id_cycle: number; conditions?: Conditions }
   ) {
     this.conditionsForm = this.fb.group({
       id_cycle: new FormControl('', Validators.required),
       id_nomencl: ['', Validators.required],
       applied_on: ['', Validators.required],
-      taux_rbt: ['100', Validators.required],
-      limit_act: [''],
-      limit_gar: [''],
+      taux_rbt: [100, Validators.required],
+      limit_act: [],
+      limit_gar: [],
       limit_gar_describ: [''],
-      nbr_of_unit: [''],
-      unit_value: [''],
+      nbr_of_unit: [],
+      unit_value: [],
     });
+
+    if (this.data.conditions) {
+      this.data.conditions.isEdit = true;
+    }
   }
 
   ngOnInit(): void {
-    console.log(this.id_cycle);
+    const id_cycle = this.data.id_cycle;
+    console.log(id_cycle);
+    console.log('test', this.data);
+
     this.conditionsForm.patchValue({
-      id_cycle: this.id_cycle,
+      id_cycle: id_cycle,
     });
 
     this.getNomencl();
@@ -669,6 +732,26 @@ export class ConditionsDialog implements OnInit {
     this.filteredNomenclature.valueChanges.subscribe((searchText) => {
       this.filterNomenclature(searchText);
     });
+
+    if (this.data.conditions) {
+      const item = this.data.conditions;
+
+      this.conditionsForm.patchValue({
+        id_couv: item.id_couv,
+        id_cycle: id_cycle,
+        id_nomencl: 1,
+        applied_on: item.applied_on,
+        limit_act: item.limit_act,
+        limit_gar: item.limit_gar,
+        limit_gar_describ: item.limit_gar_describ,
+        nbr_of_unit: item.nbr_of_unit,
+        unit_value: item.unit_value,
+      });
+    }
+  }
+
+  ngAfterViewInit() {
+    this.matRef1.value = this.data.conditions?.id_nomencl;
   }
 
   getNomencl(): Promise<void> {
@@ -712,16 +795,6 @@ export class ConditionsDialog implements OnInit {
     });
   }
 
-  onSearchInput(value: string): void {
-    // Filter the nomenclature based on user input
-    const filteredOptions = this.nomenclature.filter((element) =>
-      element.code_garantie.toLowerCase().includes(value.toLowerCase())
-    );
-
-    // Update the filtered options in the FormControl
-    this.filteredNomenclature.setValue(filteredOptions);
-  }
-
   formatDate(date: Date): string {
     return this.datePipe.transform(date, 'yyyy/MM/dd') || '';
   }
@@ -729,6 +802,39 @@ export class ConditionsDialog implements OnInit {
   SubmitCondition() {
     let element = this.conditionsForm.value;
 
+    this.apiService.postConditions(element).subscribe({
+      next: () => {
+        this.snackBar.openSnackBar('Garantie ajoutée', 'Ok!');
+        this.conditionsForm.reset();
+        this.dialogRef.close();
+      },
+      error: (err) => {
+        this.snackBar.openSnackBar(
+          `Échec lors de la création de la garantie: ${err}`,
+          "Ok :'("
+        );
+      },
+    });
+
     console.log(element);
+  }
+
+  updateConditions(element: Conditions) {
+    let data = this.conditionsForm.value;
+
+    console.log(data);
+
+    this.apiService.updateConditions(element.id_couv, data).subscribe({
+      next: () => {
+        this.snackBar.openSnackBar(
+          `Garantie ${element.code_garantie} : ${element.garantie_describ} à été mise à jour`,
+          'Ok !'
+        );
+        this.dialogRef.close();
+      },
+      error: (err) => {
+        this.snackBar.openSnackBar(err, 'OK');
+      },
+    });
   }
 }

@@ -696,9 +696,7 @@ export class SinistresComponent implements OnInit {
       this.apiService.getTempSinByContrat(id_contrat).subscribe({
         next: (data) => {
           // Map the data to include the index
-          this.dataSource.data = data.map((item: DptSin, index: number) => {
-            return { ...item, idx: index + 1 };
-          });
+          this.dataSource.data = data;
           this.rejectedDatasource.data = this.dataSource.data.filter(
             (item) => item.rbt_sin === 0
           );
@@ -706,22 +704,8 @@ export class SinistresComponent implements OnInit {
             (item) => item.rbt_sin !== 0
           );
 
-          this.acceptedData.data = this.acceptedDataSource.data.map(
-            (item: DptSin, index: number) => {
-              return {
-                ...item,
-                idx: index + 1,
-              };
-            }
-          );
-          this.rejectedData.data = this.rejectedDatasource.data.map(
-            (item: DptSin, index: number) => {
-              return {
-                ...item,
-                idx: index + 1,
-              };
-            }
-          );
+          this.acceptedData.data = this.acceptedDataSource.data;
+          this.rejectedData.data = this.rejectedDatasource.data;
           console.log(this.rejectedDatasource.data);
           resolve();
         },
@@ -746,14 +730,7 @@ export class SinistresComponent implements OnInit {
         .subscribe({
           next: (response: DptAcceptedSinReponse) => {
             // Map the data to include the index
-            this.histoAcceptedData.data = response.data.map(
-              (item: DptSin, index: number) => {
-                return {
-                  ...item,
-                  idx: index + 1,
-                };
-              }
-            );
+            this.histoAcceptedData.data = response.data;
             this.histoAcceptedLength = response.histoAcceptedLength;
             this.acceptedPaginator.length = this.histoAcceptedLength;
 
@@ -779,14 +756,7 @@ export class SinistresComponent implements OnInit {
         .subscribe({
           next: (response: DptRejectedSinReponse) => {
             // Map the data to include the index
-            this.histoRejectedData.data = response.data.map(
-              (item: DptSin, index: number) => {
-                return {
-                  ...item,
-                  idx: index + 1,
-                };
-              }
-            );
+            this.histoRejectedData.data = response.data;
             console.log('DAAATAAAAA : ', this.histoRejectedData.data);
 
             this.histoRejectedLength = response.histoRejectedLength;
