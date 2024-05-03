@@ -40,9 +40,11 @@ import {
 } from '../contrat/contrat.component';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import {
+  Cons,
   Subject,
   debounceTime,
   distinctUntilChanged,
+  firstValueFrom,
   switchMap,
   takeUntil,
   tap,
@@ -58,6 +60,8 @@ import {
 } from '@angular/material/dialog';
 import { SnackBarService } from '../../snack-bar.service';
 import { RouterLink } from '@angular/router';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 
 export interface CycleData {
   idx: number;
@@ -97,11 +101,17 @@ export interface Conso {
   lien: string;
   prenom_lien: string;
   date_sin: Date;
+  code_garantie: string;
+  garantie_describ: string;
   frais_expo: number;
   rbt_sin: number;
   remains: number;
   forced: boolean;
   isedit?: boolean;
+}
+export interface GetConso {
+  item: Conso[];
+  total: number;
 }
 
 @Component({
@@ -128,6 +138,8 @@ export interface Conso {
     NgxMatSelectSearchModule,
     MatDatepickerModule,
     DatePipe,
+    NgxSpinnerModule,
+    MatPaginatorModule,
   ],
   templateUrl: './tyc.component.html',
   styleUrl: './tyc.component.scss',
@@ -159,19 +171,23 @@ export class TycComponent implements OnInit {
     'lien',
     'prenom_lien',
     'date_sin',
+    'garantie',
     'frais_expo',
     'rbt_sin',
     'restant',
     'forced',
     'actions',
   ];
+
+  isHidden: boolean = false;
+
   _onDestroy = new Subject<void>();
 
   isLoading = false;
 
   conditionsDataSource!: MatTableDataSource<Conditions>;
 
-  consoDataSource!: MatTableDataSource<Conso>;
+  consoDataSource = new MatTableDataSource<Conso>();
 
   souscripData: SouscripData[] = [];
   selectedSous?: SouscripData | null = null;
@@ -184,12 +200,20 @@ export class TycComponent implements OnInit {
   selectedCycle?: CycleData | null = null;
   selectedIdCycle?: number;
 
+  page: number = 1;
+  pageSize: number = 15;
+  search: string = '';
+  total: number = 0;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   constructor(
     private datePipe: DatePipe,
     private cdr: ChangeDetectorRef,
     private service: ApiService,
     private dialog: MatDialog,
-    private snackBar: SnackBarService
+    private snackBar: SnackBarService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -217,7 +241,18 @@ export class TycComponent implements OnInit {
     this._onDestroy.complete();
   }
 
+  ngAfterViewInit() {
+    this.paginator.page.subscribe(() => {
+      this.page = this.paginator.pageIndex + 1;
+      this.pageSize = this.paginator.pageSize;
+      if (this.selectedIdCycle) {
+        this.getConso(this.selectedIdCycle);
+      }
+    });
+  }
+
   getPromisedSous(): Promise<void> {
+    this.spinner.show();
     return new Promise((resolve, reject) => {
       this.service
         .getSousWithSearch(this.souscripFilterCtrl.value || '')
@@ -227,17 +262,20 @@ export class TycComponent implements OnInit {
             this.filtredSouscripteurs = this.souscripData.slice();
             this.isLoading = false;
             resolve();
+            this.spinner.hide();
           },
           error: (error) => {
             console.error('Error fetching Souscripteurs List:', error);
             this.isLoading = false;
             reject(error);
+            this.spinner.hide();
           },
         });
     });
   }
 
   getCycle(souscript_id: number): Promise<void> {
+    this.spinner.show();
     return new Promise((resolve, reject) => {
       this.service.getCycleByIdSouscript(souscript_id).subscribe({
         next: (data: CycleData[]) => {
@@ -247,17 +285,20 @@ export class TycComponent implements OnInit {
           this.isLoading = false;
 
           resolve();
+          this.spinner.hide();
         },
         error: (error) => {
           console.error(error);
           this.isLoading = false;
           reject(error);
+          this.spinner.hide();
         },
       });
     });
   }
 
   getCycleById(id_cycle: number): Promise<void> {
+    this.spinner.show();
     let index = +1;
     return new Promise((resolve, reject) => {
       this.service.getCycleById(id_cycle).subscribe({
@@ -271,34 +312,40 @@ export class TycComponent implements OnInit {
 
           this.isLoading = false;
           resolve();
+          this.spinner.hide();
         },
         error: (error) => {
           console.error(error);
           this.isLoading = false;
           reject(error);
+          this.spinner.hide();
         },
       });
     });
   }
 
   getConso(id_cycle: number): Promise<void> {
+    this.spinner.show();
     return new Promise((resolve, reject) => {
-      this.service.getConsoByCycleId(id_cycle).subscribe({
-        next: (data: Conso[]) => {
-          this.consoDataSource = new MatTableDataSource(
-            data.map((item: Conso, index: number) => {
-              return { ...item, idx: index + 1 };
-            })
-          );
-          this.isLoading = false;
-          resolve();
-        },
-        error: (error) => {
-          console.error(error);
-          this.isLoading = false;
-          reject(error);
-        },
-      });
+      this.service
+        .getConsoByCycleId(id_cycle, this.page, this.pageSize, this.search)
+        .subscribe({
+          next: (data: GetConso) => {
+            this.consoDataSource.data = data.item;
+            this.total = data.total;
+            this.paginator.length = this.total;
+            this.isLoading = false;
+            console.log(this.paginator.length);
+            resolve();
+            this.spinner.hide();
+          },
+          error: (error) => {
+            console.error(error);
+            this.isLoading = false;
+            reject(error);
+            this.spinner.hide();
+          },
+        });
     });
   }
 
@@ -354,23 +401,32 @@ export class TycComponent implements OnInit {
     }
   }
 
-  updateCycle(id: number, element: CycleData) {
+  updateCycle(id: number, element: CycleData): Promise<void> {
+    this.spinner.show();
     let data = {
       ...element,
       date_start: this.formatDate(element.date_start),
       date_end: this.formatDate(element.date_end),
     };
-
-    this.service.updateCycle(id, data).subscribe({
-      next: () => {
-        this.snackBar.openSnackBar(`Cycle ${element.cycle} mis à jour`, `Ok !`);
-        if (this.selectedIdCycle) {
-          this.getCycleById(this.selectedIdCycle);
-        }
-      },
-      error: (err) => {
-        this.snackBar.openSnackBar(err, 'OK');
-      },
+    return new Promise((resolve, reject) => {
+      this.service.updateCycle(id, data).subscribe({
+        next: () => {
+          this.snackBar.openSnackBar(
+            `Cycle ${element.cycle} mis à jour`,
+            `Ok !`
+          );
+          if (this.selectedIdCycle) {
+            this.getCycleById(this.selectedIdCycle);
+            resolve();
+            this.spinner.hide();
+          }
+        },
+        error: (err) => {
+          reject();
+          this.snackBar.openSnackBar(err, 'OK');
+          this.spinner.hide();
+        },
+      });
     });
   }
 
@@ -385,6 +441,7 @@ export class TycComponent implements OnInit {
   }
 
   getConditions(id: number): Promise<void> {
+    this.spinner.show();
     return new Promise((resolve, reject) => {
       this.service.getConditionsByCycleID(id).subscribe({
         next: (data: Conditions[]) => {
@@ -397,17 +454,19 @@ export class TycComponent implements OnInit {
           console.log(this.conditionsDataSource.data);
 
           resolve();
+          this.spinner.hide();
         },
         error: (error) => {
           console.error(error);
           this.isLoading = false;
           reject(error);
+          this.spinner.hide();
         },
       });
     });
   }
 
-  deleteCondition(id: number) {
+  deleteCondition(id: number): Promise<void> {
     let code = this.conditionsDataSource.data.find(
       (item) => item.code_garantie
     );
@@ -420,15 +479,32 @@ export class TycComponent implements OnInit {
     );
 
     if (confirmDelete) {
-      this.service.deleteconditions(id).subscribe(() => {
-        this.snackBar.openSnackBar(
-          `La garantie ${code?.code_garantie} : ${gar?.garantie_describ} a bien été supprimée`,
-          'Ok :)'
+      return new Promise((resolve, reject) => {
+        this.spinner.show();
+        this.service.deleteconditions(id).subscribe(
+          () => {
+            this.snackBar.openSnackBar(
+              `La garantie ${code?.code_garantie} : ${gar?.garantie_describ} a bien été supprimée`,
+              'Ok :)'
+            );
+            if (this.selectedIdCycle) {
+              this.getConditions(this.selectedIdCycle);
+            }
+            resolve();
+            this.spinner.hide();
+          },
+          (error) => {
+            this.snackBar.openSnackBar(
+              `Une erreur s'est produite lors de la suppression de la garantie ${code?.code_garantie} : ${gar?.garantie_describ}`,
+              'Ok :('
+            );
+            reject(error);
+            this.spinner.hide();
+          }
         );
-        if (this.selectedIdCycle) {
-          this.getConditions(this.selectedIdCycle);
-        }
       });
+    } else {
+      return Promise.resolve();
     }
   }
 
@@ -500,6 +576,75 @@ export class TycComponent implements OnInit {
       window.alert("Veuillez d'abord séléctioner un cycle");
     }
   }
+
+  async handleFile(files: FileList | null): Promise<void> {
+    const refDpt = window.prompt('Entrez la ref du dpt :', '');
+
+    if (!files || files.length === 0) {
+      alert('No file selected. Please select a file to upload.');
+      return; // Exit early if no files are provided
+    }
+
+    const fileToUpload = files.item(0);
+
+    if (!fileToUpload) {
+      console.log('No file found in the file list.');
+      return; // Exit early if file is not retrieved
+    }
+
+    const fileNameParts = fileToUpload.name.split('.');
+    const fileExtension = fileNameParts.pop()?.toLowerCase();
+
+    const validExtensions: string[] = [
+      'xls',
+      'xlsx',
+      'xlsm',
+      'xlsb',
+      'xlt',
+      'xltm',
+      'xltx',
+      'xla',
+      'xlam',
+      'xll',
+      'xlw',
+    ];
+
+    if (!fileExtension || !validExtensions.includes(fileExtension)) {
+      alert('Veuillez choisir un fichier excel valide.');
+      return; // Exit early if invalid file type
+    }
+
+    // If everything is valid, start processing
+    this.spinner.show(); // Assuming spinner is for loading indication
+
+    if (this.selectedIdCycle && refDpt) {
+      const id = this.selectedIdCycle;
+
+      this.service.postConsoExcel(id, refDpt, fileToUpload).subscribe({
+        next: async (res) => {
+          await this.getConso(id);
+          this.spinner.hide();
+        },
+      });
+
+      /* try {
+        // Convert Observable to a Promise using firstValueFrom
+
+        this.service.postConsoExcel(id, refDpt, fileToUpload).subscribe({
+          next: async (res) => {
+            await this.getConso(id);
+          },
+        });
+
+        console.log('File uploaded and processed successfully.');
+      } catch (error) {
+        console.error('An error occurred while uploading the file:', error);
+        throw new Error('File upload failed'); // Throw error to be caught by caller
+      } finally {
+        this.spinner.hide(); // Hide spinner whether success or failure
+      }*/
+    }
+  }
 }
 //_____________________________________________________________________________________________________________
 //_____________________________________________________________________________________________________________
@@ -529,6 +674,7 @@ export class TycComponent implements OnInit {
     ReactiveFormsModule,
     MatIconModule,
     RouterLink,
+    NgxSpinnerModule,
   ],
 })
 export class SousDialog implements OnInit {
@@ -538,6 +684,7 @@ export class SousDialog implements OnInit {
     private fb: FormBuilder,
     private apiService: ApiService,
     private snackBar: SnackBarService,
+    private spinner: NgxSpinnerService,
     public dialogRef: MatDialogRef<SousDialog>
   ) {
     this.sousForm = this.fb.group({
@@ -548,14 +695,26 @@ export class SousDialog implements OnInit {
 
   ngOnInit(): void {}
 
-  sumbmitSous() {
+  sumbmitSous(): Promise<void> {
     const data = this.sousForm.value;
-    console.log(data);
+    this.spinner.show();
 
-    this.apiService.addSouscripteurData(data).subscribe((res) => {
-      this.snackBar.openSnackBar('Souscripteur crée', 'Okey :)');
-      console.log(res);
-      this.sousForm.reset();
+    return new Promise((resolve, reject) => {
+      this.apiService.addSouscripteurData(data).subscribe(
+        (res) => {
+          this.snackBar.openSnackBar('Souscripteur crée', 'Okey :)');
+          console.log(res);
+          this.sousForm.reset();
+          resolve();
+          this.spinner.hide();
+        },
+        (error) => {
+          console.error(error);
+          this.snackBar.openSnackBar(`${error}`, `Ok :'(`);
+          reject();
+          this.spinner.hide();
+        }
+      );
     });
   }
 }
@@ -588,6 +747,7 @@ export class SousDialog implements OnInit {
     MatIconModule,
     RouterLink,
     MatDatepickerModule,
+    NgxSpinnerModule,
   ],
 })
 export class CycleDialog implements OnInit {
@@ -595,6 +755,7 @@ export class CycleDialog implements OnInit {
 
   constructor(
     private datePipe: DatePipe,
+    private spinner: NgxSpinnerService,
     private fb: FormBuilder,
     private apiService: ApiService,
     private snackBar: SnackBarService,
@@ -622,7 +783,8 @@ export class CycleDialog implements OnInit {
     return this.datePipe.transform(date, 'yyyy/MM/dd') || '';
   }
 
-  SubmitCycle() {
+  SubmitCycle(): Promise<void> {
+    this.spinner.show();
     let element = this.cycleForm.value;
 
     let data = {
@@ -632,18 +794,24 @@ export class CycleDialog implements OnInit {
     };
     console.log(data);
 
-    this.apiService.postCycle(data).subscribe({
-      next: (res) => {
-        this.snackBar.openSnackBar('Cycle Crée', 'Ok !');
-        this.cycleForm.reset();
-        this.dialogRef.close();
-      },
-      error: (err) => {
-        this.snackBar.openSnackBar(
-          `Échec lors de la création d'un cycle: ${err}`,
-          "Ok :'("
-        );
-      },
+    return new Promise((resolve, reject) => {
+      this.apiService.postCycle(data).subscribe({
+        next: () => {
+          this.snackBar.openSnackBar('Cycle Crée', 'Ok !');
+          this.cycleForm.reset();
+          this.dialogRef.close();
+          resolve();
+          this.spinner.hide();
+        },
+        error: (err) => {
+          this.snackBar.openSnackBar(
+            `Échec lors de la création d'un cycle: ${err}`,
+            "Ok :'("
+          );
+          reject();
+          this.spinner.hide();
+        },
+      });
     });
   }
 }
@@ -679,6 +847,7 @@ export class CycleDialog implements OnInit {
     MatSelectModule,
     NgFor,
     NgxMatSelectSearchModule,
+    NgxSpinnerModule,
   ],
 })
 export class ConditionsDialog implements OnInit {
@@ -693,6 +862,7 @@ export class ConditionsDialog implements OnInit {
   @ViewChild('matRef1') matRef1!: MatSelect;
 
   constructor(
+    private spinner: NgxSpinnerService,
     private datePipe: DatePipe,
     private fb: FormBuilder,
     private apiService: ApiService,
@@ -755,6 +925,7 @@ export class ConditionsDialog implements OnInit {
   }
 
   getNomencl(): Promise<void> {
+    this.spinner.show();
     return new Promise((resolve, reject) => {
       this.apiService.getAllNomencl().subscribe({
         next: (data) => {
@@ -762,10 +933,12 @@ export class ConditionsDialog implements OnInit {
           this.filteredNomenclatureData = this.nomenclature;
 
           resolve();
+          this.spinner.hide();
         },
         error: (error) => {
           console.error('Error fetching Nomenclature List:', error);
           reject();
+          this.spinner.hide();
         },
       });
     });

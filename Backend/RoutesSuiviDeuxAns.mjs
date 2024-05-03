@@ -1,7 +1,12 @@
 import { Router } from "express";
 import db from "./dbLink.mjs";
+import multer from "multer";
+import fs from "fs";
+import xlsx from "node-xlsx";
+import { log } from "console";
 
 const router = Router();
+const upload = multer({ dest: "uploads/" });
 
 router.use((err, req, res, next) => {
   console.error("Error:", err);
@@ -76,6 +81,12 @@ FROM suivideuxans
 
 router.get("/conso/:id", async (req, res, next) => {
   const id = req.params.id;
+  const { page = 1, pageSize = 10, search = "" } = req.query;
+  const offset = (page - 1) * pageSize;
+
+  const countQuery = `SELECT COUNT(*) as total FROM consosuivi WHERE id_cycle = ?`;
+
+  log("offset", offset);
 
   const selectQuery = `
 SELECT
@@ -95,11 +106,40 @@ SELECT
     consosuivi.forced
   FROM consosuivi
   LEFT JOIN nomencl ON consosuivi.id_nomencl = nomencl.id_nomencl
-  WHERE id_cycle = ?`;
+  WHERE id_cycle = ? 
+  AND (consosuivi.nom_adherent LIKE ? OR 
+      consosuivi.prenom_adherent LIKE ? OR
+      nomencl.code_garantie LIKE ? OR
+      nomencl.garantie_describ LIKE ? OR
+      consosuivi.frais_expo LIKE ? OR
+      consosuivi.rbt_sin LIKE ?)
+  ORDER BY consosuivi.id_conso DESC
+  LIMIT ? OFFSET ?`;
 
   try {
-    const [result] = await db.query(selectQuery, id);
-    res.status(200).json(result);
+    const [totalresult] = await db.query(countQuery, [
+      id,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+    ]);
+
+    const [result] = await db.query(selectQuery, [
+      id,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
+      parseInt(pageSize),
+      offset,
+    ]);
+
+    res.status(200).json({ item: result, total: totalresult[0].total });
   } catch (err) {
     next(err);
   }
@@ -272,6 +312,98 @@ router.put("/conditions/update/:id", async (req, res, next) => {
     res.status(200).json({ message: "Garantie mise à jour" });
   } catch (err) {
     next(err);
+  }
+});
+
+/*______________________________________________________________________________
+________________________________________________________________________________
+__________________________   EXCEL PARSING PART   ______________________________
+________________________________________________________________________________
+______________________________________________________________________________*/
+
+router.post("/excel/:id", upload.single("file"), async (req, res, next) => {
+  const id = req.params.id;
+  const refdpt = req.body.data;
+
+  const selectQuery = `SELECT id_nomencl FROM suivideuxans WHERE id_cycle = ?`;
+  let coveredNomencl = await db.query(selectQuery, id);
+
+  let covered_Id_Nomencl = coveredNomencl[0].map((item) => item.id_nomencl);
+
+  try {
+    if (!req.file) {
+      return res.status(400).send("No file uploaded");
+    }
+
+    // Parse the Excel file
+    const obj = xlsx.parse(req.file.path); // Parses the buffer
+
+    obj[0].data.pop(); //remove the last row
+    obj[0].data.shift(); //remove first row
+
+    let consoData = ([] = []);
+
+    for (let row of obj[0].data) {
+      let codeNomenc = row[6].split(":")[0];
+
+      let sql = `SELECT id_nomencl FROM nomencl WHERE code_garantie = ?`;
+
+      let id_garentie = await db.query(sql, codeNomenc);
+      let id_nomencl = id_garentie[0][0].id_nomencl;
+
+      let dateSin = typeof row[5];
+      let FormattedDate = [];
+
+      if (dateSin === "number") {
+        let toDate = new Date((row[5] - (25567 + 2)) * 86400 * 1000);
+        FormattedDate.push(toDate);
+      } else if (dateSin === "string") {
+        const dd = row[5].split("-")[0];
+        const mm = row[5].split("-")[1];
+        const yyyy = row[5].split("-")[2];
+
+        let yyyyMMdd = yyyy + "-" + mm + "-" + dd;
+        let toDate = new Date(yyyyMMdd);
+
+        FormattedDate.push(toDate);
+      } else {
+        FormattedDate.push(dateSin);
+      }
+
+      const consoInterface = {
+        id_cycle: id,
+        idx_on_file: row[0],
+        nom_adherent: row[1],
+        prenom_adherent: row[2],
+        lien: row[3],
+        prenom_lien: row[4],
+        date_sin: FormattedDate[0],
+        id_nomencl: id_nomencl,
+        frais_expo: row[7],
+        rbt_sin: row[8],
+        remains: 0,
+        rib: row[9],
+        obs_on_file: row[10],
+        ref_dpt: refdpt,
+        forced: 0,
+      };
+
+      if (covered_Id_Nomencl.includes(consoInterface.id_nomencl)) {
+        consoData.push(consoInterface);
+      }
+    }
+    //console.log(consoData);
+
+    let query = `INSERT INTO consosuivi SET ?`;
+
+    for (let data of consoData) {
+      await db.query(query, data);
+    }
+
+    res.status(200).json("File uploaded and parsed successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json("Server error");
   }
 });
 

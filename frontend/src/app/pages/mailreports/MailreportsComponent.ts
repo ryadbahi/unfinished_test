@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe, NgIf } from '@angular/common';
-
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -99,6 +99,7 @@ export interface MreportsData {
     MatTooltipModule,
     DatePipe,
     NgIf,
+    NgxSpinnerModule,
   ],
   templateUrl: './mailreports.component.html',
   styleUrl: './mailreports.component.scss',
@@ -237,7 +238,8 @@ export class MailreportsComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
     private dialog: MatDialog,
-    private snackBService: SnackBarService
+    private snackBService: SnackBarService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -300,24 +302,30 @@ export class MailreportsComponent implements OnInit {
    * Refreshes the table data in the `MailreportsComponent` class.
    */
 
-  refreshTable(): void {
-    this.service
-      .getMailreportsData(this.page, this.pageSize, this.sortField)
-      .subscribe({
-        next: (response: MailreportsResponse) => {
-          this.dataSource.data = response.data;
-          this.total = response.total;
-          this.averageScore = response.averageDuration;
+  refreshTable(): Promise<void> {
+    this.spinner.show();
+    return new Promise((resolve, reject) => {
+      this.service
+        .getMailreportsData(this.page, this.pageSize, this.sortField)
+        .subscribe({
+          next: (response: MailreportsResponse) => {
+            this.dataSource.data = response.data;
+            this.total = response.total;
+            this.averageScore = response.averageDuration;
 
-          console.log(this.averageScore);
+            console.log(this.averageScore);
 
-          this.paginator.length = this.total;
-          console.table(response.data);
-        },
-        error: (error) => {
-          console.error('Failed to fetch data:', error);
-        },
-      });
+            this.paginator.length = this.total;
+            console.table(response.data);
+            resolve();
+            this.spinner.hide();
+          },
+          error: (error) => {
+            console.error('Failed to fetch data:', error);
+            this.spinner.hide();
+          },
+        });
+    });
   }
 
   applyFilter(search: string) {

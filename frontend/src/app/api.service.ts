@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Subject, from, throwError } from 'rxjs';
+import { Cons, Subject, from, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import {
@@ -17,7 +17,12 @@ import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
 import { DptSin } from './pages/sinistres/sinistres.component';
 
 import { SouscripData } from './pages/contrat/contrat.component';
-import { Conditions, Conso, CycleData } from './pages/tyc/tyc.component';
+import {
+  Conditions,
+  Conso,
+  CycleData,
+  GetConso,
+} from './pages/tyc/tyc.component';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -698,7 +703,27 @@ export class ApiService {
 
   //______________________GET CONSO _________________________________
 
-  getConsoByCycleId(id: number) {
-    return this.http.get<Conso[]>(`${this.apiUrl}/suivideuxans/conso/${id}`);
+  getConsoByCycleId(
+    id: number,
+    page: number,
+    pageSize: number,
+    search: string
+  ) {
+    const encodedSearch = encodeURIComponent(search);
+    return this.http.get<GetConso>(
+      `${this.apiUrl}/suivideuxans/conso/${id}?page=${page}&pageSize=${pageSize}&search=${encodedSearch}`
+    );
+  }
+
+  ///_________________________ POST EXCEL CONSO ____________________________
+
+  postConsoExcel(id: number, data: string, file: File) {
+    console.log('Uploading file:', file);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('data', data);
+
+    return this.http.post(`${this.apiUrl}/suivideuxans/excel/${id}`, formData);
   }
 }

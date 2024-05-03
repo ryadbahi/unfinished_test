@@ -1,17 +1,4 @@
-import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
-import { AdherentsComponent } from './pages/adherents/adherents.component';
-import { SinistresComponent } from './pages/sinistres/sinistres.component';
-import { SouscripteursComponent } from './pages/souscripteurs/souscripteurs.component';
-import { CommonModule } from '@angular/common';
-
-import { MailreportsComponent } from './pages/mailreports/MailreportsComponent';
-import { ValidlistComponent } from './pages/validlist/validlist.component';
-import { VerifsinComponent } from './pages/verifsin/verifsin.component';
-import { ParaphComponent } from './pages/paraph/paraph.component';
-import { HistoParaphComponent } from './pages/paraph/histo-paraph/histo-paraph.component';
-import { ContratComponent } from './pages/contrat/contrat.component';
-import { TycComponent } from './pages/tyc/tyc.component';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
@@ -19,65 +6,79 @@ export const routes: Routes = [
     pathMatch: 'full',
     redirectTo: 'home',
   },
-  { path: 'home', component: HomeComponent, title: 'Acceuil' },
-  { path: 'adherents', component: AdherentsComponent, title: 'Adhérents' },
-  { path: 'adherents/:id', component: AdherentsComponent, title: 'Adhérents' },
-  { path: 'sinistres', component: SinistresComponent, title: 'Sinistres' },
-  { path: 'sinistres/:id', component: SinistresComponent, title: 'Sinistres' },
-
   {
-    path: 'souscripteurs',
-    component: SouscripteursComponent,
-    title: 'Souscripteurs',
+    path: 'home',
+    loadComponent: () =>
+      import('./pages/home/home.component').then((m) => m.HomeComponent),
+    data: { title: 'Acceuil' },
   },
   {
-    path: 'souscripteurs/:id',
-    component: SouscripteursComponent,
-    title: 'Souscripteurs',
+    path: 'adherents',
+    loadComponent: () =>
+      import('./pages/adherents/adherents.component').then(
+        (m) => m.AdherentsComponent
+      ),
+    data: { title: 'Adhérents' },
+  },
+  {
+    path: 'sinistres',
+    loadComponent: () =>
+      import('./pages/sinistres/sinistres.component').then(
+        (m) => m.SinistresComponent
+      ),
+    data: { title: 'Sinistres' },
+  },
+  {
+    path: 'souscripteurs',
+    loadComponent: () =>
+      import('./pages/souscripteurs/souscripteurs.component').then(
+        (m) => m.SouscripteursComponent
+      ),
+    data: { title: 'Souscripteurs' },
   },
   {
     path: 'mailreports',
-    component: MailreportsComponent,
-    title: 'Suivi des requétes',
-  },
-  {
-    path: 'mailreports/:id',
-    component: MailreportsComponent,
-    title: 'Suivi des requétes',
+    loadComponent: () =>
+      import('./pages/mailreports/MailreportsComponent').then(
+        (m) => m.MailreportsComponent
+      ),
+    data: { title: 'Suivi des requétes' },
   },
   {
     path: 'validlist',
-    component: ValidlistComponent,
-    title: 'Vérif listing',
+    loadComponent: () =>
+      import('./pages/validlist/validlist.component').then(
+        (m) => m.ValidlistComponent
+      ),
+    data: { title: 'Vérif listing' },
   },
-
   {
     path: 'verifsin',
-    component: VerifsinComponent,
-    title: 'Vérif Sinistres',
+    loadComponent: () =>
+      import('./pages/verifsin/verifsin.component').then(
+        (m) => m.VerifsinComponent
+      ),
+    data: { title: 'Vérif Sinistres' },
   },
-
   {
     path: 'paraph',
-    component: ParaphComponent,
-    title: 'Parapheur',
+    loadComponent: () =>
+      import('./pages/paraph/paraph.component').then((m) => m.ParaphComponent),
+    data: { title: 'Parapheur' },
   },
-
-  {
-    path: 'histo_paraph',
-    component: HistoParaphComponent,
-    title: 'Historique parapheurs',
-  },
-
   {
     path: 'contrat',
-    component: ContratComponent,
-    title: 'Contrats',
+    loadComponent: () =>
+      import('./pages/contrat/contrat.component').then(
+        (m) => m.ContratComponent
+      ),
+    data: { title: 'Contrats' },
   },
-
   {
     path: 'tyc',
-    component: TycComponent,
-    title: 'Conso sur 2 ans',
+    loadComponent: () =>
+      import('./pages/tyc/tyc.component').then((m) => m.TycComponent),
+    data: { title: 'Conso sur 2 ans' },
   },
+  { path: '**', redirectTo: 'home' }, // wildcard route
 ];
