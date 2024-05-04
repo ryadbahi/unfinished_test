@@ -16,12 +16,10 @@
               noEntriesFoundLabel="Aucun acte trouvé....."
             ></ngx-mat-select-search
           ></mat-option>
-          <mat-option
-            *ngFor="let element of filteredNomenclatureData"
-            [value]="element.id_nomencl"
-          >
-            {{ element.code_garantie }} : {{ element.garantie_describ }}
-          </mat-option>
+          @for(element of filteredNomenclatureData; track element ){
+          <mat-option [value]="element.id_nomencl">
+            {{ element.code_garantie }} : {{ element.garantie_describ }} </mat-option
+          >}
         </mat-select>
       </mat-form-field>
 
@@ -31,9 +29,8 @@
           placeholder="Garantie par.."
           style="font-size: 12px"
         >
-          <mat-option *ngFor="let element of garPar" [value]="element">
-            {{ element }}
-          </mat-option>
+          @for(element of garPar; track element){
+          <mat-option [value]="element"> {{ element }} </mat-option>}
         </mat-select>
       </mat-form-field>
 

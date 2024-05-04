@@ -189,7 +189,7 @@ export class TycComponent implements OnInit {
 
   isLoading = false;
 
-  conditionsDataSource!: MatTableDataSource<Conditions>;
+  conditionsDataSource = new MatTableDataSource<Conditions>();
 
   consoDataSource = new MatTableDataSource<Conso>();
 
@@ -199,7 +199,7 @@ export class TycComponent implements OnInit {
   souscripFilterCtrl = new FormControl();
   filtredSouscripteurs: SouscripData[] = [];
 
-  cycleDataSource!: MatTableDataSource<CycleData>;
+  cycleDataSource = new MatTableDataSource<CycleData>();
   cycleData: CycleData[] = [];
   selectedCycle?: CycleData | null = null;
   selectedIdCycle?: number;
@@ -210,6 +210,11 @@ export class TycComponent implements OnInit {
   total: number = 0;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild('matRef2') matRef2!: MatSelect;
+
+  clearSelection() {
+    this.matRef2.options.forEach((opt) => opt.deselect());
+  }
 
   constructor(
     private datePipe: DatePipe,
@@ -303,16 +308,11 @@ export class TycComponent implements OnInit {
 
   getCycleById(id_cycle: number): Promise<void> {
     this.spinner.show();
-    let index = +1;
+
     return new Promise((resolve, reject) => {
       this.service.getCycleById(id_cycle).subscribe({
         next: (data: CycleData[]) => {
-          this.cycleDataSource = new MatTableDataSource(
-            data.map((item: CycleData) => {
-              return { ...item, idx: index };
-            })
-          );
-          console.log('here', this.cycleDataSource.data);
+          this.cycleDataSource.data = data;
 
           this.isLoading = false;
           resolve();
@@ -339,7 +339,35 @@ export class TycComponent implements OnInit {
             this.total = data.total;
             this.paginator.length = this.total;
             this.isLoading = false;
-            console.log(this.paginator.length);
+            resolve();
+            this.spinner.hide();
+          },
+          error: (error) => {
+            console.error(error);
+            this.isLoading = false;
+            reject(error);
+            this.spinner.hide();
+          },
+        });
+    });
+  }
+
+  applyFilter(search: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.spinner.show();
+      this.service
+        .getConsoByCycleId(
+          this.selectedIdCycle!,
+          this.page,
+          this.pageSize,
+          search
+        )
+        .subscribe({
+          next: (data: GetConso) => {
+            this.consoDataSource.data = data.item;
+            this.total = data.total;
+            this.paginator.length = this.total;
+            this.isLoading = false;
             resolve();
             this.spinner.hide();
           },
@@ -355,7 +383,10 @@ export class TycComponent implements OnInit {
 
   async onSousSelectionChange(event: MatSelectChange) {
     const selectedId = event.value;
-
+    this.cycleDataSource.data = [];
+    this.conditionsDataSource.data = [];
+    this.consoDataSource.data = [];
+    this.clearSelection();
     this.selectedSous = this.souscripData.find(
       (element: SouscripData) => element.id_souscript === selectedId
     );
@@ -372,6 +403,9 @@ export class TycComponent implements OnInit {
 
   async onCycleSelectionChange(event: MatSelectChange) {
     const selectedId = event.value;
+    this.conditionsDataSource.data = [];
+    this.consoDataSource.data = [];
+
     this.selectedCycle = this.cycleData.find(
       (element: CycleData) => element.id_cycle === selectedId
     );
@@ -450,11 +484,7 @@ export class TycComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.service.getConditionsByCycleID(id).subscribe({
         next: (data: Conditions[]) => {
-          this.conditionsDataSource = new MatTableDataSource(
-            data.map((item: Conditions, index: number) => {
-              return { ...item, idx: index + 1 };
-            })
-          );
+          this.conditionsDataSource.data = data;
           this.isLoading = false;
           console.log(this.conditionsDataSource.data);
 
@@ -631,24 +661,35 @@ export class TycComponent implements OnInit {
           this.spinner.hide();
         },
       });
-
-      /* try {
-        // Convert Observable to a Promise using firstValueFrom
-
-        this.service.postConsoExcel(id, refDpt, fileToUpload).subscribe({
-          next: async (res) => {
-            await this.getConso(id);
-          },
-        });
-
-        console.log('File uploaded and processed successfully.');
-      } catch (error) {
-        console.error('An error occurred while uploading the file:', error);
-        throw new Error('File upload failed'); // Throw error to be caught by caller
-      } finally {
-        this.spinner.hide(); // Hide spinner whether success or failure
-      }*/
     }
+  }
+
+  deleteConso(element: Conso) {
+    const confirmDelete = confirm(
+      `Voulez vous vraiement supprimer la consommation de ${element.nom_adherent} ${element.prenom_adherent} `
+    );
+
+    if (confirmDelete) {
+      this.spinner.show();
+      this.service.deleteConsoByIdCouv(element.id_conso).subscribe({
+        next: () => {
+          this.snackBar.openSnackBar(
+            `La conso de ${element.nom_adherent} ${element.prenom_adherent} à été supprimée`,
+            'Ok :)'
+          );
+          this.getConso(element.id_cycle);
+          this.spinner.hide();
+        },
+        error: (err) => {
+          console.error(err);
+          this.snackBar.openSnackBar('Erreur lors de la suppression', 'OK');
+        },
+      });
+    }
+  }
+
+  test() {
+    console.log(this.conditionsDataSource.data);
   }
 }
 //_____________________________________________________________________________________________________________

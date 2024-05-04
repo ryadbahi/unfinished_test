@@ -322,6 +322,7 @@ export class MailreportsComponent implements OnInit {
           },
           error: (error) => {
             console.error('Failed to fetch data:', error);
+            reject();
             this.spinner.hide();
           },
         });

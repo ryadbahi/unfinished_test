@@ -20,6 +20,7 @@
   white-space: normal;
   background-color: hwb(0 100% 0% / 0.6);
 }
+
 .mat-mdc-header-row {
   height: auto;
   background-color: hwb(0 100% 0% / 0.6) !important;
@@ -77,8 +78,14 @@
 .CycleTable {
   margin: 1rem;
   align-self: center;
-  max-width: 58rem;
-  width: 56rem;
+  max-width: none;
+  width: auto;
+  min-width: none;
+}
+.tableClosed {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
 .ActionBtns {

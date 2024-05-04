@@ -109,11 +109,13 @@ SELECT
   WHERE id_cycle = ? 
   AND (consosuivi.nom_adherent LIKE ? OR 
       consosuivi.prenom_adherent LIKE ? OR
+      consosuivi.lien LIKE ? OR
+      consosuivi.prenom_lien LIKE ? OR
       nomencl.code_garantie LIKE ? OR
       nomencl.garantie_describ LIKE ? OR
       consosuivi.frais_expo LIKE ? OR
       consosuivi.rbt_sin LIKE ?)
-  ORDER BY consosuivi.id_conso DESC
+  ORDER BY consosuivi.nom_adherent ASC, consosuivi.prenom_adherent, consosuivi.lien, consosuivi.prenom_lien
   LIMIT ? OFFSET ?`;
 
   try {
@@ -125,10 +127,14 @@ SELECT
       `%${search}%`,
       `%${search}%`,
       `%${search}%`,
+      `%${search}%`,
+      `%${search}%`,
     ]);
 
     const [result] = await db.query(selectQuery, [
       id,
+      `%${search}%`,
+      `%${search}%`,
       `%${search}%`,
       `%${search}%`,
       `%${search}%`,
@@ -239,6 +245,18 @@ router.delete("/conditions/:id", async (req, res, next) => {
   try {
     await db.query(deleteQuery, id);
     res.status(200).json({ message: "Conditions deleted succesfully" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/delete/conso/:id", async (req, res, next) => {
+  const id = req.params.id;
+  const deleteQuery = `DELETE FROM consosuivi WHERE id_conso = ?`;
+
+  try {
+    await db.query(deleteQuery, id);
+    res.status(200).json({ message: "Consommation supprimée" });
   } catch (err) {
     next(err);
   }

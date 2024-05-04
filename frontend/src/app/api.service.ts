@@ -726,4 +726,8 @@ export class ApiService {
 
     return this.http.post(`${this.apiUrl}/suivideuxans/excel/${id}`, formData);
   }
+
+  deleteConsoByIdCouv(id: number) {
+    return this.http.delete(`${this.apiUrl}/suivideuxans/delete/conso/${id}`);
+  }
 }
