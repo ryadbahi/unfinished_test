@@ -62,6 +62,7 @@ import { SnackBarService } from '../../snack-bar.service';
 import { RouterLink } from '@angular/router';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 export interface CycleData {
   idx: number;
@@ -140,6 +141,7 @@ export interface GetConso {
     DatePipe,
     NgxSpinnerModule,
     MatPaginatorModule,
+    MatExpansionModule,
   ],
   templateUrl: './tyc.component.html',
   styleUrl: './tyc.component.scss',
@@ -179,7 +181,9 @@ export class TycComponent implements OnInit {
     'actions',
   ];
 
-  isHidden: boolean = false;
+  panelOpenState = false;
+
+  selectedSousTitle: string = 'Aucun souscripteur selectionné';
 
   _onDestroy = new Subject<void>();
 
@@ -358,6 +362,7 @@ export class TycComponent implements OnInit {
 
     if (this.selectedSous) {
       this.selectedIdSous = this.selectedSous.id_souscript;
+      this.selectedSousTitle = this.selectedSous.nom_souscript;
 
       await this.getCycle(this.selectedIdSous);
     } else {
