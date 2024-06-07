@@ -279,26 +279,36 @@
               width: 6rem;
               min-width: 6rem;
               max-width: 6rem;
+              height: 1.5rem;
               text-align: center;
             "
           >
-            <div *ngIf="mrepelem.isEdit">
-              <select
-                [(ngModel)]="selectedStatut"
-                style="
-                  width: 5rem;
-                  min-width: 5rem;
-                  max-width: 5rem;
-                  height: 1.5rem;
-                "
-              >
-                <option *ngFor="let stat of statut" [value]="stat">
-                  {{ stat }}
-                </option>
-              </select>
-            </div>
+            @if (mrepelem.isEdit) {
+            <select
+              [(ngModel)]="selectedStatut"
+              style="
+                width: 5rem;
+                min-width: 5rem;
+                max-width: 5rem;
+                height: 1.5rem;
+              "
+            >
+              <option *ngFor="let stat of statut" [value]="stat">
+                {{ stat }}
+              </option>
+            </select>
+            } @else { @if (!mrepelem.statut || mrepelem.statut === '') {
+            <mat-icon style="padding: 0; color: red; text-align: center">
+              warning
+            </mat-icon>
+            } @else {
             <div
-              *ngIf="!mrepelem.isEdit"
+              style="
+                width: 5rem;
+                min-width: 5rem;
+                max-width: 5rem;
+                text-align: center;
+              "
               [ngClass]="{
                 green: mrepelem.statut === 'Réglée',
                 red: mrepelem.statut === 'Infondée'
@@ -306,8 +316,10 @@
             >
               {{ mrepelem.statut }}
             </div>
+            } }
           </td>
         </ng-container>
+
         <ng-container matColumnDef="reponse">
           <th mat-header-cell *matHeaderCellDef>Réponse</th>
           <td

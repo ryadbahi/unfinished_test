@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import {
@@ -12,6 +12,8 @@ import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from './date-adapter';
 import { MatTableModule } from '@angular/material/table';
 import { NgxSpinnerModule } from 'ngx-spinner';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideClientHydration } from '@angular/platform-browser';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -39,5 +41,9 @@ export const appConfig: ApplicationConfig = {
     MatTableModule,
     NgxSpinnerModule,
     DecimalPipe,
+    provideAnimationsAsync(),
+    provideAnimationsAsync(),
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideAnimationsAsync(),
   ],
 };

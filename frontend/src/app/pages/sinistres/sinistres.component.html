@@ -20,10 +20,7 @@
           (selectionChange)="onContratSelectionChange($event)"
         >
           <mat-option *ngIf="isLoading" disabled style="width: 25 rem">
-            <mat-progress-spinner
-              mode="indeterminate"
-              diameter="20"
-            ></mat-progress-spinner>
+            <mat-spinner diameter="20"></mat-spinner>
             Chargement...
           </mat-option>
 
@@ -290,11 +287,15 @@
             >
           </ng-template>
           <div style="border-radius: 10px; overflow: hidden" class="tables">
-            <table mat-table [dataSource]="acceptedData">
+            <table
+              mat-table
+              [dataSource]="acceptedData"
+              [hidden]="!acceptedData.data.length"
+            >
               <ng-container matColumnDef="idx">
                 <th mat-header-cell *matHeaderCellDef>N°</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.idx }}
+                <td mat-cell *matCellDef="let element; let i = index">
+                  {{ i + 1 }}
                 </td>
               </ng-container>
 
@@ -499,11 +500,15 @@
             >
           </ng-template>
           <div style="border-radius: 10px; overflow: hidden" class="tables">
-            <table mat-table [dataSource]="rejectedData">
+            <table
+              mat-table
+              [dataSource]="rejectedData"
+              [hidden]="!rejectedData.data.length"
+            >
               <ng-container matColumnDef="idx">
                 <th mat-header-cell *matHeaderCellDef>N°</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.idx }}
+                <td mat-cell *matCellDef="let element; let i = index">
+                  {{ i + 1 }}
                 </td>
               </ng-container>
 
@@ -701,7 +706,7 @@
       </div></mat-tab
     >
     <!--_______________________________________________________________________________________________________________________________________-->
-    <!--________________________________________________________________HISTORIQUE_____________________________________________________________-->
+    <!--___________________________________________________________HISTORIQUE ACCEPTEE_________________________________________________________-->
     <!--_______________________________________________________________________________________________________________________________________-->
     <mat-tab>
       <ng-template mat-tab-label>
@@ -745,7 +750,11 @@
             >
           </ng-template>
 
-          <div style="border-radius: 10px; overflow: hidden" class="tables">
+          <div
+            style="border-radius: 10px; overflow: hidden"
+            class="tables"
+            [hidden]="!histoAcceptedData.data.length"
+          >
             <table mat-table [dataSource]="histoAcceptedData">
               <ng-container matColumnDef="idx">
                 <th mat-header-cell *matHeaderCellDef>N°</th>
@@ -903,6 +912,10 @@
               showFirstLastButtons
             ></mat-paginator></div
         ></mat-tab>
+
+        <!--_______________________________________________________________________________________________________________________________________-->
+        <!--__________________________________________________________ HISTORIQUE REJETS __________________________________________________________-->
+        <!--_______________________________________________________________________________________________________________________________________-->
         <mat-tab>
           <ng-template mat-tab-label>
             <span
@@ -922,7 +935,11 @@
             >
           </ng-template>
 
-          <div style="border-radius: 10px; overflow: hidden" class="tables">
+          <div
+            style="border-radius: 10px; overflow: hidden"
+            class="tables"
+            [hidden]="!histoRejectedData.data.length"
+          >
             <table mat-table [dataSource]="histoRejectedData">
               <ng-container matColumnDef="idx">
                 <th mat-header-cell *matHeaderCellDef>N°</th>

@@ -7,6 +7,7 @@
 *::after {
   box-sizing: border-box;
 }
+
 html {
   //background-image: url("/assets/background.png");
   // background-image: url("/assets/blue-pink-gradient-linear.jpg");
@@ -17,9 +18,11 @@ html {
   );
   background-size: cover;
 }
+
 body {
-  margin: 4px;
+  margin: 2px;
   min-height: 98dvh;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 .blue-snackbar.mat-mdc-snack-bar-container {
@@ -39,6 +42,7 @@ body {
     white-space: pre-wrap;
   }
 }
+
 :host ::ng-deep .mat-progress-spinner circle,
 .mat-spinner circle {
   stroke: #bada55;
@@ -51,11 +55,18 @@ body {
   padding: 0px 15px 5px 5px !important;
   border-radius: 20px;
 }
+
 .mat-mdc-menu-panel {
   background-color: rgba(255, 255, 255, 0.766);
   border-radius: 20px !important;
 }
+
 .mat-badge.mat-badge {
   overflow: visible !important;
   z-index: 2;
+}
+
+html,
+body {
+  height: 100%;
 }

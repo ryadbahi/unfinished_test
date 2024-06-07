@@ -72,7 +72,7 @@
                   ></ngx-mat-select-search
                 ></mat-option>
 
-                @for(element of filtredSouscripteurs; track element ){
+                @for(element of filtredSouscripteurs; track $index ){
                 <mat-option
                   [value]="element.id_souscript"
                   [disabled]="isLoading"
@@ -102,22 +102,22 @@
                 (click)="selectedIdSous && getCycle(selectedIdSous)"
                 (selectionChange)="onCycleSelectionChange($event)"
               >
-                <mat-option *ngIf="isLoading" disabled>
+                @if(isLoading){<mat-option disabled>
                   <mat-progress-spinner
                     mode="indeterminate"
                     diameter="20"
                   ></mat-progress-spinner>
-                  Chargement...
-                </mat-option>
-
-                @for(element of cycleData; track element){
+                  Chargement... </mat-option
+                >}@else{ @for(element of cycleData; track $index){
                 <mat-option
                   [value]="element.id_cycle"
                   [disabled]="isLoading"
                   style="font-size: 12px; min-height: 2rem"
                 >
                   {{ element.cycle }} </mat-option
-                >}
+                >}@empty {
+                <mat-option>Aucun cycle trouvé</mat-option>
+                }}
               </mat-select>
             </mat-form-field>
           </div>
@@ -646,11 +646,11 @@
     </div>
   </div>
 </div>
-<ngx-spinner
+<!--<ngx-spinner
   bdColor="rgba(0, 0, 0, 0.8)"
   size="large"
   color="#fff"
   type="ball-scale-multiple"
   [fullScreen]="true"
   ><p style="color: white">Chargement...</p></ngx-spinner
->
+>-->
