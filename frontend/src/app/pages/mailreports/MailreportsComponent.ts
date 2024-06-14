@@ -358,15 +358,19 @@ export class MailreportsComponent implements OnInit {
 
   strteditmrep(mrepelem: MreportsData) {
     mrepelem.isEdit = true;
-    this.selectedTraiteePar = mrepelem.traite_par;
+    /*this.selectedTraiteePar = mrepelem.traite_par;
     this.selectedStatut = mrepelem.statut;
-    this.selectedCanal = mrepelem.canal;
+    this.selectedCanal = mrepelem.canal;*/
 
     // Store the current state of mrepelem
-    this.Oldmrepelem = JSON.stringify(mrepelem);
+    // this.Oldmrepelem = JSON.stringify(mrepelem);
     //console.log(this.Oldmrepelem);
 
     // Set dropdown values based on the current values of mrepelem
+  }
+
+  onDropdownChange(event: any, mrepelem: MreportsData, property: string) {
+    mrepelem[property] = event.target.value;
   }
 
   // Add a method to handle canceling the new row
@@ -489,35 +493,35 @@ export class MailreportsComponent implements OnInit {
     }
   }
   updateRow(mrepelem: MreportsData) {
-    // Assign the selected values to mrepelem
-    mrepelem.traite_par = this.selectedTraiteePar;
-    mrepelem.statut = this.selectedStatut;
-    mrepelem.canal = this.selectedCanal;
-
-    // Stringify the updated mrepelem
+    // Stringify the current state of mrepelem
     let updatedMrepelem = JSON.stringify(mrepelem);
 
     // Compare with the old mrepelem
     if (updatedMrepelem !== this.Oldmrepelem) {
       // Changes have been made, so submit the update
-      // Your existing code for updating the row
-      this.service.updateMailreportData(mrepelem.id_mail, mrepelem).subscribe(
-        (response) => {
+      this.service.updateMailreportData(mrepelem.id_mail, mrepelem).subscribe({
+        next: (response) => {
           console.log('Row updated successfully:', response);
           this.snackBService.openSnackBar('Mise à jour effectuée', 'okey :)');
 
           // Toggle off the editing mode after a successful update
           mrepelem.isEdit = false;
         },
-        (error) => {
+        error: (error) => {
           console.error('Error updating row:', error);
           // Handle error as needed
-          console.log('Erreur:', error);
-        }
-      );
+          this.snackBService.openSnackBar(
+            'Erreur lors de la mise à jour',
+            'Erreur :('
+          );
+        },
+        complete: () => {
+          console.log('Update operation completed');
+        },
+      });
     } else {
       console.log('No changes detected. Skipping update.');
-      this.snackBService.openSnackBar('Aucune donnée éditée ', 'hum ?!');
+      this.snackBService.openSnackBar('Aucune donnée éditée', 'hum ?!');
     }
   }
 
