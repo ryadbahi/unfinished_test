@@ -1,5 +1,6 @@
 .ConditionsDialog {
-  width: 40rem;
+  width: min-content;
+  min-width: none !important;
   height: auto;
   text-align: center;
 }
@@ -18,4 +19,8 @@
 }
 .mat-mdc-option.mdc-list-item {
   min-height: 2rem;
+}
+::ng-deep.cdk-overlay-pane.mat-mdc-dialog-panel {
+  max-width: 100vh;
+  min-width: var(--mat-dialog-container-min-width, 0);
 }
