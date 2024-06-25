@@ -341,6 +341,7 @@ export class TycComponent implements OnInit {
             this.isLoading = false;
             resolve();
             this.spinner.hide();
+            console.log(this.consoDataSource.data);
           },
           error: (error) => {
             console.error(error);
@@ -689,7 +690,19 @@ export class TycComponent implements OnInit {
   }
 
   test() {
-    console.log(this.conditionsDataSource.data);
+    console.log(this.consoDataSource.data);
+  }
+
+  checkPlafonds() {
+    let ids = this.consoDataSource.data.map((item: Conso) => {
+      return item.id_conso;
+    });
+
+    this.service.sendDataConso(ids).subscribe({
+      next: () => {
+        console.log('done !');
+      },
+    });
   }
 }
 //_____________________________________________________________________________________________________________

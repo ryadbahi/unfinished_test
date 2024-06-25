@@ -730,4 +730,8 @@ export class ApiService {
   deleteConsoByIdCouv(id: number) {
     return this.http.delete(`${this.apiUrl}/suivideuxans/delete/conso/${id}`);
   }
+
+  sendDataConso(id: number[]) {
+    return this.http.get(`${this.apiUrl}/suivideuxans/consosuivi/${id}`);
+  }
 }

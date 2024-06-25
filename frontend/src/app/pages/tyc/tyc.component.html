@@ -517,10 +517,11 @@
   _________________________________________________________________________________-->
 
 <div>
-  <div style="margin-bottom: 1rem">
+  <div
+    style="margin-bottom: 1rem; display: flex; justify-content: space-between"
+  >
     <button
       [class.hidden]="!conditionsDataSource.data.length"
-      style="border-radius: 20px; width: 100px; height: 35px"
       mat-raised-button
       (click)="fileInput.click()"
     >
@@ -531,6 +532,14 @@
         (change)="handleFile(fileInput.files)"
         style="display: none"
       />
+    </button>
+
+    <button
+      mat-raised-button
+      [class.hidden]="!conditionsDataSource.data.length"
+      (click)="checkPlafonds()"
+    >
+      Check
     </button>
   </div>
 

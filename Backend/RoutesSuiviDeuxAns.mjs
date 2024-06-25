@@ -3,7 +3,6 @@ import db from "./dbLink.mjs";
 import multer from "multer";
 import fs from "fs";
 import xlsx from "node-xlsx";
-import { log } from "console";
 
 const router = Router();
 const upload = multer({ dest: "uploads/" });
@@ -85,8 +84,6 @@ router.get("/conso/:id", async (req, res, next) => {
   const offset = (page - 1) * pageSize;
 
   const countQuery = `SELECT COUNT(*) as total FROM consosuivi WHERE id_cycle = ?`;
-
-  log("offset", offset);
 
   const selectQuery = `
 SELECT
@@ -422,6 +419,21 @@ router.post("/excel/:id", upload.single("file"), async (req, res, next) => {
   } catch (err) {
     console.error(err);
     res.status(500).json("Server error");
+  }
+});
+
+router.get("/consosuivi/:id", async (req, res, next) => {
+  const id = req.params.id;
+
+  const selectQuery = `SELECT frais_expo FROM consosuivi WHERE id_conso=?`;
+
+  try {
+    const [result] = await db.query(selectQuery, id);
+
+    // res.status(200).json({ result });
+    console.log(result);
+  } catch (err) {
+    next(err);
   }
 });
 
