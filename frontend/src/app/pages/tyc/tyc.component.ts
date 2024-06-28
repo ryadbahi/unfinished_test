@@ -694,11 +694,11 @@ export class TycComponent implements OnInit {
   }
 
   checkPlafonds() {
-    let ids = this.consoDataSource.data.map((item: Conso) => {
-      return item.id_conso;
+    let cycleId = this.cycleDataSource.data.map((item: CycleData) => {
+      return item.id_cycle;
     });
 
-    this.service.sendDataConso(ids).subscribe({
+    this.service.sendDataConso(cycleId).subscribe({
       next: () => {
         console.log('done !');
       },

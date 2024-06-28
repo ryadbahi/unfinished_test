@@ -3,6 +3,7 @@ import db from "./dbLink.mjs";
 import multer from "multer";
 import fs from "fs";
 import xlsx from "node-xlsx";
+import { error, log } from "console";
 
 const router = Router();
 const upload = multer({ dest: "uploads/" });
@@ -422,16 +423,82 @@ router.post("/excel/:id", upload.single("file"), async (req, res, next) => {
   }
 });
 
-router.get("/consosuivi/:id", async (req, res, next) => {
-  const id = req.params.id;
+/*router.get("/consosuivi/:id", async (req, res, next) => {
+  const idCycle = req.params.id;
 
-  const selectQuery = `SELECT frais_expo FROM consosuivi WHERE id_conso=?`;
+  const selectCycle = `SELECT date_start, date_end FROM cycle WHERE id_cycle = ?`;
+  const selectConso = `SELECT 
+nom_adherent,
+prenom_adherent,
+lien,
+prenom_lien,
+date_sin,
+id_nomencl,
+frais_expo,
+rbt_sin 
+FROM consosuivi 
+WHERE id_cycle =?`;
 
   try {
-    const [result] = await db.query(selectQuery, id);
+    const [cycleData] = await db.query(selectCycle, idCycle); // Use the array of IDs as parameters
+    const [consoData] = await db.query(selectConso, idCycle);
+    res.status(200).json({ selectConso, consoData });
+    console.log(cycleData, consoData);
+  } catch (err) {
+    next(err);
+  }
 
-    // res.status(200).json({ result });
-    console.log(result);
+});*/
+
+router.get("/consosuivi/:id", async (req, res, next) => {
+  const idCycle = req.params.id;
+
+  const selectConditions = `SELECT id_nomencl, applied_on, taux_rbt, limit_act, limit_gar, nbr_of_unit,unit_value FROM suivideuxans WHERE id_cycle = ?`;
+  const selectCycle = `SELECT date_start, date_end FROM cycle WHERE id_cycle = ?`;
+  const selectConso = `SELECT 
+    id_conso,
+    nom_adherent,
+    prenom_adherent,
+    lien,
+    prenom_lien,
+    date_sin,
+    id_nomencl,
+    frais_expo,
+    rbt_sin 
+  FROM consosuivi 
+  WHERE id_cycle = ?`;
+
+  try {
+    const [cycleData] = await db.query(selectCycle, idCycle);
+    const [consoData] = await db.query(selectConso, idCycle);
+    const [ConditionsData] = await db.query(selectConditions, idCycle);
+
+    const { date_start, date_end } = cycleData[0];
+
+    const result = consoData.map((conso) => {
+      const isWithinRange =
+        new Date(conso.date_sin) >= new Date(date_start) &&
+        new Date(conso.date_sin) <= new Date(date_end);
+      return {
+        ...conso,
+        isWithinRange,
+      };
+    });
+
+    res.status(200).json({ ConditionsData, cycleData, result });
+    //console.log(ConditionsData, cycleData, result);
+
+    let rangeCheck = result.every((item) => item.isWithinRange);
+
+    if (rangeCheck == true) {
+      const idConso = consoData.map((conso) => {
+        return conso.id_conso;
+      });
+
+      console.log("HERE", idConso);
+
+      /*const rejet = `UPDATE consosuivi SET statut = ? WHERE id_conso = ?`;*/
+    }
   } catch (err) {
     next(err);
   }
