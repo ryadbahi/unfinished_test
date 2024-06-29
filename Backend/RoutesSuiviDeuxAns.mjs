@@ -423,82 +423,75 @@ router.post("/excel/:id", upload.single("file"), async (req, res, next) => {
   }
 });
 
-/*router.get("/consosuivi/:id", async (req, res, next) => {
-  const idCycle = req.params.id;
-
-  const selectCycle = `SELECT date_start, date_end FROM cycle WHERE id_cycle = ?`;
-  const selectConso = `SELECT 
-nom_adherent,
-prenom_adherent,
-lien,
-prenom_lien,
-date_sin,
-id_nomencl,
-frais_expo,
-rbt_sin 
-FROM consosuivi 
-WHERE id_cycle =?`;
-
-  try {
-    const [cycleData] = await db.query(selectCycle, idCycle); // Use the array of IDs as parameters
-    const [consoData] = await db.query(selectConso, idCycle);
-    res.status(200).json({ selectConso, consoData });
-    console.log(cycleData, consoData);
-  } catch (err) {
-    next(err);
-  }
-
-});*/
-
 router.get("/consosuivi/:id", async (req, res, next) => {
   const idCycle = req.params.id;
 
-  const selectConditions = `SELECT id_nomencl, applied_on, taux_rbt, limit_act, limit_gar, nbr_of_unit,unit_value FROM suivideuxans WHERE id_cycle = ?`;
-  const selectCycle = `SELECT date_start, date_end FROM cycle WHERE id_cycle = ?`;
-  const selectConso = `SELECT 
-    id_conso,
-    nom_adherent,
-    prenom_adherent,
-    lien,
-    prenom_lien,
-    date_sin,
-    id_nomencl,
-    frais_expo,
-    rbt_sin 
-  FROM consosuivi 
-  WHERE id_cycle = ?`;
+  const selectConditions = `
+    SELECT id_nomencl, applied_on, taux_rbt, limit_act, limit_gar, nbr_of_unit, unit_value 
+    FROM suivideuxans 
+    WHERE id_cycle = ?`;
+  const selectCycle = `
+    SELECT date_start, date_end 
+    FROM cycle 
+    WHERE id_cycle = ?`;
+  const selectConso = `
+    SELECT 
+      id_conso, nom_adherent, prenom_adherent, lien, prenom_lien, date_sin, id_nomencl, frais_expo, rbt_sin 
+    FROM consosuivi 
+    WHERE id_cycle = ?`;
 
   try {
     const [cycleData] = await db.query(selectCycle, idCycle);
     const [consoData] = await db.query(selectConso, idCycle);
-    const [ConditionsData] = await db.query(selectConditions, idCycle);
+    const [conditionsData] = await db.query(selectConditions, idCycle);
+
+    if (!cycleData.length) {
+      return res.status(404).json({ message: "Cycle not found" });
+    }
 
     const { date_start, date_end } = cycleData[0];
+
+    const updates = [];
 
     const result = consoData.map((conso) => {
       const isWithinRange =
         new Date(conso.date_sin) >= new Date(date_start) &&
         new Date(conso.date_sin) <= new Date(date_end);
+
+      if (!isWithinRange) {
+        updates.push({
+          id: conso.id_conso,
+          fields: { statut: false, rbt_sin: 0 },
+        });
+      }
+
+      // Add more conditions as needed
+      // Example:
+      // if (conso.someOtherCondition) {
+      //   updates.push({ id: conso.id_conso, fields: { anotherField: newValue } });
+      // }
+
       return {
         ...conso,
         isWithinRange,
       };
     });
 
-    res.status(200).json({ ConditionsData, cycleData, result });
-    //console.log(ConditionsData, cycleData, result);
-
-    let rangeCheck = result.every((item) => item.isWithinRange);
-
-    if (rangeCheck == true) {
-      const idConso = consoData.map((conso) => {
-        return conso.id_conso;
+    if (updates.length > 0) {
+      const updateQueries = updates.map((update) => {
+        const fields = Object.entries(update.fields)
+          .map(([key, value]) => `${key} = ${db.escape(value)}`)
+          .join(", ");
+        return `UPDATE consosuivi SET ${fields} WHERE id_conso = ${db.escape(
+          update.id
+        )}`;
       });
 
-      console.log("HERE", idConso);
-
-      /*const rejet = `UPDATE consosuivi SET statut = ? WHERE id_conso = ?`;*/
+      await Promise.all(updateQueries.map((query) => db.query(query)));
     }
+
+    res.status(200).json({ conditionsData, cycleData, result });
+    console.log(conditionsData);
   } catch (err) {
     next(err);
   }

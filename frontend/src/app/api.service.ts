@@ -731,7 +731,7 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/suivideuxans/delete/conso/${id}`);
   }
 
-  sendDataConso(id: number[]) {
+  sendDataConso(id: number) {
     return this.http.get(`${this.apiUrl}/suivideuxans/consosuivi/${id}`);
   }
 }

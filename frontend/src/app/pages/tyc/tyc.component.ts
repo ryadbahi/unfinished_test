@@ -698,11 +698,16 @@ export class TycComponent implements OnInit {
       return item.id_cycle;
     });
 
-    this.service.sendDataConso(cycleId).subscribe({
-      next: () => {
-        console.log('done !');
-      },
-    });
+    let id_Cycle = this.selectedIdCycle;
+
+    if (id_Cycle) {
+      this.service.sendDataConso(id_Cycle).subscribe({
+        next: () => {
+          console.log('done !');
+          this.getConso(id_Cycle);
+        },
+      });
+    }
   }
 }
 //_____________________________________________________________________________________________________________
