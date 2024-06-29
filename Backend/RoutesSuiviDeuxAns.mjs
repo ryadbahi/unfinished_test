@@ -438,60 +438,92 @@ router.get("/consosuivi/:id", async (req, res, next) => {
     SELECT 
       id_conso, nom_adherent, prenom_adherent, lien, prenom_lien, date_sin, id_nomencl, frais_expo, rbt_sin 
     FROM consosuivi 
-    WHERE id_cycle = ?`;
+    WHERE id_cycle = ? AND rbt_sin = 0`;
 
   try {
-    const [cycleData] = await db.query(selectCycle, idCycle);
-    const [consoData] = await db.query(selectConso, idCycle);
-    const [conditionsData] = await db.query(selectConditions, idCycle);
+    const [cycleData] = await db.query(selectCycle, [idCycle]);
+    const [consoData] = await db.query(selectConso, [idCycle]);
+    const [conditionsData] = await db.query(selectConditions, [idCycle]);
 
     if (!cycleData.length) {
       return res.status(404).json({ message: "Cycle not found" });
     }
 
     const { date_start, date_end } = cycleData[0];
-
     const updates = [];
 
-    const result = consoData.map((conso) => {
-      const isWithinRange =
-        new Date(conso.date_sin) >= new Date(date_start) &&
-        new Date(conso.date_sin) <= new Date(date_end);
+    consoData.forEach((conso) => {
+      conditionsData.forEach((condition) => {
+        if (condition.nbr_of_unit) {
+          const countQuery = `
+            SELECT COUNT(*) AS count 
+            FROM consosuivi 
+            WHERE id_cycle = ? 
+              AND nom_adherent = ? 
+              AND prenom_adherent = ?`;
+          db.query(countQuery, [
+            idCycle,
+            conso.nom_adherent,
+            conso.prenom_adherent,
+          ])
+            .then(([countResult]) => {
+              const count = countResult[0].count;
+              console.log("Count:", count);
 
-      if (!isWithinRange) {
-        updates.push({
-          id: conso.id_conso,
-          fields: { statut: false, rbt_sin: 0 },
-        });
-      }
+              // Example condition using count
+              if (count < condition.nbr_of_unit) {
+                updates.push({
+                  id: conso.id_conso,
+                  fields: {
+                    statut: "Partial",
+                    rbt_sin: conso.frais_expo * 0.5,
+                  },
+                });
+              }
+            })
+            .catch((err) => {
+              console.error("Error counting:", err);
+            });
+        }
 
-      // Add more conditions as needed
-      // Example:
-      // if (conso.someOtherCondition) {
-      //   updates.push({ id: conso.id_conso, fields: { anotherField: newValue } });
-      // }
+        const isWithinRange =
+          new Date(conso.date_sin) >= new Date(date_start) &&
+          new Date(conso.date_sin) <= new Date(date_end);
 
-      return {
-        ...conso,
-        isWithinRange,
-      };
+        if (!isWithinRange) {
+          updates.push({
+            id: conso.id_conso,
+            fields: { statut: "Hors couverture", rbt_sin: 0 },
+          });
+        } else if (
+          condition.applied_on &&
+          condition.applied_on.toLowerCase().includes("ass")
+        ) {
+          const reimbursement = Math.min(
+            conso.frais_expo,
+            condition.unit_value || conso.frais_expo
+          );
+          updates.push({
+            id: conso.id_conso,
+            fields: { statut: "Ok", rbt_sin: reimbursement },
+          });
+        }
+      });
     });
 
-    if (updates.length > 0) {
-      const updateQueries = updates.map((update) => {
+    await Promise.all(
+      updates.map((update) => {
         const fields = Object.entries(update.fields)
           .map(([key, value]) => `${key} = ${db.escape(value)}`)
           .join(", ");
-        return `UPDATE consosuivi SET ${fields} WHERE id_conso = ${db.escape(
+        const updateQuery = `UPDATE consosuivi SET ${fields} WHERE id_conso = ${db.escape(
           update.id
         )}`;
-      });
+        return db.query(updateQuery);
+      })
+    );
 
-      await Promise.all(updateQueries.map((query) => db.query(query)));
-    }
-
-    res.status(200).json({ conditionsData, cycleData, result });
-    console.log(conditionsData);
+    res.status(200).json({ conditionsData, cycleData, consoData });
   } catch (err) {
     next(err);
   }
