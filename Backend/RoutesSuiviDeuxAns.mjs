@@ -497,7 +497,7 @@ router.get("/consosuivi/:id", async (req, res, next) => {
           });
         } else if (
           condition.applied_on &&
-          condition.applied_on.toLowerCase().includes("ass")
+          condition.applied_on.toLowerCase().includes("ass") // ^^
         ) {
           const reimbursement = Math.min(
             conso.frais_expo,
