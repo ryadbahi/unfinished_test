@@ -734,4 +734,8 @@ export class ApiService {
   sendDataConso(id: number) {
     return this.http.get(`${this.apiUrl}/suivideuxans/consosuivi/${id}`);
   }
+
+  sendDataConsoTest(data: { id_cycle: number; id_conso: number }[]) {
+    return this.http.post(`${this.apiUrl}/suivideuxans/consosuivi/test`, data);
+  }
 }

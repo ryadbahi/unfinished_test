@@ -529,4 +529,123 @@ router.get("/consosuivi/:id", async (req, res, next) => {
   }
 });
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// TEST LOGIC /////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+router.post("/consosuivi/test", async (req, res, next) => {
+  const data = req.body; // The data is an array of objects
+
+  // Log the received data
+  console.log("Received data:", data);
+
+  // Process each object in the array
+  data.forEach((item) => {
+    const Id_Cycle = item.id_cycle;
+    const Id_Conso = item.id_conso;
+  });
+
+  const selectConsoAdherent = `
+      SELECT 
+    id_conso, 
+    nom_adherent, 
+    prenom_adherent, 
+    lien, 
+    prenom_lien, 
+    date_sin, 
+    id_nomencl, 
+    frais_expo, 
+    rbt_sin 
+      FROM consosuivi 
+      WHERE id_cycle = ? AND id_conso = ?`;
+
+  //Quand j'aurait recup la donné d'une seule ligne je doit process le reste de sa conso me bsant sur l'adherent
+
+  /*const selectConditions = `
+      SELECT 
+    id_nomencl, 
+    applied_on, 
+    taux_rbt, 
+    limit_act, 
+    limit_gar, 
+    nbr_of_unit, 
+    unit_value 
+      FROM suivideuxans 
+      WHERE id_cycle = ?`;
+  const selectCycle = `
+      SELECT 
+    date_start, 
+    date_end 
+      FROM cycle 
+      WHERE id_cycle = ?`;
+  const selectConso = `
+      SELECT 
+    id_conso, 
+    nom_adherent, 
+    prenom_adherent, 
+    lien, 
+    prenom_lien, 
+    date_sin, 
+    id_nomencl, 
+    frais_expo, 
+    rbt_sin 
+      FROM consosuivi 
+      WHERE id_cycle = ? `; //`AND rbt_sin = 0`;
+
+  const selectConsoAdherent = `
+      SELECT 
+    id_conso, 
+    nom_adherent, 
+    prenom_adherent, 
+    lien, 
+    prenom_lien, 
+    date_sin, 
+    id_nomencl, 
+    frais_expo, 
+    rbt_sin 
+      FROM consosuivi 
+      WHERE id_cycle = ?`;
+
+  try {
+    const getCycle = await db.query(selectCycle, IdCycle);
+    const getConditions = await db.query(selectConditions, IdCycle);
+    const getConso = await db.query(selectConso, IdCycle);
+
+    const cycle_Start = getCycle[0][0].date_start;
+    const cycle_End = getCycle[0][0].date_end;
+    const Conditions = getConditions[0];
+    const Conso = getConso[0];
+
+    const getConsoAdherent = await db.query(
+      selectConsoAdherent,
+      IdCycle,
+      Conso[0].nom_adherent,
+      Conso[0].prenom_adherent
+    );
+
+    const adherents = [];
+    const validConso = [];
+
+    for (let conso of Conso) {
+      const dateSin = new Date(conso.date_sin);
+
+      if (dateSin > cycle_Start && dateSin < cycle_End) {
+        const adherent = Conso[0].nom_adherent;
+        validConso.push(dateSin);
+        adherents.push(adherent);
+      } else {
+        validConso.push(`Date hors couverture ${dateSin}`);
+      }
+    }
+
+    log(cycle_Start, cycle_End);
+    //  log(Conditions[0]);
+    //  log(Conso);
+
+    res.status(200).json({ getConsoAdherent });
+  } catch (error) {
+    next(error);
+  }*/
+});
+
 export default router;

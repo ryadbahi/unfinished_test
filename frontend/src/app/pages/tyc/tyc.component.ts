@@ -690,14 +690,22 @@ export class TycComponent implements OnInit {
   }
 
   test() {
-    console.log(this.consoDataSource.data);
+    const data = this.consoDataSource.data.map((item: Conso) => {
+      return { id_cycle: item.id_cycle, id_conso: item.id_conso }; // Format as objects
+    });
+
+    if (data.length > 0) {
+      this.service.sendDataConsoTest(data).subscribe({
+        next: () => {
+          console.log('Data sent successfully');
+        },
+      });
+    }
+
+    console.log(data);
   }
 
   checkPlafonds() {
-    let cycleId = this.cycleDataSource.data.map((item: CycleData) => {
-      return item.id_cycle;
-    });
-
     let id_Cycle = this.selectedIdCycle;
 
     if (id_Cycle) {
