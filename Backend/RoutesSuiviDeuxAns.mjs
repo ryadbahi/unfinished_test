@@ -1,9 +1,7 @@
 import { Router } from "express";
 import db from "./dbLink.mjs";
 import multer from "multer";
-import fs from "fs";
 import xlsx from "node-xlsx";
-import { error, log } from "console";
 
 const router = Router();
 const upload = multer({ dest: "uploads/" });
@@ -101,7 +99,8 @@ SELECT
     consosuivi.frais_expo,
     consosuivi.rbt_sin,
     consosuivi.remains,
-    consosuivi.forced
+    consosuivi.forced,
+    consosuivi.saved
   FROM consosuivi
   LEFT JOIN nomencl ON consosuivi.id_nomencl = nomencl.id_nomencl
   WHERE id_cycle = ? 
@@ -265,6 +264,20 @@ _______________________________________________________________________________
 ________________________________   UPDATE   _____________________________________
 _______________________________________________________________________________
 _____________________________________________________________________________*/
+
+router.put("/consosuivi/updatesaved/:id", async (req, res, next) => {
+  const id = req.params.id;
+  const data = req.body.saved; // Access stored value from the request body
+
+  const updateQuery = `UPDATE consosuivi SET saved = ? WHERE id_conso = ?`;
+
+  try {
+    await db.query(updateQuery, [data, id]);
+    res.status(200).json({ message: "Ok" });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.put("/:id", async (req, res, next) => {
   const id = req.params.id;
@@ -436,7 +449,7 @@ router.get("/consosuivi/:id", async (req, res, next) => {
     WHERE id_cycle = ?`;
   const selectConso = `
     SELECT 
-      id_conso, nom_adherent, prenom_adherent, lien, prenom_lien, date_sin, id_nomencl, frais_expo, rbt_sin 
+      id_conso, nom_adherent, prenom_adherent, lien, prenom_lien, date_sin, id_nomencl, frais_expo, rbt_sin, saved
     FROM consosuivi 
     WHERE id_cycle = ? AND rbt_sin = 0`;
 

@@ -63,6 +63,8 @@ import { RouterLink } from '@angular/router';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 export interface CycleData {
   idx: number;
@@ -109,6 +111,7 @@ export interface Conso {
   remains: number;
   forced: boolean;
   isedit?: boolean;
+  saved: boolean;
 }
 export interface GetConso {
   item: Conso[];
@@ -139,9 +142,11 @@ export interface GetConso {
     NgxMatSelectSearchModule,
     MatDatepickerModule,
     DatePipe,
+    MatTooltipModule,
     NgxSpinnerModule,
     MatPaginatorModule,
     MatExpansionModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './tyc.component.html',
   styleUrl: './tyc.component.scss',
@@ -177,6 +182,7 @@ export class TycComponent implements OnInit {
     'frais_expo',
     'rbt_sin',
     'restant',
+    'saved',
     'forced',
     'actions',
   ];
@@ -716,6 +722,18 @@ export class TycComponent implements OnInit {
         },
       });
     }
+  }
+
+  onToggleChange(element: Conso) {
+    const updatedValue = element.saved ? 1 : 0; // Convert boolean to 1 or 0
+
+    console.log(updatedValue, element.id_conso);
+
+    this.service.updateStoredStatus(element.id_conso, updatedValue).subscribe({
+      next: () => {
+        this.snackBar.openSnackBar('Good', 'OK');
+      },
+    });
   }
 }
 //_____________________________________________________________________________________________________________

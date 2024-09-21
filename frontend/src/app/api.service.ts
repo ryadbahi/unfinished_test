@@ -1,6 +1,6 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Cons, Subject, from, throwError } from 'rxjs';
+import { Subject, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import {
@@ -10,19 +10,13 @@ import {
 import {
   AdherentData,
   Liens_benef,
-  fam_adhData,
 } from './pages/adherents/adherents.component';
 import { ParaphOv } from './pages/paraph/histo-paraph/histo-paraph.component';
 
 import { DptSin } from './pages/sinistres/sinistres.component';
 
 import { SouscripData } from './pages/contrat/contrat.component';
-import {
-  Conditions,
-  Conso,
-  CycleData,
-  GetConso,
-} from './pages/tyc/tyc.component';
+import { Conditions, CycleData, GetConso } from './pages/tyc/tyc.component';
 
 export interface SinAdhData {
   id_adherent: number;
@@ -699,6 +693,16 @@ export class ApiService {
 
   updateCycle(id: number, data: any) {
     return this.http.put(`${this.apiUrl}/suivideuxans/${id}`, data);
+  }
+
+  //______________________ UPDATE CONSO _____________________________
+
+  updateStoredStatus(id: number, data: number) {
+    const payload = { saved: data }; // Send as an object
+    return this.http.put(
+      `${this.apiUrl}/suivideuxans/consosuivi/updatesaved/${id}`,
+      payload
+    );
   }
 
   //______________________GET CONSO _________________________________

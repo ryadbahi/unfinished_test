@@ -492,7 +492,16 @@ export class MailreportsComponent implements OnInit {
       });
     }
   }
+
+  ngDoCheck() {
+    // Detect changes in mrepelem and handle accordingly
+    this.cdr.detectChanges();
+  }
+
   updateRow(mrepelem: MreportsData) {
+    // Force change detection to ensure the latest value of `mrepelem.objet` is captured
+    this.cdr.detectChanges();
+
     // Stringify the current state of mrepelem
     let updatedMrepelem = JSON.stringify(mrepelem);
 

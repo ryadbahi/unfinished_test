@@ -19,7 +19,7 @@ import liensBenefRoutes from "./RoutesLiensBenef.mjs";
 import suiviDeuxAnsRoutes from "./RoutesSuiviDeuxAns.mjs";
 
 const app = express();
-
+app.use(bodyParsers.json());
 app.use(cors());
 app.use(express.json());
 

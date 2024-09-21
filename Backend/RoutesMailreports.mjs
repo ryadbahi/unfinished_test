@@ -424,9 +424,11 @@ router.post("/msg", upload.array("files"), async (req, res, next) => {
           "\n" +
           mail.body,
         reponse: reponseTime,
+        objet: "Mise à jour profil",
         tdr: timeDiff(sentOnDate, reponseTime),
         score: calculateBusinessTimeDifference(sentOnDate, reponseTime),
-        observation: "",
+        statut: "Réglée",
+        observation: "Profil mis à jour",
       };
       await insertMailReport(report);
       reports.push(report);
