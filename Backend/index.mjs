@@ -17,6 +17,7 @@ import abbrevRoutes from "./RoutesAbbrev.mjs";
 import storedSin from "./RoutesStoredSin.mjs";
 import liensBenefRoutes from "./RoutesLiensBenef.mjs";
 import suiviDeuxAnsRoutes from "./RoutesSuiviDeuxAns.mjs";
+import authenticationRoutes from "./RoutesAuthentication.mjs";
 
 const app = express();
 app.use(bodyParsers.json());
@@ -29,6 +30,9 @@ app.use((req, res, next) => {
 });
 
 app.use("/liens_benef", liensBenefRoutes);
+
+//_______________________AUTHENTICATION__________________________________
+app.use("/auth", authenticationRoutes);
 
 //_________________________SUIVI DEUX ANS__________________________________
 

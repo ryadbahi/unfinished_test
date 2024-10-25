@@ -4,7 +4,14 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'home',
+    redirectTo: 'Auth',
+  },
+
+  {
+    path: 'Auth',
+    loadComponent: () =>
+      import('./authent/authent.component').then((m) => m.AuthentComponent),
+    data: { title: 'Login' },
   },
   {
     path: 'home',

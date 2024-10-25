@@ -1,0 +1,36 @@
+.AuthBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.mat-mdc-card {
+  border-width: 2vh;
+}
+.mat-mdc-card-header {
+  padding: 0 1vh 1vh 1vh;
+  align-self: center;
+}
+
+.sepBox {
+  display: flex;
+  align-self: center;
+  margin: 1vh 0 0 0;
+}
+.line {
+  width: 10vh;
+  padding: 0 1vh 0 1vh;
+  margin-top: 3px;
+}
+.login,
+.register {
+  display: contents;
+}
+.switch {
+  cursor: pointer;
+  font-weight: bold;
+  color: #005cbb;
+}
+.Forms {
+  width: min-content;
+}

@@ -1,1 +1,67 @@
-<p>authent works!</p>
+<div><button mat-raised-button (click)="generateUserName()">TEST</button></div>
+
+<div class="AuthBox">
+  <mat-card>
+    @if (showlogin) {
+    <div class="login">
+      <mat-card-header>
+        <div>Connexion</div>
+      </mat-card-header>
+      <div class="Forms">
+        <form [formGroup]="loginform">
+          <mat-form-field>
+            <mat-label>UserName</mat-label>
+            <input matInput formControlName="username" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="loginpassword" />
+          </mat-form-field>
+        </form>
+      </div>
+      <button mat-raised-button (click)="login()">Connexion</button>
+      <div class="sepBox">
+        <div class="line">
+          <hr size="5" color="grey" />
+        </div>
+        <div>OU</div>
+        <div class="line"><hr size="5" color="grey" /></div>
+      </div>
+      <br />
+      <div><a class="switch" (click)="showLogin()">Créer un compte ?</a></div>
+    </div>
+    } @else{
+    <div class="register">
+      <mat-card-header>
+        <div>Inscription</div>
+      </mat-card-header>
+      <div class="Forms">
+        <form [formGroup]="registerform">
+          <mat-form-field>
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="user_name" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="user_surname" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="regpassword" />
+          </mat-form-field>
+        </form>
+      </div>
+      <button mat-raised-button (click)="register()">S'inscrire</button>
+      <div class="sepBox">
+        <div class="line">
+          <hr size="5" color="grey" />
+        </div>
+        <div>OU</div>
+        <div class="line"><hr size="5" color="grey" /></div>
+      </div>
+    </div>
+    <br />
+    <div><a class="switch" (click)="showLogin()">Déja inscrit ?</a></div>
+    }
+  </mat-card>
+</div>
