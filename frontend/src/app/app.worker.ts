@@ -82,6 +82,9 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
   let rearrangedData: listing[] = [];
   let tempData: listing[] = []; // Temporary array to hold the data
 
+  console.log(tempData);
+  
+
   const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
 
   if (sheet['!ref']) {
@@ -93,6 +96,10 @@ function processSheet(sheet: XLSX.WorkSheet): listing[] {
       let nom = sheet[XLSX.utils.encode_cell({ r: i, c: 3 })]?.v;
       let prenom = sheet[XLSX.utils.encode_cell({ r: i, c: 4 })]?.v;
       let dateDeNaissance = sheet[XLSX.utils.encode_cell({ r: i, c: 5 })]?.v;
+
+      if (!serial && !lienBnf && !num && !nom && !prenom && !dateDeNaissance) {
+        continue; // Skip this row
+      }
 
       if (!serial || !lienBnf || !num || !nom || !prenom || !dateDeNaissance) {
         throw new Error(

@@ -68,11 +68,17 @@ export const routes: Routes = [
     data: { title: 'Vérif Sinistres' },
   },
   {
-    path: 'paraph',
+    path: 'histo',
     loadComponent: () =>
-      import('./pages/paraph/paraph.component').then((m) => m.ParaphComponent),
-    data: { title: 'Parapheur' },
+      import('./pages/paraph/histo-paraph/histo-paraph.component').then((m) => m.HistoParaphComponent),
+    data: { title: 'Historique parapheur' },
   },
+  
+  {path: 'paraph',
+  loadComponent: () =>
+    import('./pages/paraph/paraph.component').then((m) => m.ParaphComponent),
+  data: { title: 'Parapheur' },
+},
   {
     path: 'contrat',
     loadComponent: () =>
